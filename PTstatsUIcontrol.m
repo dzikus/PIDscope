@@ -10,8 +10,7 @@
 if ~isempty(filenameA) || ~isempty(filenameB)
 
 PTstatsfig=figure(6);
-set(PTstatsfig, 'units','normalized','Position',[.1 .1 .75 .8])
-set(PTstatsfig, 'units','pixels');
+set(PTstatsfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTstatsfig, 'NumberTitle', 'off');
 set(PTstatsfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Flight stats']);
 set(PTstatsfig, 'InvertHardcopy', 'off');

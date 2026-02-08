@@ -110,8 +110,7 @@ Flim1=20; % 3.3333Hz steps
 Flim2=60;
 
 PTspecfig=figure(2);
-set(PTspecfig, 'units','normalized','Position',[.1 .1 .75 .8])
-set(PTspecfig, 'units','pixels');
+set(PTspecfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTspecfig, 'NumberTitle', 'off');
 set(PTspecfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Frequency x Throttle Spectrogram']);
 set(PTspecfig, 'InvertHardcopy', 'off');

@@ -11,8 +11,7 @@
 if ~isempty(filenameA) || ~isempty(filenameB)
       
 PTerrfig=figure(3);
-set(PTerrfig, 'units','normalized','Position',[.1 .1 .75 .8])
-set(PTerrfig, 'units','pixels');
+set(PTerrfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTerrfig, 'NumberTitle', 'off');
 set(PTerrfig, 'Name', ['PIDtoolbox (' PtbVersion ') - PID Error Tool']);
 set(PTerrfig, 'InvertHardcopy', 'off');

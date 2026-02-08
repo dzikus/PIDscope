@@ -115,22 +115,19 @@ screensz = get(0,'ScreenSize');
 screensz(3) = round(1.78 * screensz(4)); % force 16:9
 
 
-%set(PTfig, 'Position', [10, 10, screensz(3)*.5, screensz(4)*.5]);
-set(PTfig, 'units','normalized','Position',[.1 .1 .75 .8])
-set(PTfig, 'units','pixels'); % reset to pixels - Octave Qt crashes on uipanel with normalized units
+% Octave Qt bug: setting figure units to 'normalized' permanently breaks uipanel
+% Calculate pixel position manually instead
+figPos = round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]);
+set(PTfig, 'Position', figPos);
 set(PTfig, 'NumberTitle', 'off');
 set(PTfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Log Viewer']);
 
 pause(.1)% need to wait for figure to open before extracting screen values
 
 screensz_multiplier = sqrt(screensz(4)^2) * .011; % based on vertical dimension only, to deal with for ultrawide monitors
-PTfig_pos = get(PTfig, 'Position');
-prop_max_screen = PTfig_pos(4);
-% Octave returns Position in pixels even with normalized units - normalize manually
-if prop_max_screen > 10, prop_max_screen = prop_max_screen / screensz(4); end
+prop_max_screen = figPos(4) / screensz(4);
 fontsz = (screensz_multiplier*prop_max_screen);
 markerSz = round(screensz_multiplier * 0.75);
-
 vPos = 0.92;
 controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
              'BackgroundColor',[.95 .95 .95],...
