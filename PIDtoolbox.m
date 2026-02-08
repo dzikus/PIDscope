@@ -132,38 +132,38 @@ markerSz = round(screensz_multiplier * 0.75);
 vPos = 0.92;
 cpL = .875; % control panel left edge
 cpW = .12;  % control panel width
-controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
-             'BackgroundColor',[.95 .95 .95],...
-             'Position',[cpL vPos-.28 cpW .3]);
+rs = 0.025; % row step (vertical spacing between elements)
+rh = 0.026; % row height
+if isOctave, rs = 0.031; rh = 0.028; end % Octave Qt widgets need more space
 
-posInfo.firmware =[cpL+.003 vPos-0.04 cpW-.006 .04];
-posInfo.fileA=[cpL+.006 vPos-0.05 cpW/2-.006 .026];
-posInfo.clr=[cpL+cpW/2 vPos-0.05 cpW/2-.006 .026];
-posInfo.fnameAText = [cpL+.003 vPos-0.09 cpW-.006 .04];
-
-posInfo.startEndButton=[cpL+.005 vPos-0.1 .04 .026];
+r = 0; % row counter
+r=r+1; posInfo.firmware =[cpL+.003 vPos-rs*1.6 cpW-.006 .04];
+r=r+1; posInfo.fileA=[cpL+.006 vPos-rs*2 cpW/2-.006 rh];
+        posInfo.clr=[cpL+cpW/2 vPos-rs*2 cpW/2-.006 rh];
+r=r+1; posInfo.fnameAText = [cpL+.003 vPos-rs*3.6 cpW-.006 .04];
+r=r+1; posInfo.startEndButton=[cpL+.005 vPos-rs*4 .04 rh];
 LogStDefault = 2;% default ignore first 2 seconds of logfile
 LogNdDefault = 1;% default ignore last 1 second of logfile
+        posInfo.RPYcomboLV = [cpL+.05 vPos-rs*4 .065 rh];
+r=r+1; posInfo.plotR_LV =  [cpL+.005 vPos-rs*5 .035 rh];
+        posInfo.plotP_LV =  [cpL+.04 vPos-rs*5 .035 rh];
+        posInfo.plotY_LV =  [cpL+.075 vPos-rs*5 .035 rh];
+r=r+1; posInfo.lineSmooth = [cpL+.003 vPos-rs*6 cpW/2-.003 rh];
+        posInfo.linewidth = [cpL+cpW/2 vPos-rs*6 cpW/2-.003 rh];
+r=r+1; posInfo.spectrogramButton = [cpL+.003 vPos-rs*7 cpW-.006 rh];
+r=r+1; posInfo.TuningButton = [cpL+.003 vPos-rs*8 cpW-.006 rh];
+r=r+1; posInfo.period2Hz = [cpL+.003 vPos-rs*9 cpW/2-.003 rh];
+        posInfo.DispInfoButton = [cpL+cpW/2 vPos-rs*9 cpW/2-.003 rh];
+r=r+1; posInfo.saveFig = [cpL+.003 vPos-rs*10 cpW/2-.003 rh];
+        posInfo.saveSettings = [cpL+cpW/2 vPos-rs*10 cpW/2-.003 rh];
+%posInfo.wiki = [cpL+.003 vPos-rs*11 cpW/2-.003 rh];
+r=r+1; posInfo.PIDtuningService = [cpL+.003 vPos-rs*11 cpW-.006 rh];
+posInfo.resetMain = [cpL+.003 vPos-0.85 cpW-.006 rh];
 
-posInfo.RPYcomboLV = [cpL+.05 vPos-0.1 .065 .026];
-
-posInfo.plotR_LV =  [cpL+.005 vPos-0.125 .035 .025];
-posInfo.plotP_LV =  [cpL+.04 vPos-0.125 .035 .025];
-posInfo.plotY_LV =  [cpL+.075 vPos-0.125 .035 .025];
-
-posInfo.lineSmooth = [cpL+.003 vPos-0.15 cpW/2-.003 .026];
-posInfo.linewidth = [cpL+cpW/2 vPos-0.15 cpW/2-.003 .026];
-
-posInfo.spectrogramButton = [cpL+.003 vPos-0.175 cpW-.006 .026];
-posInfo.TuningButton = [cpL+.003 vPos-0.2 cpW-.006 .026];
-posInfo.period2Hz = [cpL+.003 vPos-0.225 cpW/2-.003 .026];
-posInfo.DispInfoButton = [cpL+cpW/2 vPos-0.225 cpW/2-.003 .026];
-
-posInfo.saveFig = [cpL+.003 vPos-0.25 cpW/2-.003 .026];
-posInfo.saveSettings = [cpL+cpW/2 vPos-0.25 cpW/2-.003 .026];
-%posInfo.wiki = [cpL+.003 vPos-0.275 cpW/2-.003 .026];
-posInfo.PIDtuningService = [cpL+.003 vPos-0.275 cpW-.006 .026];
-posInfo.resetMain = [cpL+.003 vPos-0.85 cpW-.006 .026];
+cpH = rs*11 + 0.05; % control panel height = rows + title margin
+controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
+             'BackgroundColor',[.95 .95 .95],...
+             'Position',[cpL vPos-cpH+0.02 cpW cpH]);
 
 
 fnameMaster = {}; 

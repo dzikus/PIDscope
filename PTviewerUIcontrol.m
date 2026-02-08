@@ -92,7 +92,7 @@ guiHandles.checkbox15=uicontrol(PTfig,'Style','checkbox','String','All','fontsiz
  
 TooltipString_FileNum=['Select the file you wish to plot in the logviewer. '];
 guiHandles.FileNum = uicontrol(PTfig,'Style','popupmenu','string',[fnameMaster],'TooltipString', [TooltipString_FileNum],...
-    'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText],'callback','if ~isempty(fnameMaster), set(zoom, ''Enable'',''off''), expandON=0; PTplotLogViewer; if ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer, end, end');
+    'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText],'callback','if ~isempty(fnameMaster), try set(zoom, ''Enable'',''off''); catch, end, expandON=0; PTplotLogViewer; if ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer, end, end');
 
             
 fileIdx = get(guiHandles.FileNum, 'Value');
