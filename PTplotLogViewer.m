@@ -202,9 +202,9 @@ if ~isempty(fnameMaster)
 
                 box off  
                 if get(guiHandles.RPYcomboLV, 'Value') 
-                    y=ylabel([ylabelname],'fontweight','bold','rot', 90);  
+                    y=ylabel([ylabelname],'fontweight','bold','rotation', 90);  
                 else
-                    y=ylabel([axLabel{ii} ' (deg/s)'],'fontweight','bold','rot', 90);  
+                    y=ylabel([axLabel{ii} ' (deg/s)'],'fontweight','bold','rotation', 90);  
                 end
 
 

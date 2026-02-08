@@ -49,6 +49,7 @@ hw = waitbar(0,['please wait... ' ]);
 tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
 tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
 tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
+pTotal = max(1, length(tmpSpecVal) * size(tmpFileVal,2) * length(axesOptionsSpec));
 for k = 1 : length(tmpSpecVal)
     s = char(datSelectionString(tmpSpecVal(k)));
     for f = 1 : size(tmpFileVal,2)
@@ -63,7 +64,7 @@ for k = 1 : length(tmpSpecVal)
                 clear dat
                 eval(['dat = T{tmpFileVal(f)}.' char(datSelectionString(tmpSpecVal(k))) '_' int2str(a-1) '_(tIND{tmpFileVal(f)})'';';])
                 lograte = A_lograte(tmpFileVal(f));%in kHz
-                waitbar(p, hw, ['processing spectrogram... '  int2str(p) ]);
+                waitbar(min(1, p/pTotal), hw, ['processing spectrogram... '  int2str(p) ]);
                 smat{p}=s;
                 eval(['[freq2d2{p}.f' int2str(f) ' amp2d2{p}.f' int2str(f) ' ]=PTSpec2d(dat,lograte, tmpPSDVal);']) %compute 2d amp spec at same time
             end
