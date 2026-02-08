@@ -6,7 +6,7 @@ OCTAVE ?= octave
 .PHONY: run install install-deps fetch-blackbox test clean
 
 run:
-	$(OCTAVE) --gui --eval "cd('$(CURDIR)'); PIDtoolbox"
+	$(OCTAVE) --gui --persist --eval "cd('$(CURDIR)'); PIDtoolbox"
 
 install-deps:
 	@echo "Installing Octave and required packages..."
