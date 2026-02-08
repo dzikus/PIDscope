@@ -101,7 +101,7 @@ climScale2=[0.5 ; 20];
 PTspecfig2=figure(3);
 set(PTspecfig2, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTspecfig2, 'NumberTitle', 'off');
-set(PTspecfig2, 'Name', ['PIDtoolbox (' PtbVersion ') - Spectral Analyzer']);
+set(PTspecfig2, 'Name', ['PIDscope (' PtbVersion ') - Spectral Analyzer']);
 set(PTspecfig2, 'InvertHardcopy', 'off');
 set(PTspecfig2,'color',bgcolor);
 

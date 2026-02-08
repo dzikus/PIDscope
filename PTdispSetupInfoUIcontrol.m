@@ -14,7 +14,7 @@ PTdisp=figure(5);
 screensz = get(0,'ScreenSize');
 set(PTdisp, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTdisp, 'NumberTitle', 'on');
-set(PTdisp, 'Name', ['PIDtoolbox (' PtbVersion ') -  Setup Info']);
+set(PTdisp, 'Name', ['PIDscope (' PtbVersion ') -  Setup Info']);
 set(PTdisp,'color',bgcolor)
 
 columnWidth=55*round(screensz_multiplier*prop_max_screen);

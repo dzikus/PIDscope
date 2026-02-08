@@ -130,7 +130,7 @@ Flim2=60;
 PTspecfig=figure(2);
 set(PTspecfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTspecfig, 'NumberTitle', 'off');
-set(PTspecfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Frequency x Throttle Spectrogram']);
+set(PTspecfig, 'Name', ['PIDscope (' PtbVersion ') - Frequency x Throttle Spectrogram']);
 set(PTspecfig, 'InvertHardcopy', 'off');
 set(PTspecfig,'color',bgcolor);
 

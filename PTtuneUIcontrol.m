@@ -12,7 +12,7 @@ if ~isempty(fnameMaster)
 PTtunefig=figure(4);
 set(PTtunefig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTtunefig, 'NumberTitle', 'on');
-set(PTtunefig, 'Name', ['PIDtoolbox (' PtbVersion ') - Step Response Tool']);
+set(PTtunefig, 'Name', ['PIDscope (' PtbVersion ') - Step Response Tool']);
 set(PTtunefig, 'InvertHardcopy', 'off');
 set(PTtunefig,'color',bgcolor)
 

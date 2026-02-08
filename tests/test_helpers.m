@@ -1,5 +1,5 @@
 function out = test_helpers()
-  % Test helpers - mock data generators for PIDtoolbox tests
+  % Test helpers - mock data generators for PIDscope tests
   % Usage: h = test_helpers(); y = h.mock_sine(100, 2, 4);
   out.mock_sine = @mock_sine;
   out.mock_step = @mock_step;

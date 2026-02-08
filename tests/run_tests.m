@@ -1,7 +1,7 @@
-% run_tests.m - PIDtoolbox test runner for GNU Octave
+% run_tests.m - PIDscope test runner for GNU Octave
 % Usage: octave --no-gui --eval "run('tests/run_tests.m')"
 
-fprintf('\n=== PIDtoolbox Test Suite ===\n\n');
+fprintf('\n=== PIDscope Test Suite ===\n\n');
 
 % Setup paths
 project_root = fileparts(fileparts(mfilename('fullpath')));

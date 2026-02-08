@@ -1,12 +1,12 @@
 PREFIX ?= /usr/local
-INSTALL_DIR = $(PREFIX)/share/pidtoolbox
+INSTALL_DIR = $(PREFIX)/share/pidscope
 BIN_DIR = $(PREFIX)/bin
 OCTAVE ?= octave
 
 .PHONY: run install install-deps fetch-blackbox test clean
 
 run:
-	$(OCTAVE) --gui --persist --eval "cd('$(CURDIR)'); PIDtoolbox"
+	$(OCTAVE) --gui --persist --eval "cd('$(CURDIR)'); PIDscope"
 
 install-deps:
 	@echo "Installing Octave and required packages..."
@@ -46,9 +46,9 @@ install: fetch-blackbox
 	install -d $(INSTALL_DIR)
 	install -d $(BIN_DIR)
 	cp -r *.m compat/ blackbox_decode blackbox_decode_INAV $(INSTALL_DIR)/
-	@printf '#!/bin/sh\nexec $(OCTAVE) --gui --eval "cd(\\\"$(INSTALL_DIR)\\\"); PIDtoolbox"\n' > $(BIN_DIR)/pidtoolbox
-	chmod +x $(BIN_DIR)/pidtoolbox
-	@echo "Installed. Run with: pidtoolbox"
+	@printf '#!/bin/sh\nexec $(OCTAVE) --gui --eval "cd(\\\"$(INSTALL_DIR)\\\"); PIDscope"\n' > $(BIN_DIR)/pidscope
+	chmod +x $(BIN_DIR)/pidscope
+	@echo "Installed. Run with: pidscope"
 
 test:
 	$(OCTAVE) --no-gui --eval "addpath('compat'); addpath('tests'); run_tests"

@@ -13,7 +13,7 @@ if ~isempty(filenameA) || ~isempty(filenameB)
 PTerrfig=figure(3);
 set(PTerrfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTerrfig, 'NumberTitle', 'off');
-set(PTerrfig, 'Name', ['PIDtoolbox (' PtbVersion ') - PID Error Tool']);
+set(PTerrfig, 'Name', ['PIDscope (' PtbVersion ') - PID Error Tool']);
 set(PTerrfig, 'InvertHardcopy', 'off');
 set(PTerrfig,'color',bgcolor)
 

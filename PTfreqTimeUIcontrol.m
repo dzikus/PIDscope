@@ -56,7 +56,7 @@ posInfo.sub100HzfreqTime  = [.915 .665 .06 .024];
 PTspecfig3=figure(31);
 set(PTspecfig3, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
 set(PTspecfig3, 'NumberTitle', 'off');
-set(PTspecfig3, 'Name', ['PIDtoolbox (' PtbVersion ') - Frequency x Time Spectrogram']);
+set(PTspecfig3, 'Name', ['PIDscope (' PtbVersion ') - Frequency x Time Spectrogram']);
 set(PTspecfig3, 'InvertHardcopy', 'off');
 set(PTspecfig3,'color',bgcolor);
 

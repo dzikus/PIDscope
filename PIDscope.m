@@ -1,4 +1,4 @@
- %% PIDtoolbox - main  
+ %% PIDscope - main
 %  script for main control panel and log viewer
 %
 % ----------------------------------------------------------------------------------
@@ -31,14 +31,14 @@ executableDir = fileparts(mfilename('fullpath'));
 if isempty(executableDir), executableDir = pwd; end
 addpath(executableDir);
 
-setupStr = {'SET UP WORKING DIRECTORY!', ' ', 'Before running PIDtoolbox, we have to determine the location of your ''main'' directory. After you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDtoolbox_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
-resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDtoolbox_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
+setupStr = {'SET UP WORKING DIRECTORY!', ' ', 'Before running PIDscope, we have to determine the location of your ''main'' directory. After you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDscope_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
+resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDscope_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
 
 % Platform-specific config directory
 if exist('/Users/Shared', 'dir')
     configDir = '/Users/Shared';
 else
-    configDir = fullfile(getenv('HOME'), '.config', 'PIDtoolbox');
+    configDir = fullfile(getenv('HOME'), '.config', 'PIDscope');
     if ~exist(configDir, 'dir'), mkdir(configDir); end
 end
 cd(configDir)
@@ -73,7 +73,7 @@ set(PTfig, 'InvertHardcopy', 'off');
 bgcolor=[.95 .95 .95];
 set(PTfig,'color',bgcolor);
 
-wikipage = 'https://github.com/bw1129/PIDtoolbox/wiki/PIDtoolbox-user-guide';
+wikipage = 'https://buymeacoffee.com/dzikus';
 
 if ~exist('filenameA','var'), filenameA={}; end
 
@@ -122,7 +122,7 @@ screensz(3) = round(1.78 * screensz(4)); % force 16:9
 figPos = round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]);
 set(PTfig, 'Position', figPos);
 set(PTfig, 'NumberTitle', 'off');
-set(PTfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Log Viewer']);
+set(PTfig, 'Name', ['PIDscope (' PtbVersion ') - Log Viewer']);
 
 pause(.1)% need to wait for figure to open before extracting screen values
 
@@ -214,7 +214,7 @@ TooltipString_spec=['Opens spectral analysis tool in new window'];
 TooltipString_step=['Opens step response tool in new window'];
 TooltipString_setup=['Displays detailed setup information in new window'];
 TooltipString_saveFig=['Saves current figure', newline,'Note: Clicking the ''Save fig'' button for the first time creates a folder using the log file names'];
-TooltipString_wiki=['Link to the PIDtoolbox wiki in Github'];
+TooltipString_wiki=['Link to the PIDscope project page'];
 TooltipString_selectButton = ['With box checked, position mouse over desired start position,' , newline, 'then mouse click, then desired end position, then mouse click again;' , newline, 'to escape, deselect then click anywhere'];
 
 
@@ -281,13 +281,13 @@ set(guiHandles.saveSettings, 'ForegroundColor', saveCol);
 %     'callback','web(wikipage);'); 
 % guiHandles.wiki.ForegroundColor=[cautionCol];
 
-guiHandles.PIDtuningService = uicontrol(PTfig,'string','www.pidtoolbox.com','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['www.pidtoolbox.com'],'units','normalized','Position',[posInfo.PIDtuningService],...
-    'callback','web(''www.pidtoolbox.com'');'); 
+guiHandles.PIDtuningService = uicontrol(PTfig,'string','Support PIDscope','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['https://buymeacoffee.com/dzikus'],'units','normalized','Position',[posInfo.PIDtuningService],...
+    'callback','web(''https://buymeacoffee.com/dzikus'');');
 set(guiHandles.PIDtuningService, 'ForegroundColor', cautionCol);
 
 
-guiHandles.resetMain = uicontrol(PTfig,'string','Reset main directory','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['Donate to the PIDtoolbox project'],'units','normalized','Position',[posInfo.resetMain],...
-    'callback','uiwait(helpdlg(resetupStr)), cd(configDir),  main_directory = uigetdir(''Navigate to Main folder''); fid = fopen([''mainDir-PTB'' PtbVersion ''.txt''],''w''); fprintf(fid,''%s\n'',main_directory); fclose(fid);  PIDtoolbox');
+guiHandles.resetMain = uicontrol(PTfig,'string','Reset main directory','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['Donate to the PIDscope project'],'units','normalized','Position',[posInfo.resetMain],...
+    'callback','uiwait(helpdlg(resetupStr)), cd(configDir),  main_directory = uigetdir(''Navigate to Main folder''); fid = fopen([''mainDir-PTB'' PtbVersion ''.txt''],''w''); fprintf(fid,''%s\n'',main_directory); fclose(fid);  PIDscope');
 set(guiHandles.resetMain, 'ForegroundColor', cautionCol);
  
  
