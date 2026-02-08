@@ -75,14 +75,19 @@ if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{
                     amp2d{p}=[];%spec 2d
                     freq2d{p}=[];% freq2d
                 else
+                    p=p+1;
+                    try
                     eval(['dat{k}(a,:) = T{tmpFileSelK}.' char(datSelectionString(vars(k))) '_' int2str(a-1) '_(tIND{tmpFileSelK});';])
                     Throt=T{tmpFileSelK}.setpoint_3_(tIND{tmpFileSelK}) / 10;% throttle
                     lograte = A_lograte(tmpFileSelK);%in kHz
-                    p=p+1;
-                    waitbar(p/12, hw, ['processing spectrogram... '  int2str(p) ]);
+                    waitbar(min(1, p/12), hw, ['processing spectrogram... '  int2str(p) ]);
                     smat{p}=s;
                     [freq{p} ampmat{p}]=PTthrSpec(Throt, dat{k}(a,:), lograte, tmpPSDVal); % compute matrices
                     [freq2d{p} amp2d{p}]=PTSpec2d(dat{k}(a,:),lograte, tmpPSDVal); %compute 2d amp spec at same time
+                    catch ME
+                        warning('PTplotSpec compute p=%d: %s', p, ME.message);
+                        smat{p}=[]; ampmat{p}=[]; freq{p}=[]; amp2d{p}=[]; freq2d{p}=[];
+                    end
                end
             end
         end
@@ -104,9 +109,10 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
     c2=[1 2 3 1 2 3 1 2 3 1 2 3];
     baselineY = [0 -40];
     ftr = fspecial('gaussian',[get(guiHandlesSpec.smoothFactor_select, 'Value')*5 get(guiHandlesSpec.smoothFactor_select, 'Value')],4);
-    for p=1:size(ampmat,2)   
-        delete(subplot('position',posInfo.SpecPos(p,:)));      
+    for p=1:size(ampmat,2)
+        try delete(subplot('position',posInfo.SpecPos(p,:))); catch, end
         if ~isempty(ampmat{p})
+        try
             delete(subplot('position',posInfo.SpecPos(p,:)));
             h1=subplot('position',posInfo.SpecPos(p,:)); cla
             img = flipud((filter2(ftr, ampmat{p} ))') + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
@@ -123,7 +129,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 xticks=[1 size(ampmat{p},1)/5:size(ampmat{p},1)/5:size(ampmat{p},1)];
                 yticks=[(size(ampmat{p},2)-30):6:size(ampmat{p},2)];
                 set(h1,'PlotBoxAspectRatioMode','auto','ylim',[size(ampmat{p},2)-30 size(ampmat{p},2)])
-                set(h1,'fontsize',fontsz,'CLim',[baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'YTick',[yticks],'yticklabels',[{100} {80} {60} {40} {20} {0}],'XTick',[xticks],'xticklabels',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
+                set(h1,'fontsize',fontsz,'CLim',[baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'YTick',yticks,'yticklabel',{'100';'80';'60';'40';'20';'0'},'XTick',xticks,'xticklabel',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
                 a=[];a2=[];a=filter2(ftr, ampmat{p}) + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
                 a2 = a(:,(round(Flim1/3.33))+1:(round(Flim2/3.33)));
                 meanspec=nanmean(a2(:));
@@ -141,10 +147,12 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 end  
                 h=text(xticks(1)+1,(size(ampmat{p},2)-30)+1,axLabel{c2(p)});
                 set(h,'Color',[1 1 1],'fontsize',fontsz,'fontweight','bold')                       
-            else % full scaling 
+            else % full scaling
                 xticks=[1 size(ampmat{p},1)/5:size(ampmat{p},1)/5:size(ampmat{p},1)];
                 yticks=[1:(size(ampmat{p},2))/10:size(ampmat{p},2) size(ampmat{p},2)];
-                set(h1,'fontsize',fontsz,'CLim',[baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'YTick',[yticks],'yticklabels',[{(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*0} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*1} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*2} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*3} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*4} {''} {0}],'XTick',[xticks],'xticklabels',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
+                maxHz = max(round(yticks * 3.333));
+                ytlbl = {num2str(maxHz), '', num2str(round(maxHz*4/5)), '', num2str(round(maxHz*3/5)), '', num2str(round(maxHz*2/5)), '', num2str(round(maxHz*1/5)), '', '0'};
+                set(h1,'fontsize',fontsz,'CLim',[baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'YTick',yticks,'yticklabel',ytlbl,'XTick',xticks,'xticklabel',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
                 set(h1,'PlotBoxAspectRatioMode','auto','ylim',[1 size(ampmat{p},2)])  
                 a=[];a2=[];a=filter2(ftr, ampmat{p}) + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
                 a2 = a(:,(size(ampmat{p},2)/10):size(ampmat{p},2));
@@ -174,8 +182,11 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 set(h,'Color',[0 0 0],'fontsize',fontsz,'fontweight','bold')             
             end
              ylabel('Frequency (Hz)','fontweight','bold') 
-             xlabel('% Throttle','fontweight','bold') 
-        end 
+             xlabel('% Throttle','fontweight','bold')
+        catch ME
+            warning('PTplotSpec render p=%d: %s', p, ME.message);
+        end
+        end
     end
 
     % color bar2 at the top 
@@ -207,7 +218,9 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
     % color maps
     % standard set (Octave: viridis replaces parula at index 1)
     if get(guiHandlesSpec.ColormapSelect, 'Value')<=7,
-        colormap(char(get(guiHandlesSpec.ColormapSelect, 'String')(get(guiHandlesSpec.ColormapSelect, 'Value'))));
+        tmpCmapStr = get(guiHandlesSpec.ColormapSelect, 'String');
+        tmpCmapVal = get(guiHandlesSpec.ColormapSelect, 'Value');
+        colormap(char(tmpCmapStr(tmpCmapVal)));
     end
     if get(guiHandlesSpec.ColormapSelect, 'Value')==8, colormap(linearREDcmap); end
     if get(guiHandlesSpec.ColormapSelect, 'Value')==9, colormap(linearGREYcmap); end

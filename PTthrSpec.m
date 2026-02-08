@@ -20,14 +20,12 @@ function [freq ampMat] = PTthrSpec(X, Y, F, psd)
     segment_length = F * 1000 * multiplier; % 300ms segments
     
     fileDurSec = length(X) / (F*1000);
-    subsampleFactor = 1;
-    switch subsampleFactor
-        case fileDurSec <= 20
-            subsampleFactor = 5;
-        case fileDurSec > 20 & fileDurSec <= 60
-            subsampleFactor = 3;
-        case fileDurSec > 60
-            subsampleFactor = 1;
+    if fileDurSec <= 20
+        subsampleFactor = 5;
+    elseif fileDurSec <= 60
+        subsampleFactor = 3;
+    else
+        subsampleFactor = 1;
     end
             
     if subsampleFactor < 1, subsampleFactor = 1; end

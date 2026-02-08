@@ -63,7 +63,9 @@ for i = 1 : 3
     set(gca,'Ytick', [st : (nd-st) / 5: nd], 'YTickLabel',[freqStr], 'YMinorTick', 'on', 'Xtick', [0 : round( (size(specMat{i},2)-1) / 10) : size(specMat{i},2)],'XTickLabel',[timeStr], 'XMinorTick', 'on', 'TickDir', 'out');
         
     if get(guiHandlesSpec3.ColormapSelect, 'Value')<=7,
-        colormap(char(get(guiHandlesSpec3.ColormapSelect, 'String')(get(guiHandlesSpec3.ColormapSelect, 'Value'))));
+        tmpCmapStr = get(guiHandlesSpec3.ColormapSelect, 'String');
+        tmpCmapVal = get(guiHandlesSpec3.ColormapSelect, 'Value');
+        colormap(char(tmpCmapStr(tmpCmapVal)));
     end
     if get(guiHandlesSpec3.ColormapSelect, 'Value')==8, colormap(linearREDcmap); end
     if get(guiHandlesSpec3.ColormapSelect, 'Value')==9, colormap(linearGREYcmap); end

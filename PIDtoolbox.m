@@ -88,6 +88,8 @@ maxY =  500;
 nLineCols = 8; multiLineCols=PTlinecmap(nLineCols);
 updateSpec=0;
 debugmode=0;%default to none
+Nfiles=0;
+fcnt=0;
 filepathA=[];
 filenameA={};
 
@@ -127,40 +129,43 @@ pause(.1)% need to wait for figure to open before extracting screen values
 screensz_multiplier = sqrt(screensz(4)^2) * .011; % based on vertical dimension only, to deal with for ultrawide monitors
 prop_max_screen = figPos(4) / screensz(4);
 fontsz = (screensz_multiplier*prop_max_screen);
-if isOctave, fontsz = fontsz * 0.88; end % Octave Qt has larger widget padding
+% Octave font scaling is done below in layout section
 markerSz = round(screensz_multiplier * 0.75);
 vPos = 0.92;
 cpL = .875; % control panel left edge
 cpW = .12;  % control panel width
 rs = 0.025; % row step (vertical spacing between elements)
 rh = 0.026; % row height
-if isOctave, rs = 0.031; rh = 0.028; end % Octave Qt widgets need more space
+if isOctave
+    fontsz = fontsz * 0.85;
+    rs = 0.034; rh = 0.030;
+end
 
-r = 0; % row counter
-r=r+1; posInfo.firmware =[cpL+.003 vPos-rs*1.6 cpW-.006 .04];
-r=r+1; posInfo.fileA=[cpL+.006 vPos-rs*2 cpW/2-.006 rh];
-        posInfo.clr=[cpL+cpW/2 vPos-rs*2 cpW/2-.006 rh];
-r=r+1; posInfo.fnameAText = [cpL+.003 vPos-rs*3.6 cpW-.006 .04];
-r=r+1; posInfo.startEndButton=[cpL+.005 vPos-rs*4 .04 rh];
+row = 1;
+posInfo.firmware =[cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
+posInfo.fileA=[cpL+.006 vPos-rs*row cpW/2-.006 rh];
+posInfo.clr=[cpL+cpW/2 vPos-rs*row cpW/2-.006 rh]; row=row+1;
+posInfo.fnameAText = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
+posInfo.startEndButton=[cpL+.005 vPos-rs*row cpW/2-.005 rh];
+posInfo.RPYcomboLV = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
 LogStDefault = 2;% default ignore first 2 seconds of logfile
 LogNdDefault = 1;% default ignore last 1 second of logfile
-        posInfo.RPYcomboLV = [cpL+.05 vPos-rs*4 .065 rh];
-r=r+1; posInfo.plotR_LV =  [cpL+.005 vPos-rs*5 .035 rh];
-        posInfo.plotP_LV =  [cpL+.04 vPos-rs*5 .035 rh];
-        posInfo.plotY_LV =  [cpL+.075 vPos-rs*5 .035 rh];
-r=r+1; posInfo.lineSmooth = [cpL+.003 vPos-rs*6 cpW/2-.003 rh];
-        posInfo.linewidth = [cpL+cpW/2 vPos-rs*6 cpW/2-.003 rh];
-r=r+1; posInfo.spectrogramButton = [cpL+.003 vPos-rs*7 cpW-.006 rh];
-r=r+1; posInfo.TuningButton = [cpL+.003 vPos-rs*8 cpW-.006 rh];
-r=r+1; posInfo.period2Hz = [cpL+.003 vPos-rs*9 cpW/2-.003 rh];
-        posInfo.DispInfoButton = [cpL+cpW/2 vPos-rs*9 cpW/2-.003 rh];
-r=r+1; posInfo.saveFig = [cpL+.003 vPos-rs*10 cpW/2-.003 rh];
-        posInfo.saveSettings = [cpL+cpW/2 vPos-rs*10 cpW/2-.003 rh];
-%posInfo.wiki = [cpL+.003 vPos-rs*11 cpW/2-.003 rh];
-r=r+1; posInfo.PIDtuningService = [cpL+.003 vPos-rs*11 cpW-.006 rh];
+posInfo.plotR_LV =  [cpL+.005 vPos-rs*row .035 rh];
+posInfo.plotP_LV =  [cpL+.04 vPos-rs*row .035 rh];
+posInfo.plotY_LV =  [cpL+.075 vPos-rs*row .035 rh]; row=row+1;
+posInfo.lineSmooth = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
+posInfo.linewidth = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
+posInfo.spectrogramButton = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
+posInfo.TuningButton = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
+posInfo.period2Hz = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
+posInfo.DispInfoButton = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
+posInfo.saveFig = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
+posInfo.saveSettings = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
+%posInfo.wiki = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
+posInfo.PIDtuningService = [cpL+.003 vPos-rs*row cpW-.006 rh];
 posInfo.resetMain = [cpL+.003 vPos-0.85 cpW-.006 rh];
 
-cpH = rs*11 + 0.05; % control panel height = rows + title margin
+cpH = rs*row + 0.04; % control panel height = rows + title margin
 controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
              'BackgroundColor',[.95 .95 .95],...
              'Position',[cpL vPos-cpH+0.02 cpW cpH]);
@@ -288,8 +293,10 @@ try
     main_directory = fscanf(fid, '%s');
     fclose(fid);
 catch
-    main_directory = [pwd '/'];
-end 
+end
+if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_directory,'dir')
+    main_directory = executableDir;
+end
 cd(main_directory)
 
 try    

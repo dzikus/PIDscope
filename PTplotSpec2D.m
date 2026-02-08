@@ -155,34 +155,36 @@ for k = 1 : length(tmpSpecVal)
                         end
                         
                         %%%%%%%%%%%%%%%%%%% Plot Latencies %%%%%%%%%%%%%%%
+                        tmpFileSelVals = get(guiHandlesSpec2.FileSelect, 'Value');
+                        tmpFileIdx = tmpFileSelVals(f);
                         if get(guiHandlesSpec2.Delay, 'Value') == 1 && a == 1
-                            if debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == GYRO_SCALED || debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == 1 || debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == 0 
-                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Filter: ' Debug01{get(guiHandlesSpec2.FileSelect, 'Value')(f)} 'ms | Dterm Filter: ' FilterDelayDterm{get(guiHandlesSpec2.FileSelect, 'Value')(f)} 'ms']);
+                            if debugmode(tmpFileIdx) == GYRO_SCALED || debugmode(tmpFileIdx) == 1 || debugmode(tmpFileIdx) == 0
+                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Filter: ' Debug01{tmpFileIdx} 'ms | Dterm Filter: ' FilterDelayDterm{tmpFileIdx} 'ms']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             else
-                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Filter: ' 'ms | Dterm Filter: ' FilterDelayDterm{get(guiHandlesSpec2.FileSelect, 'Value')(f)} 'ms']);
+                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Filter: ' 'ms | Dterm Filter: ' FilterDelayDterm{tmpFileIdx} 'ms']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             end
                         end
                         if get(guiHandlesSpec2.Delay, 'Value') == 2
-                            h=text(80, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['SP-Gyro: ' int2str(SPGyroDelay(get(guiHandlesSpec2.FileSelect, 'Value')(f), a)) 'ms']);
-                            set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz); 
+                            h=text(80, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['SP-Gyro: ' int2str(SPGyroDelay(tmpFileIdx, a)) 'ms']);
+                            set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                         end
                         if get(guiHandlesSpec2.Delay, 'Value') == 3  && a == 1
-                            if debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == RC_INTERPOLATION || debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == FEEDFORWARD 
-                                h=text(75, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['SP smoothing delay: ' Debug02{get(guiHandlesSpec2.FileSelect, 'Value')(f)} 'ms']);
+                            if debugmode(tmpFileIdx) == RC_INTERPOLATION || debugmode(tmpFileIdx) == FEEDFORWARD
+                                h=text(75, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['SP smoothing delay: ' Debug02{tmpFileIdx} 'ms']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             else
                                 h=text(80, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['debug mode not set ']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
-                            end    
+                            end
                         end
                          if get(guiHandlesSpec2.Delay, 'Value') == 4 && a == 1
-                            if debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == GYRO_SCALED || debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == 1 || debugmode(get(guiHandlesSpec2.FileSelect, 'Value')(f)) == 0 
-                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' num2str(gyro_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg']);
+                            if debugmode(tmpFileIdx) == GYRO_SCALED || debugmode(tmpFileIdx) == 1 || debugmode(tmpFileIdx) == 0
+                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' num2str(gyro_phase_shift_deg(tmpFileIdx)) 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(tmpFileIdx)) 'deg']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             else
-                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg']);
+                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(tmpFileIdx)) 'deg']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             end
                         end
@@ -229,18 +231,22 @@ end
 
 l=0;legnd={};
 l2=0;
-for m = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))
-    for n = 1 : length(get(guiHandlesSpec2.FileSelect, 'Value'))
+tmpSpecListStr = get(guiHandlesSpec2.SpecList, 'String');
+tmpSpecListVal = get(guiHandlesSpec2.SpecList, 'Value');
+tmpFileSelStr = get(guiHandlesSpec2.FileSelect, 'String');
+tmpFileSelVal = get(guiHandlesSpec2.FileSelect, 'Value');
+for m = 1 : length(tmpSpecListVal)
+    for n = 1 : length(tmpFileSelVal)
         l = l + 1;
         clear fstr fltDelayStr
-        fstr = char(get(guiHandlesSpec2.FileSelect, 'String')(get(guiHandlesSpec2.FileSelect, 'Value')(n)));
+        fstr = char(tmpFileSelStr(tmpFileSelVal(n)));
         if size(fstr,2) > 12, fstr = fstr(1,1:12); end % only use first 20 characters of file name
         if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
-            legnd{l} = [char(get(guiHandlesSpec2.SpecList, 'String')(get(guiHandlesSpec2.SpecList, 'Value')(m))) ' | ' fstr];     
+            legnd{l} = [char(tmpSpecListStr(tmpSpecListVal(m))) ' | ' fstr];
         else
             for a = axesOptionsSpec
                 l2 = l2 + 1;
-                legnd{l2} = [axLabel{a} ' | ' char(get(guiHandlesSpec2.SpecList, 'String')(get(guiHandlesSpec2.SpecList, 'Value')(m))) ' | ' fstr ];
+                legnd{l2} = [axLabel{a} ' | ' char(tmpSpecListStr(tmpSpecListVal(m))) ' | ' fstr ];
             end
         end
     end
