@@ -27,20 +27,27 @@ if isOctave
   end
 end
 
-executableDir = cd('/');
+executableDir = fileparts(mfilename('fullpath'));
+if isempty(executableDir), executableDir = pwd; end
+addpath(executableDir);
 
-setupStr = {'SET UP WORKING DIRECTORY!', ' ', 'Before running PIDtoolbox, we have to determine the location of your ''main'' directory. After you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDtoolbox_' PtbVersion '_osx\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'}
-resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDtoolbox_' PtbVersion '_osx\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'}
+setupStr = {'SET UP WORKING DIRECTORY!', ' ', 'Before running PIDtoolbox, we have to determine the location of your ''main'' directory. After you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDtoolbox_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'}
+resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDtoolbox_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'}
 
+% Platform-specific config directory
 if exist('/Users/Shared', 'dir')
-    cd('/Users/Shared')
-    if isempty(dir(['mainDir-PTB' PtbVersion '.txt']))
-        uiwait(helpdlg(setupStr))
-        main_directory = uigetdir('Navigate to Main folder');
-        fid = fopen(['mainDir-PTB' PtbVersion '.txt'],'w');
-        fprintf(fid,'%s\n',main_directory);
-        fclose(fid);
-    end
+    configDir = '/Users/Shared';
+else
+    configDir = fullfile(getenv('HOME'), '.config', 'PIDtoolbox');
+    if ~exist(configDir, 'dir'), mkdir(configDir); end
+end
+cd(configDir)
+if isempty(dir(['mainDir-PTB' PtbVersion '.txt']))
+    uiwait(helpdlg(setupStr))
+    main_directory = uigetdir('Navigate to Main folder');
+    fid = fopen(['mainDir-PTB' PtbVersion '.txt'],'w');
+    fprintf(fid,'%s\n',main_directory);
+    fclose(fid);
 end
 
 
@@ -79,6 +86,7 @@ epoch2_A=[];
 tIND = [];
 maxY =  500;
 nLineCols = 8; multiLineCols=PTlinecmap(nLineCols);
+disp('DEBUG: past PTlinecmap');
 updateSpec=0;
 debugmode=0;%default to none
 filepathA=[];
@@ -104,7 +112,9 @@ setUpCol = [.1 .1 .1];
 cautionCol = [0.6    0.3    0];
 %use_phsCorrErr=0;
 flightSpec=0;
+disp('DEBUG: about to get ScreenSize');
 screensz = get(0,'ScreenSize');
+disp('DEBUG: past ScreenSize');
 screensz(3) = round(1.78 * screensz(4)); % force 16:9
 
 
@@ -116,14 +126,20 @@ set(PTfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Log Viewer']);
 pause(.1)% need to wait for figure to open before extracting screen values
 
 screensz_multiplier = sqrt(screensz(4)^2) * .011; % based on vertical dimension only, to deal with for ultrawide monitors
-PTfig_pos = get(PTfig, 'Position'); prop_max_screen = PTfig_pos(4);
+PTfig_pos = get(PTfig, 'Position');
+prop_max_screen = PTfig_pos(4);
+% Octave returns Position in pixels even with normalized units - normalize manually
+if prop_max_screen > 10, prop_max_screen = prop_max_screen / screensz(4); end
 fontsz = (screensz_multiplier*prop_max_screen);
 markerSz = round(screensz_multiplier * 0.75);
 
-vPos = 0.92; 
+disp('DEBUG: past figure setup');
+vPos = 0.92;
+disp('DEBUG: about to create uipanel');
 controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
              'BackgroundColor',[.95 .95 .95],...
-             'Position',[.89 vPos-.28 .105 .3]); 
+             'Position',[.89 vPos-.28 .105 .3]);
+disp('DEBUG: past uipanel'); 
          
 posInfo.firmware =[.8935 vPos-0.04 .098 .04];        
 posInfo.fileA=[.896 vPos-0.05 .0455 .026];
@@ -266,7 +282,7 @@ set(guiHandles.PIDtuningService, 'ForegroundColor', cautionCol);
 
 
 guiHandles.resetMain = uicontrol(PTfig,'string','Reset main directory','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['Donate to the PIDtoolbox project'],'units','normalized','outerposition',[posInfo.resetMain],...
-    'callback','uiwait(helpdlg(resetupStr)), cd(''/Users/Shared''),  main_directory = uigetdir(''Navigate to Main folder''); fid = fopen([''mainDir-PTB'' PtbVersion ''.txt''],''w''); fprintf(fid,''%s\n'',main_directory); fclose(fid);  PIDtoolbox');
+    'callback','uiwait(helpdlg(resetupStr)), cd(configDir),  main_directory = uigetdir(''Navigate to Main folder''); fid = fopen([''mainDir-PTB'' PtbVersion ''.txt''],''w''); fprintf(fid,''%s\n'',main_directory); fclose(fid);  PIDtoolbox');
 set(guiHandles.resetMain, 'ForegroundColor', cautionCol);
  
  

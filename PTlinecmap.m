@@ -9,7 +9,7 @@ function [multiLineCols] = PTlinecmap(nColors)
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
 
-    cmap=flipud(colormap(jet));
+    cmap=flipud(jet(64));
     multiLineCols=(downsample(cmap,ceil(length(cmap)/nColors)));
     for i = find(multiLineCols(:,1) > .5 & multiLineCols(:,2) > .7 & multiLineCols(:,3) < .3)
         multiLineCols(i,:) = multiLineCols(i,:) * .78;
