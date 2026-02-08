@@ -19,14 +19,14 @@ set(PTfig, 'pointer', 'watch')
             epoch1_A=round(tta(1)/us2sec)+2;
             epoch2_A=round(tta(end)/us2sec)-2;
             guiHandles.Epoch1_A_Input = uicontrol(PTfig,'style','edit','string',[int2str(epoch1_A)],'fontsize',fontsz,'units','normalized','outerposition',[posInfo.Epoch1_A_Input],...
-            'callback','@textinput_call; epoch1_A=str2num(guiHandles.Epoch1_A_Input.String); PTprocess;PTplotLogViewer;');
+            'callback','@textinput_call; epoch1_A=str2num(get(guiHandles.Epoch1_A_Input, ''String'')); PTprocess;PTplotLogViewer;');
             guiHandles.Epoch2_A_Input = uicontrol(PTfig,'style','edit','string',[int2str(epoch2_A)],'fontsize',fontsz,'units','normalized','outerposition',[posInfo.Epoch2_A_Input],...
-            'callback','@textinput_call;epoch2_A=str2num(guiHandles.Epoch2_A_Input.String); PTprocess;PTplotLogViewer;');
+            'callback','@textinput_call;epoch2_A=str2num(get(guiHandles.Epoch2_A_Input, ''String'')); PTprocess;PTplotLogViewer;');
         end
         if (epoch2_A>round(tta(end)/us2sec))
             epoch2_A=round(tta(end)/us2sec);
             guiHandles.Epoch2_A_Input = uicontrol(PTfig,'style','edit','string',[int2str(epoch2_A)],'fontsize',fontsz,'units','normalized','outerposition',[posInfo.Epoch2_A_Input],...
-             'callback','@textinput_call;epoch2_A=str2num(guiHandles.Epoch2_A_Input.String); PTprocess;PTplotLogViewer;');
+             'callback','@textinput_call;epoch2_A=str2num(get(guiHandles.Epoch2_A_Input, ''String'')); PTprocess;PTplotLogViewer;');
         end   
         x=[epoch1_A*us2sec epoch2_A*us2sec];
         x2=tta>tta(find(tta>x(1),1)) & tta<tta(find(tta>x(2),1));
@@ -69,14 +69,14 @@ set(PTfig, 'pointer', 'watch')
             epoch1_B=round(ttb(1)/us2sec)+2;
             epoch2_B=round(ttb(end)/us2sec)-2;
             guiHandles.Epoch1_B_Input = uicontrol(PTfig,'style','edit','string',[int2str(epoch1_B)],'fontsize',fontsz,'units','normalized','outerposition',[posInfo.Epoch1_B_Input],...
-             'callback','@textinput_call; epoch1_B=str2num(guiHandles.Epoch1_B_Input.String);PTprocess;PTplotLogViewer; ');
+             'callback','@textinput_call; epoch1_B=str2num(get(guiHandles.Epoch1_B_Input, ''String''));PTprocess;PTplotLogViewer; ');
             guiHandles.Epoch2_B_Input = uicontrol(PTfig,'style','edit','string',[int2str(epoch2_B)],'fontsize',fontsz,'units','normalized','outerposition',[posInfo.Epoch2_B_Input],...
-             'callback','@textinput_call; epoch2_B=str2num(guiHandles.Epoch2_B_Input.String);PTprocess;PTplotLogViewer; ');
+             'callback','@textinput_call; epoch2_B=str2num(get(guiHandles.Epoch2_B_Input, ''String''));PTprocess;PTplotLogViewer; ');
         end
         if (epoch2_B>round(ttb(end)/us2sec))
             epoch2_B=round(ttb(end)/us2sec);
             guiHandles.Epoch2_B_Input = uicontrol(PTfig,'style','edit','string',[int2str(epoch2_B)],'fontsize',fontsz,'units','normalized','outerposition',[posInfo.Epoch2_B_Input],...
-             'callback','@textinput_call; epoch2_B=str2num(guiHandles.Epoch2_B_Input.String); PTprocess;PTplotLogViewer;');
+             'callback','@textinput_call; epoch2_B=str2num(get(guiHandles.Epoch2_B_Input, ''String'')); PTprocess;PTplotLogViewer;');
         end
         x=[epoch1_B*us2sec epoch2_B*us2sec];
         x2=ttb>ttb(find(ttb>x(1),1)) & ttb<ttb(find(ttb>x(2),1));

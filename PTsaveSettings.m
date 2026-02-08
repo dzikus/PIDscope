@@ -60,52 +60,53 @@ catch
 end
 
 try
-    defaults.Values(1) = guiHandles.Firmware.Value;
-    defaults.Values(2) = guiHandles.RPYcomboLV.Value;
-    defaults.Values(3) = guiHandles.plotR.Value;
-    defaults.Values(4) = guiHandles.plotP.Value;
-    defaults.Values(5) = guiHandles.plotY.Value;
-    defaults.Values(6) = guiHandles.lineSmooth.Value;
-    defaults.Values(7) = guiHandles.linewidth.Value;
-    defaults.Values(8) = str2num(guiHandles.maxY_input.String);
-    defaults.Values(9) = str2num(guiHandles.nCols_input.String);
+    defaults.Values(1) = get(guiHandles.Firmware, 'Value');
+    defaults.Values(2) = get(guiHandles.RPYcomboLV, 'Value');
+    defaults.Values(3) = get(guiHandles.plotR, 'Value');
+    defaults.Values(4) = get(guiHandles.plotP, 'Value');
+    defaults.Values(5) = get(guiHandles.plotY, 'Value');
+    defaults.Values(6) = get(guiHandles.lineSmooth, 'Value');
+    defaults.Values(7) = get(guiHandles.linewidth, 'Value');
+    defaults.Values(8) = str2num(get(guiHandles.maxY_input, 'String'));
+    defaults.Values(9) = str2num(get(guiHandles.nCols_input, 'String'));
 catch
 end
 try
-    defaults.Values(10) = guiHandlesSpec2.SpecList.Value(1);
-    defaults.Values(11) = guiHandlesSpec2.SpecList.Value(2);
-    defaults.Values(12) = guiHandlesSpec2.smoothFactor_select.Value;
-    defaults.Values(13) = guiHandlesSpec2.Delay.Value;
-    defaults.Values(14) = guiHandlesSpec2.plotR.Value;
-    defaults.Values(15) = guiHandlesSpec2.plotP.Value;
-    defaults.Values(16) = guiHandlesSpec2.plotY.Value;
-    defaults.Values(17) = guiHandlesSpec2.RPYcomboSpec.Value;
+    tmpSpecListVal = get(guiHandlesSpec2.SpecList, 'Value');
+    defaults.Values(10) = tmpSpecListVal(1);
+    defaults.Values(11) = tmpSpecListVal(2);
+    defaults.Values(12) = get(guiHandlesSpec2.smoothFactor_select, 'Value');
+    defaults.Values(13) = get(guiHandlesSpec2.Delay, 'Value');
+    defaults.Values(14) = get(guiHandlesSpec2.plotR, 'Value');
+    defaults.Values(15) = get(guiHandlesSpec2.plotP, 'Value');
+    defaults.Values(16) = get(guiHandlesSpec2.plotY, 'Value');
+    defaults.Values(17) = get(guiHandlesSpec2.RPYcomboSpec, 'Value');
 catch
 end
 try
-    defaults.Values(18) = guiHandlesSpec.SpecSelect{1}.Value;
-    defaults.Values(19) = guiHandlesSpec.SpecSelect{2}.Value;
-    defaults.Values(20) = guiHandlesSpec.SpecSelect{3}.Value;
-    defaults.Values(21) = guiHandlesSpec.SpecSelect{4}.Value;
-    defaults.Values(22) = guiHandlesSpec.specPresets.Value;
-    defaults.Values(23) = guiHandlesSpec.ColormapSelect.Value;
-    defaults.Values(24) = guiHandlesSpec.smoothFactor_select.Value;
+    defaults.Values(18) = get(guiHandlesSpec.SpecSelect{1}, 'Value');
+    defaults.Values(19) = get(guiHandlesSpec.SpecSelect{2}, 'Value');
+    defaults.Values(20) = get(guiHandlesSpec.SpecSelect{3}, 'Value');
+    defaults.Values(21) = get(guiHandlesSpec.SpecSelect{4}, 'Value');
+    defaults.Values(22) = get(guiHandlesSpec.specPresets, 'Value');
+    defaults.Values(23) = get(guiHandlesSpec.ColormapSelect, 'Value');
+    defaults.Values(24) = get(guiHandlesSpec.smoothFactor_select, 'Value');
 catch
 end
 
 try
-    defaults.Values(25) = guiHandlesSpec3.SpecList.Value;
-    defaults.Values(26) = guiHandlesSpec3.smoothFactor_select.Value;
-    defaults.Values(27) = guiHandlesSpec3.subsampleFactor_select.Value;
-    defaults.Values(28) = guiHandlesSpec3.ColormapSelect.Value;
+    defaults.Values(25) = get(guiHandlesSpec3.SpecList, 'Value');
+    defaults.Values(26) = get(guiHandlesSpec3.smoothFactor_select, 'Value');
+    defaults.Values(27) = get(guiHandlesSpec3.subsampleFactor_select, 'Value');
+    defaults.Values(28) = get(guiHandlesSpec3.ColormapSelect, 'Value');
 catch
 end
 try
-    defaults.Values(29) = guiHandlesTune.plotR.Value;
-    defaults.Values(30) = guiHandlesTune.plotP.Value;
-    defaults.Values(31) = guiHandlesTune.plotY.Value;
-    defaults.Values(32) = guiHandlesTune.RPYcombo.Value;
-    defaults.Values(33) = str2num(guiHandlesTune.maxYStepInput.String);
+    defaults.Values(29) = get(guiHandlesTune.plotR, 'Value');
+    defaults.Values(30) = get(guiHandlesTune.plotP, 'Value');
+    defaults.Values(31) = get(guiHandlesTune.plotY, 'Value');
+    defaults.Values(32) = get(guiHandlesTune.RPYcombo, 'Value');
+    defaults.Values(33) = str2num(get(guiHandlesTune.maxYStepInput, 'String'));
 catch
 end
 

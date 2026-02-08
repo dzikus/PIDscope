@@ -71,56 +71,56 @@ guiHandlesTune.tuneCrtlpanel = uipanel('Title','select files (max 10)','FontSize
        
 guiHandlesTune.run4 = uicontrol(PTtunefig,'string','Run','fontsize',fontsz,'TooltipString',[TooltipString_steprun],'units','normalized','outerposition',[posInfo.run4],...
     'callback','PTtuningParams;'); 
-guiHandlesTune.run4.ForegroundColor=[colRun];
+set(guiHandlesTune.run4, 'ForegroundColor', colRun);
 
 guiHandlesTune.fileListWindowStep = uicontrol(PTtunefig,'Style','listbox','string',[fnameMaster],'max',10,'min',1,...
     'fontsize',fontsz,'TooltipString', [TooltipString_fileListWindowStep],'units','normalized','outerposition', [posInfo.fileListWindowStep],'callback','@selection2;');
-guiHandlesTune.fileListWindowStep.Value=1;
+set(guiHandlesTune.fileListWindowStep, 'Value', 1);
 
 guiHandlesTune.saveFig4 = uicontrol(PTtunefig,'string','Save Fig','fontsize',fontsz,'TooltipString',[TooltipString_saveFig],'units','normalized','outerposition',[posInfo.saveFig4],...
-    'callback','guiHandlesTune.saveFig4.FontWeight=''bold'';PTsaveFig; guiHandlesTune.saveFig4.FontWeight=''normal'';'); 
-guiHandlesTune.saveFig4.ForegroundColor=[ saveCol];
+    'callback','set(guiHandlesTune.saveFig4, ''FontWeight'', ''bold'');PTsaveFig; set(guiHandlesTune.saveFig4, ''FontWeight'', ''normal'');');
+set(guiHandlesTune.saveFig4, 'ForegroundColor', saveCol);
 
 guiHandlesTune.saveSettings = uicontrol(PTtunefig,'string','Save Settings','fontsize',fontsz, 'TooltipString',['Save current settings to PTB defaults' ], 'units','normalized','outerposition',[posInfo.saveSettings4],...
-    'callback','guiHandlesTune.saveSettings.FontWeight=''bold'';PTsaveSettings; guiHandlesTune.saveSettings.FontWeight=''normal'';'); 
-guiHandlesTune.saveSettings.ForegroundColor=[saveCol];
+    'callback','set(guiHandlesTune.saveSettings, ''FontWeight'', ''bold'');PTsaveSettings; set(guiHandlesTune.saveSettings, ''FontWeight'', ''normal'');');
+set(guiHandlesTune.saveSettings, 'ForegroundColor', saveCol);
 
 guiHandlesTune.plotR =uicontrol(PTtunefig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.plotR],'callback', 'guiHandlesTune.clearPlots.Value=1; guiHandlesTune.clearPlots.FontWeight=''bold''; fcntSR = 0; PTtuningParams; guiHandlesTune.clearPlots.Value=0; guiHandlesTune.clearPlots.FontWeight=''normal''; set(PTtunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.plotR],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PTtuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PTtunefig, ''pointer'', ''arrow'');');
 
 guiHandlesTune.plotP =uicontrol(PTtunefig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.plotP],'callback', 'guiHandlesTune.clearPlots.Value=1; guiHandlesTune.clearPlots.FontWeight=''bold''; fcntSR = 0; PTtuningParams; guiHandlesTune.clearPlots.Value=0; guiHandlesTune.clearPlots.FontWeight=''normal''; set(PTtunefig, ''pointer'', ''arrow'');');
-guiHandlesTune.plotP.Value = 1;
+    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.plotP],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PTtuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PTtunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.plotP, 'Value', 1);
 
 guiHandlesTune.plotY =uicontrol(PTtunefig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.plotY],'callback', 'guiHandlesTune.clearPlots.Value=1; guiHandlesTune.clearPlots.FontWeight=''bold''; fcntSR = 0; PTtuningParams; guiHandlesTune.clearPlots.Value=0; guiHandlesTune.clearPlots.FontWeight=''normal''; set(PTtunefig, ''pointer'', ''arrow'');');
-guiHandlesTune.plotY.Value = 0;
+    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.plotY],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PTtuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PTtunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.plotY, 'Value', 0);
 
 guiHandlesTune.clearPlots = uicontrol(PTtunefig,'string','Reset','fontsize',fontsz,'TooltipString',[TooltipString_clearPlot],'units','normalized','outerposition',[posInfo.clearPlots],...
-    'callback','guiHandlesTune.clearPlots.Value=1; guiHandlesTune.clearPlots.FontWeight=''bold''; fcntSR = 0; PTtuningParams; guiHandlesTune.clearPlots.Value=0; guiHandlesTune.clearPlots.FontWeight=''normal''; set(PTtunefig, ''pointer'', ''arrow'');'); 
-guiHandlesTune.clearPlots.ForegroundColor=[cautionCol];
+    'callback','set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PTtuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PTtunefig, ''pointer'', ''arrow'');'); 
+set(guiHandlesTune.clearPlots, 'ForegroundColor', cautionCol);
 
 guiHandlesTune.Ycorrection =uicontrol(PTtunefig,'Style','checkbox','String','Y correction','fontsize',fontsz,'TooltipString', ['Y axis offset correction '],...
-    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.Ycorrection],'callback', 'guiHandlesTune.clearPlots.Value=1; guiHandlesTune.clearPlots.FontWeight=''bold''; fcntSR = 0; PTtuningParams; guiHandlesTune.clearPlots.Value=0; guiHandlesTune.clearPlots.FontWeight=''normal''; set(PTtunefig, ''pointer'', ''arrow''); PTtuningParams;');
-guiHandlesTune.Ycorrection.Value = 0;
+    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.Ycorrection],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PTtuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PTtunefig, ''pointer'', ''arrow''); PTtuningParams;');
+set(guiHandlesTune.Ycorrection, 'Value', 0);
 
 guiHandlesTune.RPYcombo =uicontrol(PTtunefig,'Style','checkbox','String','Single Panel','fontsize',fontsz,'TooltipString', ['Plot RPY in same panel '],...
-    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.RPYcombo],'callback', 'guiHandlesTune.clearPlots.Value=1; guiHandlesTune.clearPlots.FontWeight=''bold''; fcntSR = 0; PTtuningParams; guiHandlesTune.clearPlots.Value=0; guiHandlesTune.clearPlots.FontWeight=''normal''; set(PTtunefig, ''pointer'', ''arrow''); PTtuningParams;');
-guiHandlesTune.RPYcombo.Value = 0;
+    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.RPYcombo],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PTtuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PTtunefig, ''pointer'', ''arrow''); PTtuningParams;');
+set(guiHandlesTune.RPYcombo, 'Value', 0);
 
 guiHandlesTune.maxYStepTxt = uicontrol(PTtunefig,'style','text','string','Y max ','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.maxYStepTxt]);
 guiHandlesTune.maxYStepInput = uicontrol(PTtunefig,'style','edit','string','1.75','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','outerposition',[posInfo.maxYStepInput],...
-     'callback','@textinput_call3; guiHandlesTune.clearPlots.Value=1; guiHandlesTune.clearPlots.FontWeight=''bold''; fcntSR = 0;PTtuningParams; guiHandlesTune.clearPlots.Value=0; guiHandlesTune.clearPlots.FontWeight=''normal'' ;PTtuningParams;  ');
+     'callback','@textinput_call3; set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0;PTtuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal'') ;PTtuningParams;  ');
  
 guiHandlesTune.smoothFactor_select = uicontrol(PTtunefig,'style','popupmenu','string',{'smoothing off' 'smoothing low' 'smoothing medium' 'smoothing high'},'fontsize',fontsz,'TooltipString', ['Smooth the gyro when step response traces are too noisy'], 'units','normalized','outerposition',[posInfo.smooth_tuning],...
      'callback','@selection2;');
-guiHandlesTune.smoothFactor_select.Value=1;
+set(guiHandlesTune.smoothFactor_select, 'Value', 1);
 
-try guiHandlesTune.plotR.Value = defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotR'))), catch, guiHandlesTune.plotR.Value = 1, end
-try guiHandlesTune.plotP.Value = defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotP'))), catch, guiHandlesTune.plotP.Value = 1, end
-try guiHandlesTune.plotY.Value = defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotY'))), catch, guiHandlesTune.plotY.Value = 1, end
-try guiHandlesTune.RPYcombo.Value = defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-SinglePanel'))), catch, guiHandlesTune.RPYcombo.Value = 0, end
-try guiHandlesTune.maxYStepInput.String = num2str(defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-Ymax')))), catch, end
+try set(guiHandlesTune.plotR, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotR')))), catch, set(guiHandlesTune.plotR, 'Value', 1), end
+try set(guiHandlesTune.plotP, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotP')))), catch, set(guiHandlesTune.plotP, 'Value', 1), end
+try set(guiHandlesTune.plotY, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotY')))), catch, set(guiHandlesTune.plotY, 'Value', 1), end
+try set(guiHandlesTune.RPYcombo, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-SinglePanel')))), catch, set(guiHandlesTune.RPYcombo, 'Value', 0), end
+try set(guiHandlesTune.maxYStepInput, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-Ymax'))))), catch, end
 
 else
     warndlg('Please select file(s)');

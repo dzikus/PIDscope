@@ -17,7 +17,8 @@ set(PTerrfig, 'Name', ['PIDtoolbox (' PtbVersion ') - PID Error Tool']);
 set(PTerrfig, 'InvertHardcopy', 'off');
 set(PTerrfig,'color',bgcolor)
 
-prop_max_screen=(max([PTerrfig.Position(3) PTerrfig.Position(4)]));
+PTerrfig_pos = get(PTerrfig, 'Position');
+prop_max_screen=(max([PTerrfig_pos(3) PTerrfig_pos(4)]));
 fontsz3=round(screensz_multiplier*prop_max_screen);
 maxDegsec=100;
 updateErr=0;
@@ -49,15 +50,15 @@ errCrtlpanel = uipanel('Title','','FontSize',fontsz3,...
           
 guiHandlesPIDerr.refresh = uicontrol(PTerrfig,'string','Refresh','fontsize',fontsz3,'TooltipString',[TooltipString_refresh],'units','normalized','outerposition',[posInfo.refresh2],...
     'callback','updateErr=1;PTplotPIDerror;');
-guiHandlesPIDerr.refresh.BackgroundColor=[1 1 .2];
+set(guiHandlesPIDerr.refresh, 'BackgroundColor', [1 1 .2]);
 
 guiHandlesPIDerr.maxSticktext = uicontrol(PTerrfig,'style','text','string','max stick deg/s','fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.maxSticktext]);
 guiHandlesPIDerr.maxStick = uicontrol(PTerrfig,'style','edit','string',[int2str(maxDegsec)],'fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','outerposition',[posInfo.maxStick],...
-     'callback','@textinput_call; maxDegsec=str2num(guiHandlesPIDerr.maxStick.String); updateErr=1;PTplotPIDerror; ');
+     'callback','@textinput_call; maxDegsec=str2num(get(guiHandlesPIDerr.maxStick, ''String'')); updateErr=1;PTplotPIDerror; ');
 
 guiHandlesPIDerr.saveFig3 = uicontrol(PTerrfig,'string','Save Fig','fontsize',fontsz3,'TooltipString',[TooltipString_saveFig],'units','normalized','outerposition',[posInfo.saveFig3],...
-    'callback','guiHandlesPIDerr.saveFig3.FontWeight=''bold'';PTsaveFig; guiHandlesPIDerr.saveFig3.FontWeight=''normal'';'); 
-guiHandlesPIDerr.saveFig3.BackgroundColor=[ .8 .8 .8];
+    'callback','set(guiHandlesPIDerr.saveFig3, ''FontWeight'', ''bold'');PTsaveFig; set(guiHandlesPIDerr.saveFig3, ''FontWeight'', ''normal'');');
+set(guiHandlesPIDerr.saveFig3, 'BackgroundColor', [.8 .8 .8]);
    
 else
     errordlg('Please select file(s) then click ''load+run''', 'Error, no data');

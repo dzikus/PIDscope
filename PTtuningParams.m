@@ -9,12 +9,13 @@
     
 PTtunefig=figure(4);
 
-prop_max_screen=(max([PTtunefig.Position(3) PTtunefig.Position(4)]));
+PTtunefig_pos = get(PTtunefig, 'Position');
+prop_max_screen=(max([PTtunefig_pos(3) PTtunefig_pos(4)]));
 fontsz=(screensz_multiplier*prop_max_screen);
 
 f = fields(guiHandlesTune);
 for i = 1 : size(f,1)
-    eval(['guiHandlesTune.' f{i} '.FontSize=fontsz;']);
+    try set(guiHandlesTune.(f{i}), 'FontSize', fontsz); catch, end
 end
 
 
@@ -22,24 +23,24 @@ end
 ylab={'Roll';'Pitch';'Yaw'};
 ylab2={'roll';'pitch';'yaw'};
 
-axesOptions = find([guiHandlesTune.plotR.Value guiHandlesTune.plotP.Value guiHandlesTune.plotY.Value]);
+axesOptions = find([get(guiHandlesTune.plotR, 'Value') get(guiHandlesTune.plotP, 'Value') get(guiHandlesTune.plotY, 'Value')]);
 lineStyle = {'-' ; '--' ; ':'};
 lnLabels = {'solid' ; 'dashed'; 'dotted'}
 p = {'    P, I, D, Dm, F'; '    P, I, D, Dm, F'; '    P, I, D, cD'};
-pidlabels = p{guiHandles.Firmware.Value};
+pidlabels = p{get(guiHandles.Firmware, 'Value')};
 
 %%%%%%%%%%%%% step resp %%%%%%%%%%%%%
 figure(PTtunefig)
 
-ymax = str2num(guiHandlesTune.maxYStepInput.String);
+ymax = str2num(get(guiHandlesTune.maxYStepInput, 'String'));
 ypos = [(ymax/3)*2.9 (ymax/3)*1.85 (ymax/3)*.8];
 hwarn=[];
-if ~guiHandlesTune.clearPlots.Value
+if ~get(guiHandlesTune.clearPlots, 'Value')
     cnt = 0;
     set(PTtunefig, 'pointer', 'watch')
     pause(.05);
     
-    for f = guiHandlesTune.fileListWindowStep.Value   
+    for f = get(guiHandlesTune.fileListWindowStep, 'Value')   
         fcntSR = fcntSR + 1;   
         if fcntSR <= 10
             cnt2 = 0;
@@ -51,14 +52,14 @@ if ~guiHandlesTune.clearPlots.Value
                         clear H G L
                         eval(['H = T{f}.setpoint_' int2str(p-1) '_(tIND{f});'])
                         eval(['G = T{f}.gyroADC_' int2str(p-1) '_(tIND{f});'])
-                        [stepresp_A{p} tA] = PTstepcalc(H, G, A_lograte(f), guiHandlesTune.Ycorrection.Value, guiHandlesTune.smoothFactor_select.Value);
+                        [stepresp_A{p} tA] = PTstepcalc(H, G, A_lograte(f), get(guiHandlesTune.Ycorrection, 'Value'), get(guiHandlesTune.smoothFactor_select, 'Value'));
                      %   xcorrLag(p) = finddelay(H, G) * A_lograte(f);
                     end
                 catch
                     stepresp_A{p}=[];
                 end
 
-                if guiHandlesTune.RPYcombo.Value == 0
+                if get(guiHandlesTune.RPYcombo, 'Value') == 0
                     h1=subplot('position',posInfo.TparamsPos(p,:)); 
                     hold on
 
@@ -68,7 +69,7 @@ if ~guiHandlesTune.clearPlots.Value
                         m=nanmean(s);
 
                         h1=plot(tA,m);         
-                        set(h1, 'color',[multiLineCols(fcntSR,:)],'linewidth', guiHandles.linewidth.Value/1.5);
+                        set(h1, 'color',[multiLineCols(fcntSR,:)],'linewidth', get(guiHandles.linewidth, 'Value')/1.5);
                         latencyHalfHeight(p, fcntSR) = (find(m>.5,1) / A_lograte(f)) - 1;
                         peakresp(p, fcntSR)=max(m(find(tA<150)));%max(m); %%%%%%%%%%%%% CONSTRAIN from 0-150ms %%%%%
                         peaktime(p, fcntSR)=find(m == max(m(find(tA<150)))) / A_lograte(f);
@@ -133,7 +134,7 @@ if ~guiHandlesTune.clearPlots.Value
                 end
 
                 
-                if guiHandlesTune.RPYcombo.Value == 1
+                if get(guiHandlesTune.RPYcombo, 'Value') == 1
                     h1=subplot('position',[0.0500    0.1    0.72    0.84])
                     hold on
 
@@ -143,7 +144,7 @@ if ~guiHandlesTune.clearPlots.Value
                         m=nanmean(s);
 
                         h1=plot(tA,m);     
-                        set(h1, 'color',[multiLineCols(fcntSR,:)],'linewidth', guiHandles.linewidth.Value/1.5, 'linestyle', lineStyle{cnt2});
+                        set(h1, 'color',[multiLineCols(fcntSR,:)],'linewidth', get(guiHandles.linewidth, 'Value')/1.5, 'linestyle', lineStyle{cnt2});
                         latencyHalfHeight(p, fcntSR) = (find(m>.5,1) / A_lograte(f)) - 1;
                         peakresp(p, fcntSR)=max(m(find(tA<150)));%max(m); %%%%%%%%%%%%% CONSTRAIN from 0-150ms %%%%%
                         peaktime(p, fcntSR)=find(m == max(m(find(tA<150)))) / A_lograte(f);
