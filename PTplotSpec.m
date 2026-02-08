@@ -61,27 +61,29 @@ if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{
         p=0;
          hw = waitbar(0,['please wait... ' ]); 
 
-        for k=1:length(vars)       
+        tmpPSDVal = get(guiHandlesSpec.checkboxPSD, 'Value');
+        for k=1:length(vars)
+            tmpFileSelK = get(guiHandlesSpec.FileSelect{k}, 'Value');
             s=char(datSelectionString(vars(k)));
-            for a=1:3,    
+            for a=1:3,
                 if  ( ( ~isempty(strfind(s,'axisD'))) & a==3) | isempty(s)
                     p=p+1;
                     smat{p}=[];%string
                     ampmat{p}=[];%spec matrix
                     freq{p}=[];% freq matrix
                     amp2d{p}=[];%spec 2d
-                    freq2d{p}=[];% freq2d                 
-                else   
-                    eval(['dat{k}(a,:) = T{get(guiHandlesSpec.FileSelect{k}, 'Value')}.' char(datSelectionString(vars(k))) '_' int2str(a-1) '_(tIND{get(guiHandlesSpec.FileSelect{k}, 'Value')});';])                    
-                    Throt=T{get(guiHandlesSpec.FileSelect{k}, 'Value')}.setpoint_3_(tIND{get(guiHandlesSpec.FileSelect{k}, 'Value')}) / 10;% throttle
-                    lograte = A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value'));%in kHz
+                    freq2d{p}=[];% freq2d
+                else
+                    eval(['dat{k}(a,:) = T{tmpFileSelK}.' char(datSelectionString(vars(k))) '_' int2str(a-1) '_(tIND{tmpFileSelK});';])
+                    Throt=T{tmpFileSelK}.setpoint_3_(tIND{tmpFileSelK}) / 10;% throttle
+                    lograte = A_lograte(tmpFileSelK);%in kHz
                     p=p+1;
-                    waitbar(p/12, hw, ['processing spectrogram... '  int2str(p) ]); 
+                    waitbar(p/12, hw, ['processing spectrogram... '  int2str(p) ]);
                     smat{p}=s;
-                    [freq{p} ampmat{p}]=PTthrSpec(Throt, dat{k}(a,:), lograte, get(guiHandlesSpec.checkboxPSD, 'Value')); % compute matrices 
-                    [freq2d{p} amp2d{p}]=PTSpec2d(dat{k}(a,:),lograte, get(guiHandlesSpec.checkboxPSD, 'Value')); %compute 2d amp spec at same time
+                    [freq{p} ampmat{p}]=PTthrSpec(Throt, dat{k}(a,:), lograte, tmpPSDVal); % compute matrices
+                    [freq2d{p} amp2d{p}]=PTSpec2d(dat{k}(a,:),lograte, tmpPSDVal); %compute 2d amp spec at same time
                end
-            end 
+            end
         end
         close(hw)
     end

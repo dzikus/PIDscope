@@ -42,29 +42,32 @@ axesOptionsSpec = find([get(guiHandlesSpec2.plotR, 'Value') get(guiHandlesSpec2.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 set(PTspecfig2, 'pointer', 'watch')
 
-clear s dat a RC smat amp2d2 freq2d2 
+clear s dat a RC smat amp2d2 freq2d2
 p=0;
-hw = waitbar(0,['please wait... ' ]); 
-for k = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))      
-    s = char(datSelectionString(get(guiHandlesSpec2.SpecList, 'Value')(k)));
-    for f = 1 : size(get(guiHandlesSpec2.FileSelect, 'Value'),2)
-        for a = axesOptionsSpec    
+hw = waitbar(0,['please wait... ' ]);
+tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
+tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
+tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
+for k = 1 : length(tmpSpecVal)
+    s = char(datSelectionString(tmpSpecVal(k)));
+    for f = 1 : size(tmpFileVal,2)
+        for a = axesOptionsSpec
             if  ( ( ~isempty(strfind(s,'axisD'))) & a==3) | isempty(s)
                 p=p+1;
                 smat{p}=[];%string
                 amp2d2{p}=[];%spec 2d
-                freq2d2{p}=[];% freq2d2                 
-            else   
+                freq2d2{p}=[];% freq2d2
+            else
                 p = p + 1;
                 clear dat
-                eval(['dat = T{get(guiHandlesSpec2.FileSelect, 'Value')(f)}.' char(datSelectionString(get(guiHandlesSpec2.SpecList, 'Value')(k))) '_' int2str(a-1) '_(tIND{get(guiHandlesSpec2.FileSelect, 'Value')(f)})'';';])                    
-                lograte = A_lograte(get(guiHandlesSpec2.FileSelect, 'Value')(f));%in kHz
-                waitbar(p, hw, ['processing spectrogram... '  int2str(p) ]); 
+                eval(['dat = T{tmpFileVal(f)}.' char(datSelectionString(tmpSpecVal(k))) '_' int2str(a-1) '_(tIND{tmpFileVal(f)})'';';])
+                lograte = A_lograte(tmpFileVal(f));%in kHz
+                waitbar(p, hw, ['processing spectrogram... '  int2str(p) ]);
                 smat{p}=s;
-                eval(['[freq2d2{p}.f' int2str(f) ' amp2d2{p}.f' int2str(f) ' ]=PTSpec2d(dat,lograte, get(guiHandlesSpec2.checkboxPSD, 'Value'));']) %compute 2d amp spec at same time
+                eval(['[freq2d2{p}.f' int2str(f) ' amp2d2{p}.f' int2str(f) ' ]=PTSpec2d(dat,lograte, tmpPSDVal);']) %compute 2d amp spec at same time
             end
        end
-    end 
+    end
 end
 close(hw)
 
@@ -85,10 +88,14 @@ delete(subplot('position',posInfo.Spec2Pos(6,:)))
 %%%%% plot 2d amp spec
 axLabel={'Roll';'Pitch';'Yaw'};
 
-p = 0; 
-for k = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))      
+p = 0;
+tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
+tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
+tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
+tmpSmoothVal = get(guiHandlesSpec2.smoothFactor_select, 'Value');
+for k = 1 : length(tmpSpecVal)
     s = char(datSelectionString(k));
-    for f = 1 : size(get(guiHandlesSpec2.FileSelect, 'Value'),2)
+    for f = 1 : size(tmpFileVal,2)
         cnt = 0;
         for a = axesOptionsSpec 
             cnt = cnt + 1;
@@ -99,12 +106,12 @@ for k = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))
                     if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
                         
                         h2=subplot('position',posInfo.Spec2Pos(a,:)); 
-                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (get(guiHandlesSpec2.smoothFactor_select, 'Value')^3), ''lowess''));hold on'])
+                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (tmpSmoothVal^3), ''lowess''));hold on'])
                         hold on
                         set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',multilineStyle{k})
                         set(h2,'fontsize',fontsz)
                         set(h,'Color',[multiLineCols(f,:)]) 
-                        eval(['m = (A_lograte(get(guiHandlesSpec2.FileSelect, 'Value')(f)) * 1000) / 2;'])
+                        m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0:m/10:m], 'yminortick','on')
                         axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])             
                         xlabel('Frequency (Hz)','fontweight','bold');
@@ -123,12 +130,12 @@ for k = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))
                         grid on
 
                         h2=subplot('position',posInfo.Spec2Pos(a+3,:)); 
-                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (get(guiHandlesSpec2.smoothFactor_select, 'Value')^3), ''lowess''));hold on'])
+                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (tmpSmoothVal^3), ''lowess''));hold on'])
                         hold on
                         set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',multilineStyle{k})
                         set(h2,'fontsize',fontsz)
                         set(h,'Color',[multiLineCols(f,:)]) 
-                        eval(['m = (A_lograte(get(guiHandlesSpec2.FileSelect, 'Value')(f)) * 1000) / 2;'])
+                        m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0 20 40 60 80 100],'yminortick','on')
                         axis([0 100 climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)]) 
                         xlabel('Frequency (Hz)','fontweight','bold');
@@ -173,7 +180,7 @@ for k = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' num2str(gyro_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             else
-                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(uiHandlesSpec2.FileSelect.Value(f))) 'deg']);
+                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f)))) 'deg']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             end
                         end
@@ -182,7 +189,7 @@ for k = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))
                     else
                         % combine R P Y
                         h2=subplot('position',[0.0500    0.1000    0.800    0.840]); 
-                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (get(guiHandlesSpec2.smoothFactor_select, 'Value')^3), ''lowess''));hold on'])
+                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (tmpSmoothVal^3), ''lowess''));hold on'])
                         hold on
                         if k == 1
                             set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/1.4,'linestyle',rpyLineStyle{cnt})
@@ -192,7 +199,7 @@ for k = 1 : length(get(guiHandlesSpec2.SpecList, 'Value'))
                         end
                         set(h2,'fontsize',fontsz)
                         set(h,'Color',[multiLineCols(f,:)]) 
-                        eval(['m = (A_lograte(get(guiHandlesSpec2.FileSelect, 'Value')(f)) * 1000) / 2;'])
+                        m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0:m/10:m], 'yminortick','on')
                         axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])             
                         xlabel('Frequency (Hz)','fontweight','bold');

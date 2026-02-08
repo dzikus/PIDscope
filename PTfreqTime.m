@@ -33,12 +33,16 @@ end
 s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'pidsum'};
 datSelectionString=[s1];
 axisLabel ={'Roll'; 'Pitch' ; 'Yaw'};
+tmpFileVal3 = get(guiHandlesSpec3.FileSelect, 'Value');
+tmpSpecVal3 = get(guiHandlesSpec3.SpecList, 'Value');
+tmpSmoothVal3 = get(guiHandlesSpec3.smoothFactor_select, 'Value');
+tmpSubVal3 = get(guiHandlesSpec3.subsampleFactor_select, 'Value');
 for i = 1 : 3
-    delete(subplot('position',posInfo.Spec3Pos(i,:))); 
+    delete(subplot('position',posInfo.Spec3Pos(i,:)));
     try
-    if ~updateSpec      
-        eval(['dat = T{get(guiHandlesSpec3.FileSelect, 'Value')}.' char(datSelectionString(get(guiHandlesSpec3.SpecList, 'Value'))) '_' int2str(i-1) '_(tIND{get(guiHandlesSpec3.FileSelect, 'Value')})'';';]) 
-        [Tm F specMat{i}] = PTtimeFreqCalc(dat', A_lograte(get(guiHandlesSpec3.FileSelect, 'Value')), specSmoothFactors(get(guiHandlesSpec3.smoothFactor_select, 'Value')), timeSmoothFactors(get(guiHandlesSpec3.subsampleFactor_select, 'Value')));
+    if ~updateSpec
+        eval(['dat = T{tmpFileVal3}.' char(datSelectionString(tmpSpecVal3)) '_' int2str(i-1) '_(tIND{tmpFileVal3})'';';])
+        [Tm F specMat{i}] = PTtimeFreqCalc(dat', A_lograte(tmpFileVal3), specSmoothFactors(tmpSmoothVal3), timeSmoothFactors(tmpSubVal3));
     end
     
     h2=subplot('position',posInfo.Spec3Pos(i,:));
@@ -46,10 +50,8 @@ for i = 1 : 3
 
     set(gca,'Clim',[ClimScale3], 'fontsize',fontsz,'fontweight','bold')
     title('');
-    a=get(gca,'Ylabel');
-    a.String = ['Frequency (Hz) ' axisLabel{i}];
-    a=get(gca,'Xlabel');
-    a.String = 'Time (sec)';
+    set(get(gca,'Ylabel'), 'String', ['Frequency (Hz) ' axisLabel{i}]);
+    set(get(gca,'Xlabel'), 'String', 'Time (sec)');
     F2 = F(F<=fLim_freqTime);
     freqStr = flipud(int2str((0: F2(end) / 5: F2(end))'));
     timeStr = int2str((0: round(Tm(end)) / 10: round(Tm(end)))');
