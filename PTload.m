@@ -182,6 +182,9 @@ try
   
     try close(waitbarFid), catch, end
 catch  ME
-   %  errmsg.PTload=PTerrorMessages('PTload', ME); 
+    warning('PTload error: %s', ME.message);
+    for k = 1:numel(ME.stack)
+        warning('  in %s at line %d', ME.stack(k).name, ME.stack(k).line);
+    end
 end
 
