@@ -24,6 +24,7 @@ if ~isempty(fnameMaster)
 
     % scale fonts according to size of window and/or screen
     PTfig_pos = get(PTfig, 'Position');
+    if PTfig_pos(3) > 10, PTfig_pos(3:4) = PTfig_pos(3:4) ./ get(0,'ScreenSize')(3:4); end
     prop_max_screen=(max([PTfig_pos(3) PTfig_pos(4)]));
     fontsz=(screensz_multiplier*prop_max_screen);
 

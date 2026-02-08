@@ -18,6 +18,7 @@ set(PTerrfig, 'InvertHardcopy', 'off');
 set(PTerrfig,'color',bgcolor)
 
 PTerrfig_pos = get(PTerrfig, 'Position');
+if PTerrfig_pos(3) > 10, PTerrfig_pos(3:4) = PTerrfig_pos(3:4) ./ get(0,'ScreenSize')(3:4); end
 prop_max_screen=(max([PTerrfig_pos(3) PTerrfig_pos(4)]));
 fontsz3=round(screensz_multiplier*prop_max_screen);
 maxDegsec=100;

@@ -11,6 +11,7 @@
 if ~isempty(fnameMaster) 
    
 PTspecfig_pos = get(PTspecfig, 'Position');
+if PTspecfig_pos(3) > 10, PTspecfig_pos(3:4) = PTspecfig_pos(3:4) ./ get(0,'ScreenSize')(3:4); end
 prop_max_screen=(max([PTspecfig_pos(3) PTspecfig_pos(4)]));
 fontsz=(screensz_multiplier*prop_max_screen);
 %% update fonts

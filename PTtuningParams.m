@@ -10,6 +10,7 @@
 PTtunefig=figure(4);
 
 PTtunefig_pos = get(PTtunefig, 'Position');
+if PTtunefig_pos(3) > 10, PTtunefig_pos(3:4) = PTtunefig_pos(3:4) ./ get(0,'ScreenSize')(3:4); end
 prop_max_screen=(max([PTtunefig_pos(3) PTtunefig_pos(4)]));
 fontsz=(screensz_multiplier*prop_max_screen);
 
