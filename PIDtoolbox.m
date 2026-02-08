@@ -127,40 +127,43 @@ pause(.1)% need to wait for figure to open before extracting screen values
 screensz_multiplier = sqrt(screensz(4)^2) * .011; % based on vertical dimension only, to deal with for ultrawide monitors
 prop_max_screen = figPos(4) / screensz(4);
 fontsz = (screensz_multiplier*prop_max_screen);
+if isOctave, fontsz = fontsz * 0.88; end % Octave Qt has larger widget padding
 markerSz = round(screensz_multiplier * 0.75);
 vPos = 0.92;
+cpL = .875; % control panel left edge
+cpW = .12;  % control panel width
 controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
              'BackgroundColor',[.95 .95 .95],...
-             'Position',[.89 vPos-.28 .105 .3]);
-         
-posInfo.firmware =[.8935 vPos-0.04 .098 .04];        
-posInfo.fileA=[.896 vPos-0.05 .0455 .026];
-posInfo.clr=[.942 vPos-0.05 .0455 .026];
-posInfo.fnameAText = [.8935 vPos-0.09 .098 .04];
+             'Position',[cpL vPos-.28 cpW .3]);
 
-posInfo.startEndButton=[.9 vPos-0.1 .04 .026];
+posInfo.firmware =[cpL+.003 vPos-0.04 cpW-.006 .04];
+posInfo.fileA=[cpL+.006 vPos-0.05 cpW/2-.006 .026];
+posInfo.clr=[cpL+cpW/2 vPos-0.05 cpW/2-.006 .026];
+posInfo.fnameAText = [cpL+.003 vPos-0.09 cpW-.006 .04];
+
+posInfo.startEndButton=[cpL+.005 vPos-0.1 .04 .026];
 LogStDefault = 2;% default ignore first 2 seconds of logfile
 LogNdDefault = 1;% default ignore last 1 second of logfile
 
-posInfo.RPYcomboLV = [.93 vPos-0.1 .06 .026];
+posInfo.RPYcomboLV = [cpL+.05 vPos-0.1 .065 .026];
 
-posInfo.plotR_LV =  [.90 vPos-0.125 .03 .025];
-posInfo.plotP_LV =  [.93 vPos-0.125 .03 .025];
-posInfo.plotY_LV =  [.96 vPos-0.125 .03 .025];
+posInfo.plotR_LV =  [cpL+.005 vPos-0.125 .035 .025];
+posInfo.plotP_LV =  [cpL+.04 vPos-0.125 .035 .025];
+posInfo.plotY_LV =  [cpL+.075 vPos-0.125 .035 .025];
 
-posInfo.lineSmooth = [.895 vPos-0.15 .046 .026];
-posInfo.linewidth = [.943 vPos-0.15 .046 .026];
+posInfo.lineSmooth = [cpL+.003 vPos-0.15 cpW/2-.003 .026];
+posInfo.linewidth = [cpL+cpW/2 vPos-0.15 cpW/2-.003 .026];
 
-posInfo.spectrogramButton = [.895 vPos-0.175 .094 .026];
-posInfo.TuningButton = [.895 vPos-0.2 .094 .026];
-posInfo.period2Hz = [.895 vPos-0.225 .046 .026]; 
-posInfo.DispInfoButton = [.943 vPos-0.225 .046 .026]; 
+posInfo.spectrogramButton = [cpL+.003 vPos-0.175 cpW-.006 .026];
+posInfo.TuningButton = [cpL+.003 vPos-0.2 cpW-.006 .026];
+posInfo.period2Hz = [cpL+.003 vPos-0.225 cpW/2-.003 .026];
+posInfo.DispInfoButton = [cpL+cpW/2 vPos-0.225 cpW/2-.003 .026];
 
-posInfo.saveFig = [.895 vPos-0.25 .046 .026];
-posInfo.saveSettings = [.943 vPos-0.25 .046 .026];
-%posInfo.wiki = [.895 vPos-0.275 .046 .026];
-posInfo.PIDtuningService = [.895 vPos-0.275 .094 .026];
-posInfo.resetMain = [.895 vPos-0.85 .094 .026];
+posInfo.saveFig = [cpL+.003 vPos-0.25 cpW/2-.003 .026];
+posInfo.saveSettings = [cpL+cpW/2 vPos-0.25 cpW/2-.003 .026];
+%posInfo.wiki = [cpL+.003 vPos-0.275 cpW/2-.003 .026];
+posInfo.PIDtuningService = [cpL+.003 vPos-0.275 cpW-.006 .026];
+posInfo.resetMain = [cpL+.003 vPos-0.85 cpW-.006 .026];
 
 
 fnameMaster = {}; 
@@ -309,12 +312,12 @@ try
     defaults = readtable('PTBdefaults.txt');
     a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
     t = uitable(PTfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',[.89 vPos-.82 .105 .3],'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',[cpL vPos-.82 cpW .3],'FontSize',fontsz*.8, 'ColumnName', [''])
 catch
     defaults = ' '; 
     a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
     t = uitable(PTfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',[.89 vPos-.82 .105 .3],'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',[cpL vPos-.82 cpW .3],'FontSize',fontsz*.8, 'ColumnName', [''])
 end
 
 

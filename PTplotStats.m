@@ -13,7 +13,7 @@ if ~isempty(filenameA) || ~isempty(filenameB)
     %% update fonts
 
 PTstatsfig_pos = get(PTstatsfig, 'Position');
-if PTstatsfig_pos(3) > 10, PTstatsfig_pos(3:4) = PTstatsfig_pos(3:4) ./ get(0,'ScreenSize')(3:4); end
+screensz_tmp = get(0,'ScreenSize'); if PTstatsfig_pos(3) > 10, PTstatsfig_pos(3:4) = PTstatsfig_pos(3:4) ./ screensz_tmp(3:4); end
 prop_max_screen=(max([PTstatsfig_pos(3) PTstatsfig_pos(4)]));
 fontsz5=round(screensz_multiplier*prop_max_screen);
 

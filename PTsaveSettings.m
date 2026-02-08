@@ -129,12 +129,12 @@ try
     defaults = readtable('PTBdefaults.txt');
     a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
     t = uitable(PTfig,'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',[.89 vPos-.82 .105 .3],'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',[cpL vPos-.82 cpW .3],'FontSize',fontsz*.8, 'ColumnName', [''])
 catch
     defaults = ' '; 
     a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
     t = uitable(PTfig,'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',[.89 vPos-.82 .105 .3],'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',[cpL vPos-.82 cpW .3],'FontSize',fontsz*.8, 'ColumnName', [''])
 end
 
 clear var

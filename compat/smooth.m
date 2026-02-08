@@ -55,34 +55,18 @@ end
 
 
 function ys = smooth_loess(y, n, span, degree)
-  % Local regression with tri-cube weight function
-  % degree=1: LOWESS (linear), degree=2: LOESS (quadratic)
-  ys = zeros(n, 1);
-  half = floor(span / 2);
-
-  for i = 1:n
-    lo = max(1, i - half);
-    hi = min(n, i + half);
-    m = hi - lo + 1;
-
-    x_local = (lo:hi)' - i;  % centered at current point
-    y_local = y(lo:hi);
-
-    % Tri-cube weight function
-    max_dist = max(abs(x_local)) + 1;
-    u = abs(x_local) / max_dist;
-    w = (1 - u.^3).^3;
-
-    % Build design matrix
-    if degree == 1
-      X = [ones(m, 1), x_local];
-    else
-      X = [ones(m, 1), x_local, x_local.^2];
-    end
-
-    % Weighted least squares: beta = (X'WX) \ (X'Wy)
-    W = diag(w);
-    beta = (X' * W * X) \ (X' * (w .* y_local));
-    ys(i) = beta(1);  % fitted value at center (x_local=0)
+  % Local regression approximation using Savitzky-Golay filter
+  % Much faster than per-point weighted least squares (O(n) vs O(n*span))
+  if span <= degree
+    ys = y;
+    return;
+  end
+  try
+    ys = sgolayfilt(y, degree, span);
+  catch
+    % Fallback: triple-pass moving average (approximates local regression)
+    ys = smooth_moving(y, n, span);
+    ys = smooth_moving(ys, n, span);
+    ys = smooth_moving(ys, n, span);
   end
 end

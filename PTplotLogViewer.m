@@ -24,7 +24,7 @@ if ~isempty(fnameMaster)
 
     % scale fonts according to size of window and/or screen
     PTfig_pos = get(PTfig, 'Position');
-    if PTfig_pos(3) > 10, PTfig_pos(3:4) = PTfig_pos(3:4) ./ get(0,'ScreenSize')(3:4); end
+    screensz_tmp = get(0,'ScreenSize'); if PTfig_pos(3) > 10, PTfig_pos(3:4) = PTfig_pos(3:4) ./ screensz_tmp(3:4); end
     prop_max_screen=(max([PTfig_pos(3) PTfig_pos(4)]));
     fontsz=(screensz_multiplier*prop_max_screen);
 
@@ -97,7 +97,7 @@ if ~isempty(fnameMaster)
     delete(hexpand3)
     expandON = 0;
 
-    ylabelname=[];
+    ylabelname='';
     for i = 1 : size(axesOptionsLV,2)
         if i == size(axesOptionsLV,2)
             ylabelname = [ylabelname axLabel{axesOptionsLV(i)} '-' lineStyle2LVnames{i} '   (deg/s) '];
@@ -108,7 +108,8 @@ if ~isempty(fnameMaster)
     
     PTfig;
     
-    if strcmp(get(zoom, 'Enable'),'off') && ~expandON % 
+    try zoomOn = strcmp(get(zoom(PTfig), 'Enable'),'on'); catch, zoomOn = 0; end
+    if ~zoomOn && ~expandON %
          delete(subplot('position' ,fullszPlot));
          delete(subplot('position',posInfo.linepos1));
          delete(subplot('position',posInfo.linepos2));
@@ -191,10 +192,11 @@ if ~isempty(fnameMaster)
                  h=fill([t2,xmax,xmax,t2],[-maxY,-maxY,maxY,maxY],[.8 .8 .8]);
                  set(h,'FaceAlpha',0.8,'EdgeColor',[.8 .8 .8]);
 
-                 if strcmp(get(zoom, 'Enable'),'on')
+                 try zoomOn2 = strcmp(get(zoom(PTfig), 'Enable'),'on'); catch, zoomOn2 = 0; end
+                 if zoomOn2
                     v = axis;
                     axis(v)
-                else  
+                else
                     axis([0 xmax -maxY maxY])
                  end
 

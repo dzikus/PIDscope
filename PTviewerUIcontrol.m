@@ -32,8 +32,8 @@ posInfo.maxYinput = [.735 .965 .025 .025];
 posInfo.nCols_text = [.70 .94 .04 .025];
 posInfo.nCols_input = [.735 .94 .025 .025];
 
-posInfo.YTstick = [.892 vPos-0.39 .045 .085];
-posInfo.RPstick = [.948 vPos-0.39 .045 .085];
+posInfo.YTstick = [cpL+.005 vPos-0.39 .05 .085];
+posInfo.RPstick = [cpL+cpW/2 vPos-0.39 .05 .085];
 
 posInfo.linepos1=[0.095 0.685 0.77 0.21];
 posInfo.linepos2=[0.095 0.47 0.77 0.21];
@@ -96,9 +96,11 @@ guiHandles.FileNum = uicontrol(PTfig,'Style','popupmenu','string',[fnameMaster],
 
             
 fileIdx = get(guiHandles.FileNum, 'Value');
-if numel(epoch1_A) < fileIdx || numel(epoch2_A) < fileIdx
-    epoch1_A(fileIdx)=tta{fileIdx}(1)/us2sec;
-    epoch2_A(fileIdx)=tta{fileIdx}(end)/us2sec;
+if exist('tta','var') && iscell(tta) && numel(tta) >= fileIdx
+    if numel(epoch1_A) < fileIdx || numel(epoch2_A) < fileIdx
+        epoch1_A(fileIdx)=tta{fileIdx}(1)/us2sec;
+        epoch2_A(fileIdx)=tta{fileIdx}(end)/us2sec;
+    end
 end
 
 % set IND for data subset. Updated in logviewer.

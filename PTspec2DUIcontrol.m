@@ -88,7 +88,7 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PTdatatip);
 end
 
-specCrtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
+spec2Crtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
               'Position',[.89 .31+vPosSpec2d .105 .61]);
  
@@ -171,7 +171,7 @@ gyro_phase_shift_deg=[];
 dterm_phase_shift_deg=[];
 for k = 1 : Nfiles
     Fs=1000/A_lograte(k);% yields more consistent results (mode(diff(tta)));
-    maxlag=int8(round(30000/Fs)); %~30ms delay
+    maxlag=round(30000/Fs); %~30ms delay
  
  
     clear d pg g1 g1 s1 g2 s2  g3 s3 
