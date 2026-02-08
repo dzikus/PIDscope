@@ -71,7 +71,23 @@ posInfo.controlFreq2Cutoff =    [.945 .715 .023 .025];
 posInfo.controlFreqCutoff_text =[.9 .74 .07 .025];
 posInfo.checkbox2d=             [.91 .685 .04 .02];
 posInfo.checkboxPSD=            [.94 .685 .04 .02];
- 
+
+if exist('isOctave','var') && isOctave
+    % Octave Qt widgets need more vertical space - spread out Params panel elements
+    posInfo.computeSpec=            [.896 .87 .0455 .030];
+    posInfo.resetSpec=              [.942 .87 .0455 .030];
+    posInfo.saveFig1=               [.8965 .838 .0455 .030];
+    posInfo.saveSettings1=          [.942 .838 .0455 .030];
+    posInfo.specPresets=            [.8945 .795 .096 .035];
+    posInfo.ColormapSelect=         [.8945 .758 .096 .035];
+    posInfo.smooth_select=          [.8945 .721 .096 .035];
+    posInfo.controlFreqCutoff_text= [.9 .700 .07 .024];
+    posInfo.controlFreq1Cutoff=     [.91 .675 .023 .024];
+    posInfo.controlFreq2Cutoff=     [.945 .675 .023 .024];
+    posInfo.checkbox2d=             [.91 .650 .04 .025];
+    posInfo.checkboxPSD=            [.94 .650 .04 .025];
+end
+
 posInfo.AphasedelayText1=[.06 .984 .14 .02];
 posInfo.AphasedelayText2=[.282 .984 .14 .02];
 posInfo.AphasedelayText3=[.504 .984 .14 .02];
@@ -82,20 +98,22 @@ posInfo.hCbar2pos=[0.262 0.89 0.18  0.02];
 posInfo.hCbar3pos=[0.484 0.89 0.18  0.02];
 posInfo.hCbar4pos=[0.706 0.89 0.18  0.02];
  
-posInfo.hDropdn1pos=[0.08 0.97 0.095   0.01];
-posInfo.hDropdn2pos=[0.302 0.97 0.095   0.01];
-posInfo.hDropdn3pos=[0.524 0.97 0.095   0.01];
-posInfo.hDropdn4pos=[0.746 0.97 0.095   0.01];
- 
-posInfo.fDropdn1pos=[0.08 0.946 0.095  0.01];
-posInfo.fDropdn2pos=[0.302 0.946 0.095  0.01];
-posInfo.fDropdn3pos=[0.524 0.946 0.095  0.01];
-posInfo.fDropdn4pos=[0.746 0.946 0.095  0.01];
- 
-posInfo.Sub100HzCheck1=[0.175 0.945 .06 .025];
-posInfo.Sub100HzCheck2=[.4 .945 .06 .025];
-posInfo.Sub100HzCheck3=[0.62 0.945 .06 .025];
-posInfo.Sub100HzCheck4=[.84 .945 .06 .025];
+ddh = 0.01; % dropdown height
+if exist('isOctave','var') && isOctave, ddh = 0.025; end
+posInfo.hDropdn1pos=[0.08 0.97 0.095   ddh];
+posInfo.hDropdn2pos=[0.302 0.97 0.095   ddh];
+posInfo.hDropdn3pos=[0.524 0.97 0.095   ddh];
+posInfo.hDropdn4pos=[0.746 0.97 0.095   ddh];
+
+posInfo.fDropdn1pos=[0.08 0.942 0.095  ddh];
+posInfo.fDropdn2pos=[0.302 0.942 0.095  ddh];
+posInfo.fDropdn3pos=[0.524 0.942 0.095  ddh];
+posInfo.fDropdn4pos=[0.746 0.942 0.095  ddh];
+
+posInfo.Sub100HzCheck1=[0.175 0.942 .06 .025];
+posInfo.Sub100HzCheck2=[.4 .942 .06 .025];
+posInfo.Sub100HzCheck3=[0.62 0.942 .06 .025];
+posInfo.Sub100HzCheck4=[.84 .942 .06 .025];
 
 posInfo.climMax_text = [.01 .913 .025 .024];
 posInfo.climMax_input = [.01 .888 .025 .024];
@@ -122,9 +140,13 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PTdatatip);
 end
 
+specCrtlpanelPos = [.89 .68 .105 .24];
+if exist('isOctave','var') && isOctave
+    specCrtlpanelPos = [.89 .64 .105 .28];
+end
 specCrtlpanel = uipanel('Title','Params','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
-              'Position',[.89 .68 .105 .24]);
+              'Position',specCrtlpanelPos);
  
 %%% PRESET CONFIGURATIONS
 

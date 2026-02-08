@@ -43,34 +43,57 @@ for c=1 : size(cols,2)
 end
 
 vPosSpec2d = .037;
+sp2_rh = .026; sp2_ddh = .04;
+if exist('isOctave','var') && isOctave
+    sp2_rh = .030; sp2_ddh = .035;
+end
 
 posInfo.fileListWindowSpec=[.898 .7+vPosSpec2d .088 .20];
 posInfo.TermListWindowSpec=[.898 .55+vPosSpec2d .088 .14];
 
-posInfo.computeSpec=            [.896 .52+vPosSpec2d .0455 .026];
-posInfo.resetSpec=              [.942 .52+vPosSpec2d .0455 .026];
-posInfo.spectrogramButton2=     [.896 .495+vPosSpec2d .0915 .026];
-posInfo.spectrogramButton3=    [.896 .47+vPosSpec2d .0915 .026];
-posInfo.saveFig2=               [.896 .445+vPosSpec2d .0455 .026]; % .896 .495 .092 .026
-posInfo.saveSettings2=          [.942 .445+vPosSpec2d .0455 .026];
+posInfo.computeSpec=            [.896 .52+vPosSpec2d .0455 sp2_rh];
+posInfo.resetSpec=              [.942 .52+vPosSpec2d .0455 sp2_rh];
+posInfo.spectrogramButton2=     [.896 .49+vPosSpec2d .0915 sp2_rh];
+posInfo.spectrogramButton3=    [.896 .46+vPosSpec2d .0915 sp2_rh];
+posInfo.saveFig2=               [.896 .43+vPosSpec2d .0455 sp2_rh];
+posInfo.saveSettings2=          [.942 .43+vPosSpec2d .0455 sp2_rh];
 
-posInfo.smooth_select =         [.895 .405+vPosSpec2d .0955 .04];
-posInfo.Delay =                 [.895 .379+vPosSpec2d .0955 .04];
+posInfo.smooth_select =         [.895 .395+vPosSpec2d .0955 sp2_ddh];
+posInfo.Delay =                 [.895 .36+vPosSpec2d .0955 sp2_ddh];
 
-posInfo.plotRspec =                 [.90 .37+vPosSpec2d .03 .025];
-posInfo.plotPspec =                 [.925 .37+vPosSpec2d .03 .025];
-posInfo.plotYspec =                 [.95 .37+vPosSpec2d .03 .025];
+posInfo.plotRspec =                 [.90 .335+vPosSpec2d .03 .025];
+posInfo.plotPspec =                 [.925 .335+vPosSpec2d .03 .025];
+posInfo.plotYspec =                 [.95 .335+vPosSpec2d .03 .025];
 
-posInfo.checkboxPSD =            [.90 .35+vPosSpec2d .03 .02];
-posInfo.RPYcomboSpec =           [.932 .35+vPosSpec2d .055 .02];
+posInfo.checkboxPSD =            [.90 .315+vPosSpec2d .03 .02];
+posInfo.RPYcomboSpec =           [.932 .315+vPosSpec2d .055 .02];
 
-posInfo.climMax1_text = [.894 .322+vPosSpec2d .026 .022];
-posInfo.climMax1_input = [.918 .322+vPosSpec2d .022 .022];
-posInfo.climMax2_text = [.943 .322+vPosSpec2d .026 .022];
-posInfo.climMax2_input = [.968 .322+vPosSpec2d .022 .022];
+posInfo.climMax1_text = [.894 .292+vPosSpec2d .026 .022];
+posInfo.climMax1_input = [.918 .270+vPosSpec2d .022 .022];
+posInfo.climMax2_text = [.943 .292+vPosSpec2d .026 .022];
+posInfo.climMax2_input = [.968 .270+vPosSpec2d .022 .022];
 
-
-
+if exist('isOctave','var') && isOctave
+    % Octave Qt widgets need more vertical space - spread out panel elements
+    vPosSpec2d = .037;
+    posInfo.computeSpec=            [.896 .52+vPosSpec2d .0455 .030];
+    posInfo.resetSpec=              [.942 .52+vPosSpec2d .0455 .030];
+    posInfo.spectrogramButton2=     [.896 .485+vPosSpec2d .0915 .030];
+    posInfo.spectrogramButton3=     [.896 .450+vPosSpec2d .0915 .030];
+    posInfo.saveFig2=               [.896 .415+vPosSpec2d .0455 .030];
+    posInfo.saveSettings2=          [.942 .415+vPosSpec2d .0455 .030];
+    posInfo.smooth_select=          [.895 .375+vPosSpec2d .0955 .035];
+    posInfo.Delay=                  [.895 .338+vPosSpec2d .0955 .035];
+    posInfo.plotRspec=              [.90 .313+vPosSpec2d .03 .025];
+    posInfo.plotPspec=              [.925 .313+vPosSpec2d .03 .025];
+    posInfo.plotYspec=              [.95 .313+vPosSpec2d .03 .025];
+    posInfo.checkboxPSD=            [.90 .290+vPosSpec2d .03 .025];
+    posInfo.RPYcomboSpec=           [.932 .290+vPosSpec2d .055 .025];
+    posInfo.climMax1_text=          [.894 .267+vPosSpec2d .026 .024];
+    posInfo.climMax1_input=         [.918 .245+vPosSpec2d .022 .024];
+    posInfo.climMax2_text=          [.943 .267+vPosSpec2d .026 .024];
+    posInfo.climMax2_input=         [.968 .245+vPosSpec2d .022 .024];
+end
 
 climScale1=[0 ; -50 ];
 climScale2=[0.5 ; 20];
@@ -88,9 +111,13 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PTdatatip);
 end
 
+spec2CrtlpanelPos = [.89 .27+vPosSpec2d .105 .65];
+if exist('isOctave','var') && isOctave
+    spec2CrtlpanelPos = [.89 .24+vPosSpec2d .105 .68];
+end
 spec2Crtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
-              'Position',[.89 .31+vPosSpec2d .105 .61]);
+              'Position',spec2CrtlpanelPos);
  
 guiHandlesSpec2.computeSpec = uicontrol(PTspecfig2,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec],...
     'callback','PTplotSpec2D;');

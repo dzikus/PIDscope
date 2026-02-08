@@ -80,7 +80,7 @@ if ~isempty(fnameMaster)
 %     jRangeSlider.LowValue = 20;, jRangeSlider.HighValue = 180;
 
     guiHandles.slider = uicontrol(PTfig, 'style','slider','SliderStep',[0.001 0.01],'Visible', 'on', 'units','normalized','position',[0.0826 0.905 0.795 0.02],...
-        'min',0,'max',1, 'callback','PTslider1Actions;')  
+        'min',0,'max',1, 'callback','PTslider1Actions;');
 
         
         

@@ -163,12 +163,17 @@ posInfo.saveFig = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
 posInfo.saveSettings = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
 %posInfo.wiki = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
 posInfo.PIDtuningService = [cpL+.003 vPos-rs*row cpW-.006 rh];
-posInfo.resetMain = [cpL+.003 vPos-0.85 cpW-.006 rh];
-
 cpH = rs*row + 0.04; % control panel height = rows + title margin
 controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
              'BackgroundColor',[.95 .95 .95],...
              'Position',[cpL vPos-cpH+0.02 cpW cpH]);
+
+% Position info table just below control panel
+cpBottom = vPos - cpH + 0.02;
+infoTableH = 0.30;
+infoTableY = cpBottom - infoTableH - 0.01;
+infoTablePos = [cpL infoTableY cpW infoTableH];
+posInfo.resetMain = [cpL+.003 infoTableY - rh - 0.005 cpW-.006 rh];
 
 
 fnameMaster = {}; 
@@ -319,12 +324,12 @@ try
     defaults = readtable('PTBdefaults.txt');
     a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
     t = uitable(PTfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',[cpL vPos-.82 cpW .3],'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
 catch
     defaults = ' '; 
     a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
     t = uitable(PTfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',[cpL vPos-.82 cpW .3],'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
 end
 
 

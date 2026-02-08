@@ -55,7 +55,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 %%%% compute fft %%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{2}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{3}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{4}, 'Value')>1
+if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 || get(guiHandlesSpec.SpecSelect{2}, 'Value')>1 || get(guiHandlesSpec.SpecSelect{3}, 'Value')>1 || get(guiHandlesSpec.SpecSelect{4}, 'Value')>1
     set(PTspecfig, 'pointer', 'watch')
     if updateSpec==0 
         clear s dat ampmat amp2d freq a RC smat amp2d freq2d Throt
@@ -67,7 +67,7 @@ if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{
             tmpFileSelK = get(guiHandlesSpec.FileSelect{k}, 'Value');
             s=char(datSelectionString(vars(k)));
             for a=1:3,
-                if  ( ( ~isempty(strfind(s,'axisD'))) & a==3) | isempty(s)
+                if  ( ( ~isempty(strfind(s,'axisD'))) && a==3) || isempty(s)
                     p=p+1;
                     smat{p}=[];%string
                     ampmat{p}=[];%spec matrix
@@ -134,7 +134,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 a2 = a(:,(round(Flim1/3.33))+1:(round(Flim2/3.33)));
                 meanspec=nanmean(a2(:));
                 peakspec=max(max(a(:,(round(Flim1/3.33))+1:(round(Flim2/3.33)))));
-                if get(guiHandlesSpec.ColormapSelect, 'Value')==8 | get(guiHandlesSpec.ColormapSelect, 'Value')==9          
+                if get(guiHandlesSpec.ColormapSelect, 'Value')==8 || get(guiHandlesSpec.ColormapSelect, 'Value')==9          
                     h=text(64,(size(ampmat{p},2)-30)+3,['mean=' num2str(meanspec,3)]);
                     set(h,'Color','k','fontsize',fontsz,'fontweight','bold');
                     h=text(64,(size(ampmat{p},2)-30)+1,['peak=' num2str(peakspec,3)]);
@@ -158,7 +158,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 a2 = a(:,(size(ampmat{p},2)/10):size(ampmat{p},2));
                 meanspec=nanmean(a2(:));
                 peakspec=max(max(a(:,(size(ampmat{p},2)/10):size(ampmat{p},2))));
-                if get(guiHandlesSpec.ColormapSelect, 'Value')==8 | get(guiHandlesSpec.ColormapSelect, 'Value')==9
+                if get(guiHandlesSpec.ColormapSelect, 'Value')==8 || get(guiHandlesSpec.ColormapSelect, 'Value')==9
                     h=text(64,size(ampmat{p},2)*.04,['mean=' num2str(meanspec,3)]);
                     set(h,'Color','k','fontsize',fontsz,'fontweight','bold');
                     h=text(64,size(ampmat{p},2)*.13,['peak=' num2str(peakspec,3)]);
@@ -177,7 +177,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
             grid on
             ax = gca;
             set(ax, 'GridColor', [1 1 1]);
-            if get(guiHandlesSpec.ColormapSelect, 'Value')==8 | get(guiHandlesSpec.ColormapSelect, 'Value')==9
+            if get(guiHandlesSpec.ColormapSelect, 'Value')==8 || get(guiHandlesSpec.ColormapSelect, 'Value')==9
                 set(ax, 'GridColor', [0 0 0]); % black on white background
                 set(h,'Color',[0 0 0],'fontsize',fontsz,'fontweight','bold')             
             end
