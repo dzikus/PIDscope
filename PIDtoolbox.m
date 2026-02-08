@@ -293,9 +293,9 @@ try
     fid = fopen('logfileDir.txt','r');
     logfile_directory = fscanf(fid, '%c');
     fclose(fid);
-    delete('*.bbl');
-    delete('*.bfl');
-    delete('*.csv');
+    if ~isempty(dir('*.bbl')), delete('*.bbl'); end
+    if ~isempty(dir('*.bfl')), delete('*.bfl'); end
+    if ~isempty(dir('*.csv')), delete('*.csv'); end
 catch
     logfile_directory = [executableDir];
 end
