@@ -14,7 +14,6 @@ function [multiLineCols] = PTlinecmap(nColors)
     for i = find(multiLineCols(:,1) > .5 & multiLineCols(:,2) > .7 & multiLineCols(:,3) < .3)
         multiLineCols(i,:) = multiLineCols(i,:) * .78;
     end
-    round(100/nColors)
     multiLineCols = repmat(multiLineCols, round(100/nColors),1);% repeats colormap to be 100 rows long
 
 end
