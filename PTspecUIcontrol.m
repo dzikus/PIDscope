@@ -117,8 +117,10 @@ PTspecfig.InvertHardcopy='off';
 set(PTspecfig,'color',bgcolor);
 
 
-dcm_obj2 = datacursormode(PTspecfig);
-set(dcm_obj2,'UpdateFcn',@PTdatatip);
+try  % datacursormode not available in Octave
+  dcm_obj2 = datacursormode(PTspecfig);
+  set(dcm_obj2,'UpdateFcn',@PTdatatip);
+end
 
 specCrtlpanel = uipanel('Title','Params','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
@@ -207,7 +209,7 @@ guiHandlesSpec.climMax_input3 = uicontrol(PTspecfig,'style','edit','string',[num
 guiHandlesSpec.climMax_input4 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(guiHandlesSpec.checkboxPSD.Value+1, 4))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input4],...
      'callback','@textinput_call2; climScale(guiHandlesSpec.checkboxPSD.Value+1, 4)=str2num(guiHandlesSpec.climMax_input4.String);updateSpec=1;PTplotSpec;');
  
- guiHandlesSpec.ColormapSelect = uicontrol(PTspecfig,'Style','popupmenu','string',{'parula','jet','hot','cool','gray','bone','copper','viridis','linear-RED','linear-GREY'},...
+ guiHandlesSpec.ColormapSelect = uicontrol(PTspecfig,'Style','popupmenu','string',{'viridis','jet','hot','cool','gray','bone','copper','linear-RED','linear-GREY'},...
     'fontsize',fontsz,'TooltipString', [TooltipString_cmap], 'units','normalized','outerposition',[posInfo.ColormapSelect],'callback','@selection2;updateSpec=1; PTplotSpec;');
 guiHandlesSpec.ColormapSelect.Value=3;% jet 2 hot 3 viridis 8
 

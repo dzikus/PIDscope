@@ -61,8 +61,10 @@ PTspecfig3.InvertHardcopy='off';
 set(PTspecfig3,'color',bgcolor);
 
 
-dcm_obj2 = datacursormode(PTspecfig3);
-set(dcm_obj2,'UpdateFcn',@PTdatatip);
+try  % datacursormode not available in Octave
+  dcm_obj2 = datacursormode(PTspecfig3);
+  set(dcm_obj2,'UpdateFcn',@PTdatatip);
+end
 
 Spec3Crtlpanel = uipanel('Title','select file ','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
@@ -99,7 +101,7 @@ guiHandlesSpec3.subsampleFactor_select = uicontrol(PTspecfig3,'style','popupmenu
      'callback','PTfreqTime;');
 guiHandlesSpec3.subsampleFactor_select.Value=2;
 
- guiHandlesSpec3.ColormapSelect = uicontrol(PTspecfig3,'Style','popupmenu','string',{'parula','jet','hot','cool','gray','bone','copper','viridis','linear-RED','linear-GREY'},...
+ guiHandlesSpec3.ColormapSelect = uicontrol(PTspecfig3,'Style','popupmenu','string',{'viridis','jet','hot','cool','gray','bone','copper','linear-RED','linear-GREY'},...
     'fontsize',fontsz,'TooltipString', [TooltipString_cmap], 'units','normalized','outerposition',[posInfo.ColormapSelect2],'callback','@selection2;updateSpec=1; PTfreqTime;');
 
 guiHandlesSpec3.climMax1_text = uicontrol(PTspecfig3,'style','text','string','Z min','fontsize',fontsz,'TooltipString',['adjusts the color limits'],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.clim3Max1_text]);

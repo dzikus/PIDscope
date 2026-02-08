@@ -131,7 +131,7 @@ if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
                 a2 = a(:,(round(Flim1/3.33))+1:(round(Flim2/3.33)));
                 meanspec=nanmean(a2(:));
                 peakspec=max(max(a(:,(round(Flim1/3.33))+1:(round(Flim2/3.33)))));
-                if guiHandlesSpec.ColormapSelect.Value==9 | guiHandlesSpec.ColormapSelect.Value==10          
+                if guiHandlesSpec.ColormapSelect.Value==8 | guiHandlesSpec.ColormapSelect.Value==9          
                     h=text(64,(size(ampmat{p},2)-30)+3,['mean=' num2str(meanspec,3)]);
                     set(h,'Color','k','fontsize',fontsz,'fontweight','bold');
                     h=text(64,(size(ampmat{p},2)-30)+1,['peak=' num2str(peakspec,3)]);
@@ -153,7 +153,7 @@ if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
                 a2 = a(:,(size(ampmat{p},2)/10):size(ampmat{p},2));
                 meanspec=nanmean(a2(:));
                 peakspec=max(max(a(:,(size(ampmat{p},2)/10):size(ampmat{p},2))));
-                if guiHandlesSpec.ColormapSelect.Value==9 | guiHandlesSpec.ColormapSelect.Value==10
+                if guiHandlesSpec.ColormapSelect.Value==8 | guiHandlesSpec.ColormapSelect.Value==9
                     h=text(64,size(ampmat{p},2)*.04,['mean=' num2str(meanspec,3)]);
                     set(h,'Color','k','fontsize',fontsz,'fontweight','bold');
                     h=text(64,size(ampmat{p},2)*.13,['peak=' num2str(peakspec,3)]);
@@ -172,7 +172,7 @@ if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
             grid on
             ax = gca;
             ax.GridColor = [1 1 1]; 
-            if guiHandlesSpec.ColormapSelect.Value==9 | guiHandlesSpec.ColormapSelect.Value==10
+            if guiHandlesSpec.ColormapSelect.Value==8 | guiHandlesSpec.ColormapSelect.Value==9
                 ax.GridColor = [0 0 0]; % black on white background
                 set(h,'Color',[0 0 0],'fontsize',fontsz,'fontweight','bold')             
             end
@@ -208,14 +208,12 @@ if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
     end
 
     % color maps
-    % standard set
-    if guiHandlesSpec.ColormapSelect.Value<8,
+    % standard set (Octave: viridis replaces parula at index 1)
+    if guiHandlesSpec.ColormapSelect.Value<=7,
         colormap(char(guiHandlesSpec.ColormapSelect.String(guiHandlesSpec.ColormapSelect.Value)));
     end
-    % new
-    if guiHandlesSpec.ColormapSelect.Value==8, colormap(viridis); end
-    if guiHandlesSpec.ColormapSelect.Value==9, colormap(linearREDcmap); end 
-    if guiHandlesSpec.ColormapSelect.Value==10, colormap(linearGREYcmap); end
+    if guiHandlesSpec.ColormapSelect.Value==8, colormap(linearREDcmap); end
+    if guiHandlesSpec.ColormapSelect.Value==9, colormap(linearGREYcmap); end
 
 end
 
