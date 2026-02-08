@@ -39,20 +39,20 @@ if ~isempty(fnameMaster)
 
     if get(guiHandlesInfo.checkboxDIFF, 'Value') == 1
          t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupA(u)))]);
-         set(t,'units','normalized','OuterPosition',[.02 .05 .45 .9],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}])
+         set(t,'units','normalized','Position',[.02 .05 .45 .9],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}])
          set(t,'BackgroundColor', [1 .7 .7])
         if Nfiles > 1
               t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupB(u)))]);
-              set(t,'units','normalized','OuterPosition',[.52 .05 .45 .9],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')})
+              set(t,'units','normalized','Position',[.52 .05 .45 .9],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')})
               set(t,'BackgroundColor', [1 .7 .7])
         end
     else
         t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupA))]);
-         set(t,'units','normalized','OuterPosition',[.02 .05 .45 .9],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}])
+         set(t,'units','normalized','Position',[.02 .05 .45 .9],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}])
          set(t,'BackgroundColor', [BGCol])
         if Nfiles > 1
               t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupB))]);
-              set(t,'units','normalized','OuterPosition',[.52 .05 .45 .9],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')})
+              set(t,'units','normalized','Position',[.52 .05 .45 .9],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')})
               set(t,'BackgroundColor', [BGCol])
         end
     end
