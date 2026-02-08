@@ -1,0 +1,23 @@
+#!/bin/bash
+# PIDscope AppImage entry point
+
+APPDIR="$(dirname "$(readlink -f "$0")")"
+
+OCT_VER=$(ls "${APPDIR}/usr/lib/" | grep -E '^[0-9]+\.' | head -1)
+
+# Don't inherit host LD_LIBRARY_PATH -- avoid mixing host Octave/Qt with bundled
+export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${APPDIR}/usr/lib/${OCT_VER}:${APPDIR}/usr/lib/x86_64-linux-gnu"
+export OCTAVE_HOME="${APPDIR}/usr"
+export OCTAVE_EXEC_PREFIX="${APPDIR}/usr"
+export QT_PLUGIN_PATH="${APPDIR}/usr/lib/qt5/plugins"
+export QT_QPA_PLATFORM_PLUGIN_PATH="${APPDIR}/usr/lib/qt5/plugins/platforms"
+export XDG_DATA_DIRS="${APPDIR}/usr/share:${XDG_DATA_DIRS:-/usr/share}"
+
+PTB_DIR="${APPDIR}/usr/share/pidscope"
+export PTB_CONFIG_DIR="${HOME}/.config/PIDscope"
+mkdir -p "${PTB_CONFIG_DIR}"
+
+exec "${APPDIR}/usr/bin/octave" \
+    --gui \
+    --persist \
+    --eval "cd('${PTB_DIR}'); addpath('${PTB_DIR}'); addpath('${PTB_DIR}/compat'); PIDscope"

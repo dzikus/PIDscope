@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=PIDscope
+GenericName=Flight Log Analyzer
+Comment=Blackbox flight log analyzer for FPV drones
+Exec=pidscope %f
+Icon=com.pidscope.PIDscope
+Terminal=false
+Categories=Science;Engineering;DataVisualization;
+Keywords=PID;drone;FPV;blackbox;betaflight;flight;log;analyzer;
+MimeType=application/x-betaflight-blackbox-log;application/x-betaflight-blackbox-flash;
+StartupNotify=true

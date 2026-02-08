@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.pidscope.PIDscope</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>PIDscope</name>
+  <summary>Blackbox flight log analyzer for FPV drones</summary>
+
+  <description>
+    <p>
+      PIDscope is a graphical tool for analyzing blackbox flight logs from
+      multirotor drones running Betaflight, Emuflight, or INAV firmware.
+      It provides step response analysis, spectral analysis, spectrograms,
+      phase lag calculation, and multi-file comparison.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">pidscope.desktop</launchable>
+
+  <url type="homepage">https://buymeacoffee.com/dzikus</url>
+
+  <provides>
+    <binary>pidscope</binary>
+    <mediatype>application/x-betaflight-blackbox-log</mediatype>
+    <mediatype>application/x-betaflight-blackbox-flash</mediatype>
+  </provides>
+
+  <releases>
+    <release version="0.58" date="2022-10-24">
+      <description>
+        <p>Initial release.</p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1" />
+
+  <categories>
+    <category>Science</category>
+    <category>Engineering</category>
+  </categories>
+</component>
