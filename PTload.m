@@ -20,7 +20,7 @@ try
         maxMotorOutput=2000; 
 
    %     set(PTfig, 'pointer', 'watch')
-        guiHandles.runAll.FontWeight='Bold';
+        set(guiHandles.runAll, 'FontWeight', 'Bold');
 
         pause(.2)
         
@@ -70,7 +70,7 @@ try
             end
             
             clear subFiles;
-            [filenameA{ii} subFiles] = PTgetcsv(filenameA{ii}, guiHandles.Firmware.Value);
+            [filenameA{ii} subFiles] = PTgetcsv(filenameA{ii}, get(guiHandles.Firmware, 'Value'));
             
              
             for jj = 1 : size(subFiles,2)
@@ -121,7 +121,7 @@ try
                 pitchPIDF{fcnt} = [char(p) ',' dm{1}(a(1)+1:a(2)-1) ',' ff{1}(b(1)+1:b(2)-1)];
                 yawPIDF{fcnt} = [char(y) ',' dm{1}(a(2)+1:end) ',' ff{1}(b(2)+1:end)];
 
-                if guiHandles.Firmware.Value == 3 % INAV
+                if get(guiHandles.Firmware, 'Value') == 3 % INAV
                     T{fcnt}.setpoint_0_ = T{fcnt}.axisRate_0_;
                     T{fcnt}.setpoint_1_ = T{fcnt}.axisRate_1_;
                     T{fcnt}.setpoint_2_ = T{fcnt}.axisRate_2_;
@@ -140,7 +140,7 @@ try
                         eval(['T{fcnt}.(''axisF_' int2str(k) '_'')' '= zeros(length(T{fcnt}.loopIteration),1);']);
                     end 
                     
-                    if guiHandles.Firmware.Value == 3 % INAV
+                    if get(guiHandles.Firmware, 'Value') == 3 % INAV
                         eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_ - 1000)) / 10;'])% scale motor sigs to %
                         try 
                             eval(['T{fcnt}.motor_' int2str(k+4) '_ = ((T{fcnt}.motor_' int2str(k+4) '_ - 1000)) / 10;'])% scale motor sigs 4-7 for x8 configuration

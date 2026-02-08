@@ -111,9 +111,9 @@ Flim2=60;
 
 PTspecfig=figure(2);
 set(PTspecfig, 'units','normalized','outerposition',[.1 .1 .75 .8])
-PTspecfig.NumberTitle='off';
-PTspecfig.Name= ['PIDtoolbox (' PtbVersion ') - Frequency x Throttle Spectrogram'];
-PTspecfig.InvertHardcopy='off';
+set(PTspecfig, 'NumberTitle', 'off');
+set(PTspecfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Frequency x Throttle Spectrogram']);
+set(PTspecfig, 'InvertHardcopy', 'off');
 set(PTspecfig,'color',bgcolor);
 
 

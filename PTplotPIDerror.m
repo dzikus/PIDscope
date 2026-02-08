@@ -14,13 +14,14 @@ set(PTerrfig, 'pointer', 'watch')
 if ~isempty(filenameA) || ~isempty(filenameB)
     %% update fonts
 
-    prop_max_screen=(max([PTerrfig.Position(3) PTerrfig.Position(4)]));
+    PTerrfig_pos = get(PTerrfig, 'Position');
+    prop_max_screen=(max([PTerrfig_pos(3) PTerrfig_pos(4)]));
     fontsz3=round(screensz_multiplier*prop_max_screen);
 
-    guiHandlesPIDerr.refresh.FontSize=fontsz3; 
-    guiHandlesPIDerr.maxSticktext.FontSize=fontsz3;
-    guiHandlesPIDerr.maxStick.FontSize=fontsz3;
-    guiHandlesPIDerr.saveFig3.FontSize=fontsz3;
+    set(guiHandlesPIDerr.refresh, 'FontSize', fontsz3);
+    set(guiHandlesPIDerr.maxSticktext, 'FontSize', fontsz3);
+    set(guiHandlesPIDerr.maxStick, 'FontSize', fontsz3);
+    set(guiHandlesPIDerr.saveFig3, 'FontSize', fontsz3);
  
     
       %% PID error distributions 

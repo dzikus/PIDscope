@@ -12,22 +12,23 @@ if ~isempty(filenameA) || ~isempty(filenameB)
     pause(.05)
     %% update fonts
 
-prop_max_screen=(max([PTstatsfig.Position(3) PTstatsfig.Position(4)]));
+PTstatsfig_pos = get(PTstatsfig, 'Position');
+prop_max_screen=(max([PTstatsfig_pos(3) PTstatsfig_pos(4)]));
 fontsz5=round(screensz_multiplier*prop_max_screen);
 
-guiHandlesStats.saveFig5.FontSize=fontsz5; 
-guiHandlesStats.refresh.FontSize=fontsz5; 
-guiHandlesStats.degsecStick.FontSize=fontsz5; 
-guiHandlesStats.crossAxesStats.FontSize=fontsz5; 
+set(guiHandlesStats.saveFig5, 'FontSize', fontsz5);
+set(guiHandlesStats.refresh, 'FontSize', fontsz5);
+set(guiHandlesStats.degsecStick, 'FontSize', fontsz5);
+set(guiHandlesStats.crossAxesStats, 'FontSize', fontsz5);
 
-guiHandlesStats.crossAxesStats_text.FontSize=fontsz5;
-guiHandlesStats.crossAxesStats_input.FontSize=fontsz5;
-guiHandlesStats.crossAxesStats_text2.FontSize=fontsz5;
-guiHandlesStats.crossAxesStats_input2.FontSize=fontsz5;
+set(guiHandlesStats.crossAxesStats_text, 'FontSize', fontsz5);
+set(guiHandlesStats.crossAxesStats_input, 'FontSize', fontsz5);
+set(guiHandlesStats.crossAxesStats_text2, 'FontSize', fontsz5);
+set(guiHandlesStats.crossAxesStats_input2, 'FontSize', fontsz5);
 
 %% Histograms   
 
-if guiHandlesStats.crossAxesStats.Value==1    
+if get(guiHandlesStats.crossAxesStats, 'Value')==1    
     if ~isempty(filenameA)
         if ~updateStats
         
@@ -43,7 +44,7 @@ if guiHandlesStats.crossAxesStats.Value==1
 
         Yscale=round((max([max(RateCurveRoll_A) max(RateCurvePitch_A) max(RateCurveYaw_A)])) / 50) * 50;
 
-        if guiHandlesStats.degsecStick.Value==1, 
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
             RateCurveRoll_A=(diff(RateCurveRoll_A));
             RateCurvePitch_A=(diff(RateCurvePitch_A));
             RateCurveYaw_A=(diff(RateCurveYaw_A));
@@ -70,9 +71,9 @@ if guiHandlesStats.crossAxesStats.Value==1
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveRoll_A)-1],RateCurveRoll_A(1,2:end));
         set(ax(1),'Ycolor',[colorA])
         set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
-        ax(2).YLabel.String='deg/s';
-        if guiHandlesStats.degsecStick.Value==1, 
-            ax(2).YLabel.String='deg/s/stick travel units';
+        set(get(ax(2), 'YLabel'), 'String', 'deg/s');
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
+            set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveRoll_A(20) RateCurveRoll_A(40) RateCurveRoll_A(60) RateCurveRoll_A(80)],'ko','Parent', ax(2)); 
@@ -102,9 +103,9 @@ if guiHandlesStats.crossAxesStats.Value==1
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurvePitch_A)-1],RateCurvePitch_A(1,2:end));
         set(ax(1),'Ycolor',[colorA])
         set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
-        ax(2).YLabel.String='deg/s';
-        if guiHandlesStats.degsecStick.Value==1, 
-            ax(2).YLabel.String='deg/s/stick travel units';
+        set(get(ax(2), 'YLabel'), 'String', 'deg/s');
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
+            set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurvePitch_A(20) RateCurvePitch_A(40) RateCurvePitch_A(60) RateCurvePitch_A(80)],'ko','Parent', ax(2));     
@@ -135,9 +136,9 @@ if guiHandlesStats.crossAxesStats.Value==1
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveYaw_A)-1],RateCurveYaw_A(1,2:end));
         set(ax(1),'Ycolor',[colorA])
         set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
-        ax(2).YLabel.String='deg/s';
-        if guiHandlesStats.degsecStick.Value==1, 
-            ax(2).YLabel.String='deg/s/stick travel units';
+        set(get(ax(2), 'YLabel'), 'String', 'deg/s');
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
+            set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveYaw_A(20) RateCurveYaw_A(40) RateCurveYaw_A(60) RateCurveYaw_A(80)],'ko','Parent', ax(2)); 
@@ -182,7 +183,7 @@ if guiHandlesStats.crossAxesStats.Value==1
 
         Yscale=round((max([max(RateCurveRoll_B) max(RateCurvePitch_B) max(RateCurveYaw_B)])) / 50) * 50;
 
-        if guiHandlesStats.degsecStick.Value==1, 
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
             RateCurveRoll_B=(diff(RateCurveRoll_B));
             RateCurvePitch_B=(diff(RateCurvePitch_B));
             RateCurveYaw_B=(diff(RateCurveYaw_B));
@@ -209,9 +210,9 @@ if guiHandlesStats.crossAxesStats.Value==1
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveRoll_B)-1],RateCurveRoll_B(1,2:end));
         set(ax(1),'Ycolor',[colorB])
         set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
-        ax(2).YLabel.String='deg/s';
-        if guiHandlesStats.degsecStick.Value==1, 
-            ax(2).YLabel.String='deg/s/stick travel units';
+        set(get(ax(2), 'YLabel'), 'String', 'deg/s');
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
+            set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveRoll_B(20) RateCurveRoll_B(40) RateCurveRoll_B(60) RateCurveRoll_B(80)],'ko','Parent', ax(2)); 
@@ -243,9 +244,9 @@ if guiHandlesStats.crossAxesStats.Value==1
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurvePitch_B)-1],RateCurvePitch_B(1,2:end));
         set(ax(1),'Ycolor',[colorB])
         set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
-        ax(2).YLabel.String='deg/s';
-        if guiHandlesStats.degsecStick.Value==1, 
-            ax(2).YLabel.String='deg/s/stick travel units';
+        set(get(ax(2), 'YLabel'), 'String', 'deg/s');
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
+            set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurvePitch_B(20) RateCurvePitch_B(40) RateCurvePitch_B(60) RateCurvePitch_B(80)],'ko','Parent', ax(2)); 
@@ -277,9 +278,9 @@ if guiHandlesStats.crossAxesStats.Value==1
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveYaw_B)-1],RateCurveYaw_B(1,2:end));
         set(ax(1),'Ycolor',[colorB])
         set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
-        ax(2).YLabel.String='deg/s';
-        if guiHandlesStats.degsecStick.Value==1, 
-            ax(2).YLabel.String='deg/s/stick travel units';
+        set(get(ax(2), 'YLabel'), 'String', 'deg/s');
+        if get(guiHandlesStats.degsecStick, 'Value')==1, 
+            set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveYaw_B(20) RateCurveYaw_B(40) RateCurveYaw_B(60) RateCurveYaw_B(80)],'ko','Parent', ax(2)); 
@@ -313,7 +314,7 @@ end
 
 %% means/standard deviations
  
-if guiHandlesStats.crossAxesStats.Value==2
+if get(guiHandlesStats.crossAxesStats, 'Value')==2
        
     cols=[0.06 0.3 0.54 0.78];
     rows=[0.76 0.53 0.3 0.08];
@@ -714,7 +715,7 @@ end
 
 
 %% Mode 1 topography
-if guiHandlesStats.crossAxesStats.Value==3
+if get(guiHandlesStats.crossAxesStats, 'Value')==3
        
     cols=[0.06 0.52];
     rows=[0.55 0.08];
@@ -803,7 +804,7 @@ if guiHandlesStats.crossAxesStats.Value==3
 end
 
 %% Mode 2 topography
-if guiHandlesStats.crossAxesStats.Value==4
+if get(guiHandlesStats.crossAxesStats, 'Value')==4
        
     cols=[0.06 0.52];
     rows=[0.55 0.08];
@@ -892,7 +893,7 @@ if guiHandlesStats.crossAxesStats.Value==4
 end
 %% each against throttle
 
-if guiHandlesStats.crossAxesStats.Value==5
+if get(guiHandlesStats.crossAxesStats, 'Value')==5
        
     cols=[0.06 0.54];
     rows=[0.69 0.385 0.08];

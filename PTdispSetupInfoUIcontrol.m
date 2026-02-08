@@ -13,8 +13,8 @@ if ~isempty(fnameMaster)
 PTdisp=figure(5);
 screensz = get(0,'ScreenSize');
 set(PTdisp, 'units','normalized','outerposition',[.1 .1 .75 .8])
-PTdisp.NumberTitle='on';
-PTdisp.Name= ['PIDtoolbox (' PtbVersion ') -  Setup Info'];
+set(PTdisp, 'NumberTitle', 'on');
+set(PTdisp, 'Name', ['PIDtoolbox (' PtbVersion ') -  Setup Info']);
 set(PTdisp,'color',bgcolor)
 
 columnWidth=55*round(screensz_multiplier*prop_max_screen);
@@ -26,11 +26,11 @@ posInfo.checkboxDIFF=[.04 .96 .1 .04];
   
 guiHandlesInfo.FileNumDispA = uicontrol(PTdisp,'Style','popupmenu','string',[fnameMaster],...
     'fontsize',fontsz, 'units','normalized','outerposition', [posInfo.FileNumDispA],'callback','@selection; PTdispSetupInfo;');
-guiHandlesInfo.FileNumDispA.Value=1;
+set(guiHandlesInfo.FileNumDispA, 'Value', 1);
 if Nfiles > 1
     guiHandlesInfo.FileNumDispB = uicontrol(PTdisp,'Style','popupmenu','string',[fnameMaster],...
         'fontsize',fontsz, 'units','normalized','outerposition', [posInfo.FileNumDispB],'callback','@selection; PTdispSetupInfo;');
-    guiHandlesInfo.FileNumDispB.Value=2;
+    set(guiHandlesInfo.FileNumDispB, 'Value', 2);
 end
 
 guiHandlesInfo.checkboxDIFF =uicontrol(PTdisp,'Style','checkbox','String','Show Differences Only','fontsize',fontsz,'TooltipString', [''],...

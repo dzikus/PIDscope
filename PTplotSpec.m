@@ -10,41 +10,35 @@
 
 if ~isempty(fnameMaster) 
    
-prop_max_screen=(max([PTspecfig.Position(3) PTspecfig.Position(4)]));
+PTspecfig_pos = get(PTspecfig, 'Position');
+prop_max_screen=(max([PTspecfig_pos(3) PTspecfig_pos(4)]));
 fontsz=(screensz_multiplier*prop_max_screen);
-%% update fonts 
+%% update fonts
 
 f = fields(guiHandlesSpec);
 for i = 1 : size(f,1)
     try
-        eval(['guiHandlesSpec.' f{i} '.FontSize=fontsz;']);
+        h = guiHandlesSpec.(f{i});
+        if iscell(h)
+            for ci = 1:numel(h), set(h{ci}, 'FontSize', fontsz); end
+        else
+            set(h, 'FontSize', fontsz);
+        end
     catch
-        guiHandlesSpec.SpecSelect{1}.FontSize=fontsz;
-        guiHandlesSpec.SpecSelect{2}.FontSize=fontsz;
-        guiHandlesSpec.SpecSelect{3}.FontSize=fontsz;
-        guiHandlesSpec.SpecSelect{4}.FontSize=fontsz;
-        guiHandlesSpec.FileSelect{1}.FontSize=fontsz;
-        guiHandlesSpec.FileSelect{2}.FontSize=fontsz;
-        guiHandlesSpec.FileSelect{3}.FontSize=fontsz;
-        guiHandlesSpec.FileSelect{4}.FontSize=fontsz;
-        guiHandlesSpec.Sub100HzCheck{1}.FontSize=fontsz;
-        guiHandlesSpec.Sub100HzCheck{2}.FontSize=fontsz;
-        guiHandlesSpec.Sub100HzCheck{3}.FontSize=fontsz;
-        guiHandlesSpec.Sub100HzCheck{4}.FontSize=fontsz;
-    end       
+    end
 end
 
-guiHandlesSpec.climMax_input = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(guiHandlesSpec.checkboxPSD.Value+1, 1))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input],...
-     'callback','@textinput_call2; climScale(guiHandlesSpec.checkboxPSD.Value+1, 1)=str2num(guiHandlesSpec.climMax_input.String);updateSpec=1;PTplotSpec;');
+guiHandlesSpec.climMax_input = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input],...
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 1)=str2num(get(guiHandlesSpec.climMax_input, 'String'));updateSpec=1;PTplotSpec;');
 
-guiHandlesSpec.climMax_input2 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(guiHandlesSpec.checkboxPSD.Value+1, 2))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input2],...
-     'callback','@textinput_call2; climScale(guiHandlesSpec.checkboxPSD.Value+1, 2)=str2num(guiHandlesSpec.climMax_input2.String);updateSpec=1;PTplotSpec;');
+guiHandlesSpec.climMax_input2 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 2))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input2],...
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 2)=str2num(get(guiHandlesSpec.climMax_input2, 'String'));updateSpec=1;PTplotSpec;');
  
-guiHandlesSpec.climMax_input3 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(guiHandlesSpec.checkboxPSD.Value+1, 3))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input3],...
-     'callback','@textinput_call2; climScale(guiHandlesSpec.checkboxPSD.Value+1, 3)=str2num(guiHandlesSpec.climMax_input3.String);updateSpec=1;PTplotSpec;');
+guiHandlesSpec.climMax_input3 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 3))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input3],...
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 3)=str2num(get(guiHandlesSpec.climMax_input3, 'String'));updateSpec=1;PTplotSpec;');
  
-guiHandlesSpec.climMax_input4 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(guiHandlesSpec.checkboxPSD.Value+1, 4))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input4],...
-     'callback','@textinput_call2; climScale(guiHandlesSpec.checkboxPSD.Value+1, 4)=str2num(guiHandlesSpec.climMax_input4.String);updateSpec=1;PTplotSpec;');
+guiHandlesSpec.climMax_input4 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 4))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','outerposition',[posInfo.climMax_input4],...
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 4)=str2num(get(guiHandlesSpec.climMax_input4, 'String'));updateSpec=1;PTplotSpec;');
 
 %%
 
@@ -54,13 +48,13 @@ datSelectionString=[s1];
 
 clear vars
 for i=1:4
-    vars(i)=guiHandlesSpec.SpecSelect{i}.Value;
+    vars(i)=get(guiHandlesSpec.SpecSelect{i}, 'Value');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 %%%% compute fft %%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if guiHandlesSpec.SpecSelect{1}.Value>1 | guiHandlesSpec.SpecSelect{2}.Value>1 | guiHandlesSpec.SpecSelect{3}.Value>1 | guiHandlesSpec.SpecSelect{4}.Value>1
+if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{2}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{3}, 'Value')>1 | get(guiHandlesSpec.SpecSelect{4}, 'Value')>1
     set(PTspecfig, 'pointer', 'watch')
     if updateSpec==0 
         clear s dat ampmat amp2d freq a RC smat amp2d freq2d Throt
@@ -78,14 +72,14 @@ if guiHandlesSpec.SpecSelect{1}.Value>1 | guiHandlesSpec.SpecSelect{2}.Value>1 |
                     amp2d{p}=[];%spec 2d
                     freq2d{p}=[];% freq2d                 
                 else   
-                    eval(['dat{k}(a,:) = T{guiHandlesSpec.FileSelect{k}.Value}.' char(datSelectionString(vars(k))) '_' int2str(a-1) '_(tIND{guiHandlesSpec.FileSelect{k}.Value});';])                    
-                    Throt=T{guiHandlesSpec.FileSelect{k}.Value}.setpoint_3_(tIND{guiHandlesSpec.FileSelect{k}.Value}) / 10;% throttle
-                    lograte = A_lograte(guiHandlesSpec.FileSelect{k}.Value);%in kHz
+                    eval(['dat{k}(a,:) = T{get(guiHandlesSpec.FileSelect{k}, 'Value')}.' char(datSelectionString(vars(k))) '_' int2str(a-1) '_(tIND{get(guiHandlesSpec.FileSelect{k}, 'Value')});';])                    
+                    Throt=T{get(guiHandlesSpec.FileSelect{k}, 'Value')}.setpoint_3_(tIND{get(guiHandlesSpec.FileSelect{k}, 'Value')}) / 10;% throttle
+                    lograte = A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value'));%in kHz
                     p=p+1;
                     waitbar(p/12, hw, ['processing spectrogram... '  int2str(p) ]); 
                     smat{p}=s;
-                    [freq{p} ampmat{p}]=PTthrSpec(Throt, dat{k}(a,:), lograte, guiHandlesSpec.checkboxPSD.Value); % compute matrices 
-                    [freq2d{p} amp2d{p}]=PTSpec2d(dat{k}(a,:),lograte, guiHandlesSpec.checkboxPSD.Value); %compute 2d amp spec at same time
+                    [freq{p} ampmat{p}]=PTthrSpec(Throt, dat{k}(a,:), lograte, get(guiHandlesSpec.checkboxPSD, 'Value')); % compute matrices 
+                    [freq2d{p} amp2d{p}]=PTSpec2d(dat{k}(a,:),lograte, get(guiHandlesSpec.checkboxPSD, 'Value')); %compute 2d amp spec at same time
                end
             end 
         end
@@ -100,38 +94,38 @@ else
     end
 end
 
-if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
+if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
     figure(PTspecfig);
     %%%%% plot spec mattrices
     c1=[1 1 1 2 2 2 3 3 3 4 4 4];
     c2=[1 2 3 1 2 3 1 2 3 1 2 3];
     baselineY = [0 -40];
-    ftr = fspecial('gaussian',[guiHandlesSpec.smoothFactor_select.Value*5 guiHandlesSpec.smoothFactor_select.Value],4);
+    ftr = fspecial('gaussian',[get(guiHandlesSpec.smoothFactor_select, 'Value')*5 get(guiHandlesSpec.smoothFactor_select, 'Value')],4);
     for p=1:size(ampmat,2)   
         delete(subplot('position',posInfo.SpecPos(p,:)));      
         if ~isempty(ampmat{p})
             delete(subplot('position',posInfo.SpecPos(p,:)));
             h1=subplot('position',posInfo.SpecPos(p,:)); cla
-            img = flipud((filter2(ftr, ampmat{p} ))') + baselineY(guiHandlesSpec.checkboxPSD.Value+1);
+            img = flipud((filter2(ftr, ampmat{p} ))') + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
             imagesc(img); 
 
-            lograte=A_lograte(guiHandlesSpec.FileSelect{c1(p)}.Value);
+            lograte=A_lograte(get(guiHandlesSpec.FileSelect{c1(p)}, 'Value'));
 
              axLabel={'roll';'pitch';'yaw'};
             
-            if guiHandlesSpec.Sub100HzCheck{c1(p)}.Value==1
+            if get(guiHandlesSpec.Sub100HzCheck{c1(p)}, 'Value')==1
                 hold on;h=plot([0 100],[size(ampmat{p},2)-round(Flim1/3.33) size(ampmat{p},2)-round(Flim1/3.33)],'y--');set(h,'linewidth',2) 
                 hold on;h=plot([0 100],[size(ampmat{p},2)-round(Flim2/3.33) size(ampmat{p},2)-round(Flim2/3.33)],'y--');set(h,'linewidth',2)
                 % sub100Hz scaling           
                 xticks=[1 size(ampmat{p},1)/5:size(ampmat{p},1)/5:size(ampmat{p},1)];
                 yticks=[(size(ampmat{p},2)-30):6:size(ampmat{p},2)];
                 set(h1,'PlotBoxAspectRatioMode','auto','ylim',[size(ampmat{p},2)-30 size(ampmat{p},2)])
-                set(h1,'fontsize',fontsz,'CLim',[baselineY(guiHandlesSpec.checkboxPSD.Value+1) climScale(guiHandlesSpec.checkboxPSD.Value+1, c1(p))],'YTick',[yticks],'yticklabels',[{100} {80} {60} {40} {20} {0}],'XTick',[xticks],'xticklabels',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
-                a=[];a2=[];a=filter2(ftr, ampmat{p}) + baselineY(guiHandlesSpec.checkboxPSD.Value+1);
+                set(h1,'fontsize',fontsz,'CLim',[baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'YTick',[yticks],'yticklabels',[{100} {80} {60} {40} {20} {0}],'XTick',[xticks],'xticklabels',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
+                a=[];a2=[];a=filter2(ftr, ampmat{p}) + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
                 a2 = a(:,(round(Flim1/3.33))+1:(round(Flim2/3.33)));
                 meanspec=nanmean(a2(:));
                 peakspec=max(max(a(:,(round(Flim1/3.33))+1:(round(Flim2/3.33)))));
-                if guiHandlesSpec.ColormapSelect.Value==8 | guiHandlesSpec.ColormapSelect.Value==9          
+                if get(guiHandlesSpec.ColormapSelect, 'Value')==8 | get(guiHandlesSpec.ColormapSelect, 'Value')==9          
                     h=text(64,(size(ampmat{p},2)-30)+3,['mean=' num2str(meanspec,3)]);
                     set(h,'Color','k','fontsize',fontsz,'fontweight','bold');
                     h=text(64,(size(ampmat{p},2)-30)+1,['peak=' num2str(peakspec,3)]);
@@ -147,13 +141,13 @@ if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
             else % full scaling 
                 xticks=[1 size(ampmat{p},1)/5:size(ampmat{p},1)/5:size(ampmat{p},1)];
                 yticks=[1:(size(ampmat{p},2))/10:size(ampmat{p},2) size(ampmat{p},2)];
-                set(h1,'fontsize',fontsz,'CLim',[baselineY(guiHandlesSpec.checkboxPSD.Value+1) climScale(guiHandlesSpec.checkboxPSD.Value+1, c1(p))],'YTick',[yticks],'yticklabels',[{(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*0} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*1} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*2} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*3} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*4} {''} {0}],'XTick',[xticks],'xticklabels',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
+                set(h1,'fontsize',fontsz,'CLim',[baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'YTick',[yticks],'yticklabels',[{(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*0} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*1} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*2} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*3} {''} {(max(round(yticks * 3.333))/1)-(max(round(yticks * 3.333))/5)*4} {''} {0}],'XTick',[xticks],'xticklabels',{'0';'20';'40';'60';'80';'100'},'tickdir','out','xminortick','on','yminortick','on');
                 set(h1,'PlotBoxAspectRatioMode','auto','ylim',[1 size(ampmat{p},2)])  
-                a=[];a2=[];a=filter2(ftr, ampmat{p}) + baselineY(guiHandlesSpec.checkboxPSD.Value+1);
+                a=[];a2=[];a=filter2(ftr, ampmat{p}) + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
                 a2 = a(:,(size(ampmat{p},2)/10):size(ampmat{p},2));
                 meanspec=nanmean(a2(:));
                 peakspec=max(max(a(:,(size(ampmat{p},2)/10):size(ampmat{p},2))));
-                if guiHandlesSpec.ColormapSelect.Value==8 | guiHandlesSpec.ColormapSelect.Value==9
+                if get(guiHandlesSpec.ColormapSelect, 'Value')==8 | get(guiHandlesSpec.ColormapSelect, 'Value')==9
                     h=text(64,size(ampmat{p},2)*.04,['mean=' num2str(meanspec,3)]);
                     set(h,'Color','k','fontsize',fontsz,'fontweight','bold');
                     h=text(64,size(ampmat{p},2)*.13,['peak=' num2str(peakspec,3)]);
@@ -171,9 +165,9 @@ if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
                         
             grid on
             ax = gca;
-            ax.GridColor = [1 1 1]; 
-            if guiHandlesSpec.ColormapSelect.Value==8 | guiHandlesSpec.ColormapSelect.Value==9
-                ax.GridColor = [0 0 0]; % black on white background
+            set(ax, 'GridColor', [1 1 1]);
+            if get(guiHandlesSpec.ColormapSelect, 'Value')==8 | get(guiHandlesSpec.ColormapSelect, 'Value')==9
+                set(ax, 'GridColor', [0 0 0]); % black on white background
                 set(h,'Color',[0 0 0],'fontsize',fontsz,'fontweight','bold')             
             end
              ylabel('Frequency (Hz)','fontweight','bold') 
@@ -209,15 +203,15 @@ if guiHandlesSpec.checkbox2d.Value==0 && ~isempty(ampmat)
 
     % color maps
     % standard set (Octave: viridis replaces parula at index 1)
-    if guiHandlesSpec.ColormapSelect.Value<=7,
-        colormap(char(guiHandlesSpec.ColormapSelect.String(guiHandlesSpec.ColormapSelect.Value)));
+    if get(guiHandlesSpec.ColormapSelect, 'Value')<=7,
+        colormap(char(get(guiHandlesSpec.ColormapSelect, 'String')(get(guiHandlesSpec.ColormapSelect, 'Value'))));
     end
-    if guiHandlesSpec.ColormapSelect.Value==8, colormap(linearREDcmap); end
-    if guiHandlesSpec.ColormapSelect.Value==9, colormap(linearGREYcmap); end
+    if get(guiHandlesSpec.ColormapSelect, 'Value')==8, colormap(linearREDcmap); end
+    if get(guiHandlesSpec.ColormapSelect, 'Value')==9, colormap(linearGREYcmap); end
 
 end
 
-if guiHandlesSpec.checkbox2d.Value==1 && ~isempty(amp2d)
+if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
     figure(PTspecfig);
     try
     delete(hCbar1);delete(hCbar2);delete(hCbar3);delete(hCbar4)
@@ -233,40 +227,40 @@ if guiHandlesSpec.checkbox2d.Value==1 && ~isempty(amp2d)
         delete(subplot('position',posInfo.SpecPos(p,:)));
         if ~isempty(amp2d{p})
             h2=subplot('position',posInfo.SpecPos(p,:)); cla
-            h=plot(freq2d{p}, smooth(amp2d{p}, log10(size(amp2d{p},1)) * (guiHandlesSpec.smoothFactor_select.Value^2), 'lowess'));hold on
+            h=plot(freq2d{p}, smooth(amp2d{p}, log10(size(amp2d{p},1)) * (get(guiHandlesSpec.smoothFactor_select, 'Value')^2), 'lowess'));hold on
             set(h, 'linewidth', guiHandles.linewidth.Value/2)
             set(h2,'fontsize',fontsz,'fontweight','bold')
-            if guiHandlesSpec.specPresets.Value <= 3
+            if get(guiHandlesSpec.specPresets, 'Value') <= 3
                 set(h,'Color',[SpecLineCols(c1(p),:,1)])
             end
-            if guiHandlesSpec.specPresets.Value > 4 && guiHandlesSpec.specPresets.Value <= 6
+            if get(guiHandlesSpec.specPresets, 'Value') > 4 && get(guiHandlesSpec.specPresets, 'Value') <= 6
                 set(h,'Color',[SpecLineCols(c1(p),:,2)])
             end
-            if guiHandlesSpec.specPresets.Value > 6
+            if get(guiHandlesSpec.specPresets, 'Value') > 6
                 set(h,'Color',[SpecLineCols(c1(p),:,3)])
             end
             
-            if guiHandlesSpec.Sub100HzCheck{c1(p)}.Value==1
+            if get(guiHandlesSpec.Sub100HzCheck{c1(p)}, 'Value')==1
                 set(h2,'xtick',[0 20 40 60 80 100], 'yminortick','on')
-                axis([0 100 baselineYlines(guiHandlesSpec.checkboxPSD.Value+1) climScale(guiHandlesSpec.checkboxPSD.Value+1, c1(p))])
-                h=plot([round(Flim1) round(Flim1)],[baselineYlines(guiHandlesSpec.checkboxPSD.Value+1) climScale(guiHandlesSpec.checkboxPSD.Value+1, c1(p))],'k--');
+                axis([0 100 baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))])
+                h=plot([round(Flim1) round(Flim1)],[baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'k--');
                 set(h,'linewidth',1)
-                h=plot([round(Flim2) round(Flim2)],[baselineYlines(guiHandlesSpec.checkboxPSD.Value+1) climScale(guiHandlesSpec.checkboxPSD.Value+1, c1(p))],'k--');
+                h=plot([round(Flim2) round(Flim2)],[baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'k--');
                 set(h,'linewidth',1)
             else    
-                set(h2,'xtick',[0 : ((A_lograte(guiHandlesSpec.FileSelect{k}.Value) / 2) * 1000 / 5) : (A_lograte(guiHandlesSpec.FileSelect{k}.Value) / 2) * 1000],'yminortick','on')
-                axis([0 (A_lograte(guiHandlesSpec.FileSelect{k}.Value) / 2) * 1000 baselineYlines(guiHandlesSpec.checkboxPSD.Value+1) climScale(guiHandlesSpec.checkboxPSD.Value+1, c1(p))])
+                set(h2,'xtick',[0 : ((A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value')) / 2) * 1000 / 5) : (A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value')) / 2) * 1000],'yminortick','on')
+                axis([0 (A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value')) / 2) * 1000 baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))])
             end
 
             xlabel('Frequency (Hz)')
-            if guiHandlesSpec.checkboxPSD.Value
+            if get(guiHandlesSpec.checkboxPSD, 'Value')
                 ylabel(['PSD (dB)'])
             else
                 ylabel(['Amplitude'])
             end
                 
 
-            h=text(2,climScale(guiHandlesSpec.checkboxPSD.Value+1, c1(p))*.95,axLabel{c2(p)});
+            h=text(2,climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))*.95,axLabel{c2(p)});
             set(h,'Color',[.2 .2 .2],'fontsize',fontsz,'fontweight','bold')
 
             grid on

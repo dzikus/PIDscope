@@ -11,9 +11,9 @@ if ~isempty(fnameMaster)
     
 PTtunefig=figure(4);
 set(PTtunefig, 'units','normalized','outerposition',[.1 .1 .75 .8])
-PTtunefig.NumberTitle='on';
-PTtunefig.Name= ['PIDtoolbox (' PtbVersion ') - Step Response Tool'];
-PTtunefig.InvertHardcopy='off';
+set(PTtunefig, 'NumberTitle', 'on');
+set(PTtunefig, 'Name', ['PIDtoolbox (' PtbVersion ') - Step Response Tool']);
+set(PTtunefig, 'InvertHardcopy', 'off');
 set(PTtunefig,'color',bgcolor)
 
 updateStep=0;

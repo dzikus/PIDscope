@@ -77,9 +77,9 @@ climScale2=[0.5 ; 20];
 
 PTspecfig2=figure(3);
 set(PTspecfig2, 'units','normalized','outerposition',[.1 .1 .75 .8])
-PTspecfig2.NumberTitle='off';
-PTspecfig2.Name= ['PIDtoolbox (' PtbVersion ') - Spectral Analyzer'];
-PTspecfig2.InvertHardcopy='off';
+set(PTspecfig2, 'NumberTitle', 'off');
+set(PTspecfig2, 'Name', ['PIDtoolbox (' PtbVersion ') - Spectral Analyzer']);
+set(PTspecfig2, 'InvertHardcopy', 'off');
 set(PTspecfig2,'color',bgcolor);
 
 
@@ -94,26 +94,26 @@ specCrtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
  
 guiHandlesSpec2.computeSpec = uicontrol(PTspecfig2,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','outerposition',[posInfo.computeSpec],...
     'callback','PTplotSpec2D;');
-guiHandlesSpec2.computeSpec.ForegroundColor=[colRun];
+set(guiHandlesSpec2.computeSpec, 'ForegroundColor', colRun);
 
 guiHandlesSpec2.resetSpec = uicontrol(PTspecfig2,'string','Reset','fontsize',fontsz,'TooltipString', ['Reset Spectral Tool'],'units','normalized','outerposition',[posInfo.resetSpec],...
     'callback',' for k = 1 : 6, delete(subplot(''position'',posInfo.Spec2Pos(k,:))), end; set(PTspecfig2, ''pointer'', ''arrow'');');
-guiHandlesSpec2.resetSpec.ForegroundColor=[cautionCol];
+set(guiHandlesSpec2.resetSpec, 'ForegroundColor', cautionCol);
 
 guiHandlesSpec2.saveFig2 = uicontrol(PTspecfig2,'string','Save Fig','fontsize',fontsz,'TooltipString',[TooltipString_saveFig],'units','normalized','ForegroundColor',[saveCol],'outerposition',[posInfo.saveFig2],...
-    'callback','guiHandlesSpec2.saveFig2.FontWeight=''bold'';PTsaveFig;guiHandlesSpec2.saveFig2.FontWeight=''normal'';'); 
+    'callback','set(guiHandlesSpec2.saveFig2, ''FontWeight'', ''bold'');PTsaveFig;set(guiHandlesSpec2.saveFig2, ''FontWeight'', ''normal'');'); 
 
 guiHandlesSpec2.saveSettings2 = uicontrol(PTspecfig2,'string','Save Settings','fontsize',fontsz, 'TooltipString',['Save current settings to PTB defaults' ], 'units','normalized','outerposition',[posInfo.saveSettings2],...
-    'callback','guiHandlesSpec2.saveSettings2.FontWeight=''bold'';PTsaveSettings; guiHandlesSpec2.saveSettings2.FontWeight=''normal'';'); 
-guiHandlesSpec2.saveSettings2.ForegroundColor=[saveCol];
+    'callback','set(guiHandlesSpec2.saveSettings2, ''FontWeight'', ''bold'');PTsaveSettings; set(guiHandlesSpec2.saveSettings2, ''FontWeight'', ''normal'');');
+set(guiHandlesSpec2.saveSettings2, 'ForegroundColor', saveCol);
 
 % create string list for SpecSelect
 sA={'Gyro','Gyro prefilt','Dterm','Dterm prefilt','Pterm','PID error','Set point','PIDsum'};
 
-guiHandlesSpec2.SpecList = uicontrol(PTspecfig2,'Style','listbox','string',[sA],'max',3,'min',1, 'fontsize',fontsz, 'TooltipString',[TooltipString_user],'units','normalized','outerposition', [posInfo.TermListWindowSpec], 'callback', 'if length(guiHandlesSpec2.SpecList.Value) > 2, guiHandlesSpec2.SpecList.Value=1; end;');
-guiHandlesSpec2.SpecList.Value =[1 2];
+guiHandlesSpec2.SpecList = uicontrol(PTspecfig2,'Style','listbox','string',[sA],'max',3,'min',1, 'fontsize',fontsz, 'TooltipString',[TooltipString_user],'units','normalized','outerposition', [posInfo.TermListWindowSpec], 'callback', 'if length(get(guiHandlesSpec2.SpecList, ''Value'')) > 2, set(guiHandlesSpec2.SpecList, ''Value'', 1); end;');
+set(guiHandlesSpec2.SpecList, 'Value', [1 2]);
  
-guiHandlesSpec2.FileSelect = uicontrol(PTspecfig2,'Style','listbox','string',[fnameMaster],'max', 10, 'min', 1, 'fontsize',fontsz,'TooltipString',[TooltipString_user],'units','normalized','outerposition', [posInfo.fileListWindowSpec], 'callback', 'if length(guiHandlesSpec2.FileSelect.Value) > 10, guiHandlesSpec2.FileSelect.Value=1; end;');
+guiHandlesSpec2.FileSelect = uicontrol(PTspecfig2,'Style','listbox','string',[fnameMaster],'max', 10, 'min', 1, 'fontsize',fontsz,'TooltipString',[TooltipString_user],'units','normalized','outerposition', [posInfo.fileListWindowSpec], 'callback', 'if length(get(guiHandlesSpec2.FileSelect, ''Value'')) > 10, set(guiHandlesSpec2.FileSelect, ''Value'', 1); end;');
 
 guiHandlesSpec2.smoothFactor_select = uicontrol(PTspecfig2,'style','popupmenu','string',{'smoothing low' 'smoothing low-med' 'smoothing medium' 'smoothing med-high' 'smoothing high'},'fontsize',fontsz,'TooltipString', [TooltipString_smooth], 'units','normalized','outerposition',[posInfo.smooth_select],...
      'callback','@selection2;PTplotSpec2D;');

@@ -79,25 +79,25 @@ guiHandles.checkbox13=uicontrol(PTfig,'Style','checkbox','String','Motor 4','fon
 guiHandles.checkbox14=uicontrol(PTfig,'Style','checkbox','String','Throttle','fontsize',fontsz,'ForegroundColor',[linec.col14],'BackgroundColor',bgcolor,...
     'units','normalized','outerposition',[posInfo.checkbox14],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 
-guiHandles.checkbox1.Value=1;
-guiHandles.checkbox7.Value=1;
-guiHandles.checkbox10.Value=1;
-guiHandles.checkbox11.Value=1;
-guiHandles.checkbox12.Value=1;
-guiHandles.checkbox13.Value=1;
-guiHandles.checkbox14.Value=1;
+set(guiHandles.checkbox1, 'Value', 1);
+set(guiHandles.checkbox7, 'Value', 1);
+set(guiHandles.checkbox10, 'Value', 1);
+set(guiHandles.checkbox11, 'Value', 1);
+set(guiHandles.checkbox12, 'Value', 1);
+set(guiHandles.checkbox13, 'Value', 1);
+set(guiHandles.checkbox14, 'Value', 1);
 
 guiHandles.checkbox15=uicontrol(PTfig,'Style','checkbox','String','All','fontsize',fontsz,'TooltipString', ['Plot or clear all lines '],'ForegroundColor',[linec.col15],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox15],'callback','if ~isempty(fnameMaster), plotall_flag=guiHandles.checkbox15.Value; PTplotLogViewer; end');
+    'units','normalized','outerposition',[posInfo.checkbox15],'callback','if ~isempty(fnameMaster), plotall_flag=get(guiHandles.checkbox15, ''Value''); PTplotLogViewer; end');
  
 TooltipString_FileNum=['Select the file you wish to plot in the logviewer. '];
 guiHandles.FileNum = uicontrol(PTfig,'Style','popupmenu','string',[fnameMaster],'TooltipString', [TooltipString_FileNum],...
-    'fontsize',fontsz, 'units','normalized','outerposition', [posInfo.fnameAText],'callback','if ~isempty(fnameMaster), set(zoom, ''Enable'',''off''), expandON=0; PTplotLogViewer; if ~isempty(filenameA) && guiHandles.startEndButton.Value, [x y] = ginput(1); epoch1_A(guiHandles.FileNum.Value) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(guiHandles.FileNum.Value) = round(x(1)*10)/10; PTplotLogViewer, end, end');
+    'fontsize',fontsz, 'units','normalized','outerposition', [posInfo.fnameAText],'callback','if ~isempty(fnameMaster), set(zoom, ''Enable'',''off''), expandON=0; PTplotLogViewer; if ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer, end, end');
 
             
-if isempty(epoch1_A(guiHandles.FileNum.Value)) || isempty(epoch2_A(guiHandles.FileNum.Value))
-    epoch1_A(guiHandles.FileNum.Value)=tta{guiHandles.FileNum.Value}(1)/us2sec;
-    epoch2_A(guiHandles.FileNum.Value)=tta{guiHandles.FileNum.Value}(end)/us2sec;
+if isempty(epoch1_A(get(guiHandles.FileNum, 'Value'))) || isempty(epoch2_A(get(guiHandles.FileNum, 'Value')))
+    epoch1_A(get(guiHandles.FileNum, 'Value'))=tta{get(guiHandles.FileNum, 'Value')}(1)/us2sec;
+    epoch2_A(get(guiHandles.FileNum, 'Value'))=tta{get(guiHandles.FileNum, 'Value')}(end)/us2sec;
 end
 
 % set IND for data subset. Updated in logviewer.
@@ -112,7 +112,7 @@ guiHandles.maxY_input = uicontrol(PTfig,'style','edit','string',int2str(maxY),'f
  
 guiHandles.nCols_text = uicontrol(PTfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.nCols_text]);
 guiHandles.nCols_input = uicontrol(PTfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','outerposition',[posInfo.nCols_input],...
-     'callback','if str2num(guiHandles.nCols_input.String) > 20, guiHandles.nCols_input.String = ''20''; end; if str2num(guiHandles.nCols_input.String) < 1, guiHandles.nCols_input.String = ''1''; end; multiLineCols=PTlinecmap(str2num(guiHandles.nCols_input.String)); ');
+     'callback','if str2num(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2num(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PTlinecmap(str2num(get(guiHandles.nCols_input, ''String''))); ');
  
 subplot('position',[posInfo.YTstick]); 
 set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on'); 
@@ -121,7 +121,7 @@ subplot('position',[posInfo.RPstick])
 set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on'); 
 box on
 
-try guiHandles.maxY_input.String = num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ymax')))), catch, end
-try guiHandles.nCols_input.String = num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ncolors')))), catch, end
+try set(guiHandles.maxY_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ymax'))))), catch, end
+try set(guiHandles.nCols_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ncolors'))))), catch, end
 
 

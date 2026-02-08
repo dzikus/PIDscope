@@ -11,9 +11,9 @@ if ~isempty(filenameA) || ~isempty(filenameB)
 
 PTstatsfig=figure(6);
 set(PTstatsfig, 'units','normalized','outerposition',[.1 .1 .75 .8])
-PTstatsfig.NumberTitle='off';
-PTstatsfig.Name= ['PIDtoolbox (' PtbVersion ') - Flight stats'];
-PTstatsfig.InvertHardcopy='off';
+set(PTstatsfig, 'NumberTitle', 'off');
+set(PTstatsfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Flight stats']);
+set(PTstatsfig, 'InvertHardcopy', 'off');
 set(PTstatsfig,'color',bgcolor)
 
 TooltipString_degsecStick=['Plots rate curve (Histograms Figs) in terms of degs per sec per stick-travel units, or how fast one''s rates change across stick travel '];

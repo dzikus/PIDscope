@@ -12,9 +12,9 @@ if ~isempty(filenameA) || ~isempty(filenameB)
       
 PTerrfig=figure(3);
 set(PTerrfig, 'units','normalized','outerposition',[.1 .1 .75 .8])
-PTerrfig.NumberTitle='off';
-PTerrfig.Name= ['PIDtoolbox (' PtbVersion ') - PID Error Tool'];
-PTerrfig.InvertHardcopy='off';
+set(PTerrfig, 'NumberTitle', 'off');
+set(PTerrfig, 'Name', ['PIDtoolbox (' PtbVersion ') - PID Error Tool']);
+set(PTerrfig, 'InvertHardcopy', 'off');
 set(PTerrfig,'color',bgcolor)
 
 prop_max_screen=(max([PTerrfig.Position(3) PTerrfig.Position(4)]));
