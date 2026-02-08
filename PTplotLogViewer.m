@@ -120,8 +120,10 @@ if ~isempty(fnameMaster)
     end
 
             
-    dcm_obj = datacursormode(PTfig);
-    set(dcm_obj,'UpdateFcn',@PTdatatip);
+    try  % datacursormode not available in Octave
+      dcm_obj = datacursormode(PTfig);
+      set(dcm_obj,'UpdateFcn',@PTdatatip);
+    end
 
     cntLV = 0;
     lnstyle = lineStyleLV;

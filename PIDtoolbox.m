@@ -11,6 +11,22 @@
 
 PtbVersion='v0.58';
 
+%% Octave compatibility setup
+isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;
+if isOctave
+  % Load required Octave packages (suppress warnings if already loaded)
+  try pkg load signal; end
+  try pkg load statistics; end
+  try pkg load control; end
+  try pkg load image; end
+  % Add compat/ shims for MATLAB functions not available in Octave
+  % (smooth, finddelay, nanmean, nanmedian)
+  compat_dir = fullfile(fileparts(mfilename('fullpath')), 'compat');
+  if exist(compat_dir, 'dir')
+    addpath(compat_dir);
+  end
+end
+
 executableDir = cd('/');
 
 setupStr = {'SET UP WORKING DIRECTORY!', ' ', 'Before running PIDtoolbox, we have to determine the location of your ''main'' directory. After you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDtoolbox_' PtbVersion '_osx\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'}
@@ -35,7 +51,7 @@ FEEDFORWARD = 59;
 FFT_FREQ = 17;
 
 t = now;
-currentDate = char(datetime(t,'ConvertFrom','datenum')); 
+currentDate = datestr(t, 'yyyy-mm-dd HH:MM:SS'); % Octave compatible (was: datetime)
 currentDate = currentDate(1:strfind(currentDate,' ')-1);
 
 set(0,'defaultUicontrolFontName', 'Helvetica')

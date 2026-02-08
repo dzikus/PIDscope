@@ -8,18 +8,18 @@
 % ----------------------------------------------------------------------------------
 
 if ~isempty(fnameMaster) 
-    if Nfiles < 2 
-        str=strings(size(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo,1),1);
-        str(:)=':'; str2=strcat(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,1), char(str));
-        setupA=strcat(str2, string(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,2))); 
+    if Nfiles < 2
+        str=repmat({':'}, size(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo,1), 1); % Octave compatible (was: strings)
+        str2=strcat(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,1), str);
+        setupA=strcat(str2, dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,2)); % Octave compatible (was: string())
     else
-        str=strings(size(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo,1),1);
-        str(:)=':'; str2=strcat(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,1), char(str));
-        setupA=strcat(str2, string(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,2))); 
-        
-        str=strings(size(dataA(guiHandlesInfo.FileNumDispB.Value).SetupInfo,1),1);
-        str(:)=':'; str2=strcat(dataA(guiHandlesInfo.FileNumDispB.Value).SetupInfo(:,1), char(str));
-        setupB=strcat(str2, string(dataA(guiHandlesInfo.FileNumDispB.Value).SetupInfo(:,2)));
+        str=repmat({':'}, size(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo,1), 1);
+        str2=strcat(dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,1), str);
+        setupA=strcat(str2, dataA(guiHandlesInfo.FileNumDispA.Value).SetupInfo(:,2));
+
+        str=repmat({':'}, size(dataA(guiHandlesInfo.FileNumDispB.Value).SetupInfo,1), 1);
+        str2=strcat(dataA(guiHandlesInfo.FileNumDispB.Value).SetupInfo(:,1), str);
+        setupB=strcat(str2, dataA(guiHandlesInfo.FileNumDispB.Value).SetupInfo(:,2));
     end
      
     BGCol = [];
