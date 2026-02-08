@@ -54,7 +54,7 @@ for k = 1 : length(tmpSpecVal)
     s = char(datSelectionString(tmpSpecVal(k)));
     for f = 1 : size(tmpFileVal,2)
         for a = axesOptionsSpec
-            if  ( ( ~isempty(strfind(s,'axisD'))) & a==3) | isempty(s)
+            if  ( ( ~isempty(strfind(s,'axisD'))) && a==3) || isempty(s)
                 p=p+1;
                 smat{p}=[];%string
                 amp2d2{p}=[];%spec 2d

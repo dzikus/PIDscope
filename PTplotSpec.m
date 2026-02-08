@@ -30,16 +30,16 @@ for i = 1 : size(f,1)
 end
 
 guiHandlesSpec.climMax_input = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 1)=str2num(get(guiHandlesSpec.climMax_input, 'String'));updateSpec=1;PTplotSpec;');
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec.climMax_input, ''String''));updateSpec=1;PTplotSpec;');
 
 guiHandlesSpec.climMax_input2 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 2))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input2],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 2)=str2num(get(guiHandlesSpec.climMax_input2, 'String'));updateSpec=1;PTplotSpec;');
- 
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 2)=str2num(get(guiHandlesSpec.climMax_input2, ''String''));updateSpec=1;PTplotSpec;');
+
 guiHandlesSpec.climMax_input3 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 3))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input3],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 3)=str2num(get(guiHandlesSpec.climMax_input3, 'String'));updateSpec=1;PTplotSpec;');
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 3)=str2num(get(guiHandlesSpec.climMax_input3, ''String''));updateSpec=1;PTplotSpec;');
  
 guiHandlesSpec.climMax_input4 = uicontrol(PTspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 4))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input4],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 4)=str2num(get(guiHandlesSpec.climMax_input4, 'String'));updateSpec=1;PTplotSpec;');
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 4)=str2num(get(guiHandlesSpec.climMax_input4, ''String''));updateSpec=1;PTplotSpec;');
 
 %%
 
