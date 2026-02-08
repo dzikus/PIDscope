@@ -120,11 +120,11 @@ guiHandlesSpec2.smoothFactor_select = uicontrol(PTspecfig2,'style','popupmenu','
 
 guiHandlesSpec2.spectrogramButton2 = uicontrol(PTspecfig2,'string','Freq x Throttle','fontsize',fontsz,'TooltipString', ['Opens Freq x Throttle Spectrogram in New Window'], 'units','normalized','outerposition',[posInfo.spectrogramButton2],...
     'callback','PTspecUIcontrol;');
-guiHandlesSpec2.spectrogramButton2.ForegroundColor=[colorA];
+set(guiHandlesSpec2.spectrogramButton2, 'ForegroundColor', colorA);
 
  guiHandlesSpec2.spectrogramButton3 = uicontrol(PTspecfig2,'string','Freq x Time','fontsize',fontsz,'TooltipString', ['Opens Freq x Time Spectrogram in New Window'], 'units','normalized','outerposition',[posInfo.spectrogramButton3],...
      'callback','PTfreqTimeUIcontrol;');
- guiHandlesSpec2.spectrogramButton3.ForegroundColor=[colorB];
+ set(guiHandlesSpec2.spectrogramButton3, 'ForegroundColor', colorB);
  
  guiHandlesSpec2.Delay = uicontrol(PTspecfig2,'style','popupmenu','string',{'filter delay', 'SP-gyro delay', 'SP smoothing delay', 'phase shift'},'fontsize',fontsz,'TooltipString', ['Select which Delay Display'], 'units','normalized','outerposition',[posInfo.Delay],...
      'callback','PTplotSpec2D;');
@@ -140,27 +140,27 @@ guiHandlesSpec2.plotY =uicontrol(PTspecfig2,'Style','checkbox','String','Y','fon
 
 guiHandlesSpec2.checkboxPSD =uicontrol(PTspecfig2,'Style','checkbox','String','PSD','fontsize',fontsz,'TooltipString', ['Power Spectral Density'],...
     'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.checkboxPSD],'callback', 'PTplotSpec2D;');
-guiHandlesSpec2.checkboxPSD.Value = 1;
+set(guiHandlesSpec2.checkboxPSD, 'Value', 1);
 
 guiHandlesSpec2.RPYcomboSpec =uicontrol(PTspecfig2,'Style','checkbox','String','Single Panel','fontsize',fontsz,'TooltipString', ['Plot RPY in same panel '],...
     'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.RPYcomboSpec],'callback', 'PTplotSpec2D;');
 
 guiHandlesSpec2.climMax1_text = uicontrol(PTspecfig2,'style','text','string','Y min','fontsize',fontsz,'TooltipString',['Y min'],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.climMax1_text]);
-guiHandlesSpec2.climMax1_input = uicontrol(PTspecfig2,'style','edit','string',[num2str(climScale1(guiHandlesSpec2.checkboxPSD.Value+1, 1))],'fontsize',fontsz,'TooltipString',['Y min'],'units','normalized','outerposition',[posInfo.climMax1_input],...
-     'callback','@textinput_call2; climScale1(guiHandlesSpec2.checkboxPSD.Value+1, 1)=str2num(guiHandlesSpec2.climMax1_input.String);PTplotSpec2D;');
+guiHandlesSpec2.climMax1_input = uicontrol(PTspecfig2,'style','edit','string',[num2str(climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y min'],'units','normalized','outerposition',[posInfo.climMax1_input],...
+     'callback','@textinput_call2; climScale1(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec2.climMax1_input, ''String''));PTplotSpec2D;');
 
  guiHandlesSpec2.climMax2_text = uicontrol(PTspecfig2,'style','text','string','Y max','fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.climMax2_text]);
-guiHandlesSpec2.climMax2_input = uicontrol(PTspecfig2,'style','edit','string',[num2str(climScale2(guiHandlesSpec2.checkboxPSD.Value+1, 1))],'fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','outerposition',[posInfo.climMax2_input],...
-     'callback','@textinput_call2; climScale2(guiHandlesSpec2.checkboxPSD.Value+1, 1)=str2num(guiHandlesSpec2.climMax2_input.String);PTplotSpec2D;');
+guiHandlesSpec2.climMax2_input = uicontrol(PTspecfig2,'style','edit','string',[num2str(climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','outerposition',[posInfo.climMax2_input],...
+     'callback','@textinput_call2; climScale2(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec2.climMax2_input, ''String''));PTplotSpec2D;');
 
 
-try guiHandlesSpec2.SpecList.Value = [defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term1'))) defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term2')))]; catch, guiHandlesSpec2.SpecList.Value = [1 2], end
-try guiHandlesSpec2.smoothFactor_select.Value = defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-smoothing'))), catch, guiHandlesSpec2.smoothFactor_select.Value = 3, end
-try guiHandlesSpec2.Delay.Value = defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-delay'))), catch, guiHandlesSpec2.Delay.Value = 1, end
-try guiHandlesSpec2.plotR.Value = defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-plotR'))), catch, guiHandlesSpec2.plotR.Value = 1, end
-try guiHandlesSpec2.plotP.Value = defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-plotP'))), catch, guiHandlesSpec2.plotP.Value = 1, end
-try guiHandlesSpec2.plotY.Value = defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-plotY'))), catch, guiHandlesSpec2.plotY.Value = 1, end
-try guiHandlesSpec2.RPYcomboSpec.Value = defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-SinglePanel'))), catch, guiHandlesSpec2.RPYcomboSpec.Value = 0, end
+try set(guiHandlesSpec2.SpecList, 'Value', [defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term1'))) defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term2')))]), catch, set(guiHandlesSpec2.SpecList, 'Value', [1 2]), end
+try set(guiHandlesSpec2.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-smoothing')))), catch, set(guiHandlesSpec2.smoothFactor_select, 'Value', 3), end
+try set(guiHandlesSpec2.Delay, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-delay')))), catch, set(guiHandlesSpec2.Delay, 'Value', 1), end
+try set(guiHandlesSpec2.plotR, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-plotR')))), catch, set(guiHandlesSpec2.plotR, 'Value', 1), end
+try set(guiHandlesSpec2.plotP, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-plotP')))), catch, set(guiHandlesSpec2.plotP, 'Value', 1), end
+try set(guiHandlesSpec2.plotY, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-plotY')))), catch, set(guiHandlesSpec2.plotY, 'Value', 1), end
+try set(guiHandlesSpec2.RPYcomboSpec, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-SinglePanel')))), catch, set(guiHandlesSpec2.RPYcomboSpec, 'Value', 0), end
 
 
 FilterDelayDterm={};
