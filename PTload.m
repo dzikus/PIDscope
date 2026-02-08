@@ -20,7 +20,7 @@ try
         maxMotorOutput=2000; 
 
    %     set(PTfig, 'pointer', 'watch')
-        set(guiHandles.runAll, 'FontWeight', 'Bold');
+        set(guiHandles.fileA, 'FontWeight', 'Bold');
 
         pause(.2)
         

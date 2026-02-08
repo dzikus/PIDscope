@@ -60,18 +60,19 @@ if ~isempty(fnameMaster)
 
 
     %% where you want full range of data
+    fileIdx = get(guiHandles.FileNum, 'Value');
 
-    % if start or end > length of file, or start > end  
-    if (epoch1_A(get(guiHandles.FileNum, 'Value')) > (tta{(get(guiHandles.FileNum, 'Value'))}(end) / us2sec))  ||  (epoch2_A(get(guiHandles.FileNum, 'Value')) > (tta{(get(guiHandles.FileNum, 'Value'))}(end) / us2sec)) || (epoch1_A(get(guiHandles.FileNum, 'Value')) > epoch2_A(get(guiHandles.FileNum, 'Value')))
-        epoch1_A(get(guiHandles.FileNum, 'Value')) = 2;
-        epoch2_A(get(guiHandles.FileNum, 'Value')) = floor(tta{(get(guiHandles.FileNum, 'Value'))}(end) / us2sec) - 1;
+    % if start or end > length of file, or start > end
+    if (epoch1_A(fileIdx) > (tta{fileIdx}(end) / us2sec))  ||  (epoch2_A(fileIdx) > (tta{fileIdx}(end) / us2sec)) || (epoch1_A(fileIdx) > epoch2_A(fileIdx))
+        epoch1_A(fileIdx) = 2;
+        epoch2_A(fileIdx) = floor(tta{fileIdx}(end) / us2sec) - 1;
     end
 
-     y=[epoch1_A(get(guiHandles.FileNum, 'Value'))*us2sec epoch2_A(get(guiHandles.FileNum, 'Value'))*us2sec];%%% used for fill in unused data range
-     t1=(tta{(get(guiHandles.FileNum, 'Value'))}(find(tta{(get(guiHandles.FileNum, 'Value'))}>y(1),1))) / us2sec;
-     t2=(tta{(get(guiHandles.FileNum, 'Value'))}(find(tta{(get(guiHandles.FileNum, 'Value'))}>y(2),1))) / us2sec;  
+     y=[epoch1_A(fileIdx)*us2sec epoch2_A(fileIdx)*us2sec];%%% used for fill in unused data range
+     t1=(tta{fileIdx}(find(tta{fileIdx}>y(1),1))) / us2sec;
+     t2=(tta{fileIdx}(find(tta{fileIdx}>y(2),1))) / us2sec;
 
-    tIND{get(guiHandles.FileNum, 'Value')} = (tta{get(guiHandles.FileNum, 'Value')} > (t1*us2sec)) & (tta{get(guiHandles.FileNum, 'Value')} < (t2*us2sec));
+    tIND{fileIdx} = (tta{fileIdx} > (t1*us2sec)) & (tta{fileIdx} < (t2*us2sec));
 
 %     jRangeSlider = com.jidesoft.swing.RangeSlider(0,200,10,190);  % min,max,low,high
 %     jRangeSlider = javacomponent(jRangeSlider,[50, 80, 500, 80], gcf);
@@ -159,7 +160,7 @@ if ~isempty(fnameMaster)
                     lnstyle = lineStyleLV;
                 end
 
-                xmax=max(tta{get(guiHandles.FileNum, 'Value')}/us2sec); 
+                xmax=max(tta{fileIdx}/us2sec);
 
 
                 h=plot([0 xmax],[-maxY -maxY],'k');
@@ -170,17 +171,19 @@ if ~isempty(fnameMaster)
                 set(gca,'xtick',[round(xmax/10):round(xmax/10):round(xmax)],'XColor',[.2 .2 .2])  
 
                 sFactor = lineSmoothFactors(get(guiHandles.lineSmooth, 'Value'));
+                fileIdx = get(guiHandles.FileNum, 'Value');
+                lwVal = get(guiHandles.linewidth, 'Value')/2;
 
-                if get(guiHandles.checkbox0, 'Value'), hch1=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.debug_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch1,'color', [linec.col0],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox1, 'Value'), hch2=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.gyroADC_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch2,'color', [linec.col1],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox2, 'Value'), hch3=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.axisP_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch3,'color', [linec.col2],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox3, 'Value'), hch4=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.axisI_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch4,'color', [linec.col3],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox4, 'Value') && ii<3, hch5=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.axisDpf_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch5,'color', [linec.col4],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox5, 'Value') && ii<3, hch6=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.axisD_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch6,'color', [linec.col5],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox6, 'Value'), hch7=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.axisF_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch7,'color', [linec.col6],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox7, 'Value'), hch8=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.setpoint_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch8,'color', [linec.col7],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox8, 'Value'), hch9=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.pidsum_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch9,'color', [linec.col8],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox9, 'Value'), hch10=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, eval([ 'smooth(T{get(guiHandles.FileNum, 'Value')}.piderr_' int2str(ii-1) '_, sFactor, ''loess'')' ]));hold on;set(hch10,'color', [linec.col9],'LineWidth',get(guiHandles.linewidth, 'Value')/2,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox0, 'Value'), hch1=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['debug_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch1,'color', [linec.col0],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox1, 'Value'), hch2=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['gyroADC_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch2,'color', [linec.col1],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox2, 'Value'), hch3=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisP_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch3,'color', [linec.col2],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox3, 'Value'), hch4=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisI_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch4,'color', [linec.col3],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox4, 'Value') && ii<3, hch5=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisDpf_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch5,'color', [linec.col4],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox5, 'Value') && ii<3, hch6=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisD_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch6,'color', [linec.col5],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox6, 'Value'), hch7=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisF_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch7,'color', [linec.col6],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox7, 'Value'), hch8=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['setpoint_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch8,'color', [linec.col7],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox8, 'Value'), hch9=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['pidsum_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch9,'color', [linec.col8],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox9, 'Value'), hch10=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['piderr_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch10,'color', [linec.col9],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
 
     
                  h=fill([0,t1,t1,0],[-maxY,-maxY,maxY,maxY],[.8 .8 .8]);
@@ -211,17 +214,17 @@ if ~isempty(fnameMaster)
                 
                             %  Percent variables
                 LVpanel5 = subplot('position',posInfo.linepos4);
-                if get(guiHandles.checkbox10, 'Value'), hch11=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_0_, sFactor, 'loess')) );hold on;set(hch11,'color', [linec.col10],'LineWidth',get(guiHandles.linewidth, 'Value')/2), end
-                if get(guiHandles.checkbox11, 'Value'), hch12=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_1_, sFactor, 'loess')) );hold on;set(hch12,'color', [linec.col11],'LineWidth',get(guiHandles.linewidth, 'Value')/2), end
-                if get(guiHandles.checkbox12, 'Value'), hch13=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_2_, sFactor, 'loess')) );hold on;set(hch13,'color', [linec.col12],'LineWidth',get(guiHandles.linewidth, 'Value')/2), end
-                if get(guiHandles.checkbox13, 'Value'), hch14=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_3_, sFactor, 'loess')) );hold on;set(hch14,'color', [linec.col13],'LineWidth',get(guiHandles.linewidth, 'Value')/2), end
+                if get(guiHandles.checkbox10, 'Value'), hch11=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_0_, sFactor, 'loess'));hold on;set(hch11,'color', [linec.col10],'LineWidth',lwVal), end
+                if get(guiHandles.checkbox11, 'Value'), hch12=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_1_, sFactor, 'loess'));hold on;set(hch12,'color', [linec.col11],'LineWidth',lwVal), end
+                if get(guiHandles.checkbox12, 'Value'), hch13=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_2_, sFactor, 'loess'));hold on;set(hch13,'color', [linec.col12],'LineWidth',lwVal), end
+                if get(guiHandles.checkbox13, 'Value'), hch14=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_3_, sFactor, 'loess'));hold on;set(hch14,'color', [linec.col13],'LineWidth',lwVal), end
                 % motor sigs 4-7 for x8 configuration
-                if get(guiHandles.checkbox10, 'Value'), try hch15=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_4_, sFactor, 'loess')) );hold on;set(hch15,'color', [linec.col10],'LineWidth',get(guiHandles.linewidth, 'Value')/2, 'LineStyle', '--'), catch, end, end
-                if get(guiHandles.checkbox11, 'Value'), try hch16=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_5_, sFactor, 'loess')) );hold on;set(hch16,'color', [linec.col11],'LineWidth',get(guiHandles.linewidth, 'Value')/2, 'LineStyle', '--'), catch, end, end
-                if get(guiHandles.checkbox12, 'Value'), try hch17=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_6_, sFactor, 'loess')) );hold on;set(hch17,'color', [linec.col12],'LineWidth',get(guiHandles.linewidth, 'Value')/2, 'LineStyle', '--'), catch, end, end
-                if get(guiHandles.checkbox13, 'Value'), try hch18=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.motor_7_, sFactor, 'loess')) );hold on;set(hch18,'color', [linec.col13],'LineWidth',get(guiHandles.linewidth, 'Value')/2, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox10, 'Value'), try hch15=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_4_, sFactor, 'loess'));hold on;set(hch15,'color', [linec.col10],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox11, 'Value'), try hch16=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_5_, sFactor, 'loess'));hold on;set(hch16,'color', [linec.col11],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox12, 'Value'), try hch17=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_6_, sFactor, 'loess'));hold on;set(hch17,'color', [linec.col12],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox13, 'Value'), try hch18=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_7_, sFactor, 'loess'));hold on;set(hch18,'color', [linec.col13],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
 
-                if get(guiHandles.checkbox14, 'Value'), hch19=plot(tta{get(guiHandles.FileNum, 'Value')}/us2sec, (smooth(T{get(guiHandles.FileNum, 'Value')}.setpoint_3_/10, sFactor, 'loess')) );hold on;set(hch19,'color', [linec.col14],'LineWidth',get(guiHandles.linewidth, 'Value')/2), end
+                if get(guiHandles.checkbox14, 'Value'), hch19=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.setpoint_3_/10, sFactor, 'loess'));hold on;set(hch19,'color', [linec.col14],'LineWidth',lwVal), end
 
                 axis([0 xmax 0 100])
                 

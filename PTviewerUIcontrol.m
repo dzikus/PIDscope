@@ -95,9 +95,10 @@ guiHandles.FileNum = uicontrol(PTfig,'Style','popupmenu','string',[fnameMaster],
     'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText],'callback','if ~isempty(fnameMaster), set(zoom, ''Enable'',''off''), expandON=0; PTplotLogViewer; if ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer, end, end');
 
             
-if isempty(epoch1_A(get(guiHandles.FileNum, 'Value'))) || isempty(epoch2_A(get(guiHandles.FileNum, 'Value')))
-    epoch1_A(get(guiHandles.FileNum, 'Value'))=tta{get(guiHandles.FileNum, 'Value')}(1)/us2sec;
-    epoch2_A(get(guiHandles.FileNum, 'Value'))=tta{get(guiHandles.FileNum, 'Value')}(end)/us2sec;
+fileIdx = get(guiHandles.FileNum, 'Value');
+if numel(epoch1_A) < fileIdx || numel(epoch2_A) < fileIdx
+    epoch1_A(fileIdx)=tta{fileIdx}(1)/us2sec;
+    epoch2_A(fileIdx)=tta{fileIdx}(end)/us2sec;
 end
 
 % set IND for data subset. Updated in logviewer.

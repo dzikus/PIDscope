@@ -43,7 +43,7 @@ else
 end
 cd(configDir)
 if isempty(dir(['mainDir-PTB' PtbVersion '.txt']))
-    uiwait(helpdlg(setupStr))
+    uiwait(helpdlg(setupStr));
     main_directory = uigetdir('Navigate to Main folder');
     fid = fopen(['mainDir-PTB' PtbVersion '.txt'],'w');
     fprintf(fid,'%s\n',main_directory);
@@ -210,7 +210,7 @@ TooltipString_selectButton = ['With box checked, position mouse over desired sta
 guiHandles.Firmware = uicontrol(PTfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
 
 guiHandles.fileA = uicontrol(PTfig,'string','Select ','fontsize',fontsz,'TooltipString', [TooltipString_loadRun], 'units','normalized','Position',[posInfo.fileA],...
-     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); [filenameA, filepathA] = uigetfile({[logfile_directory ''*.BBL;*.BFL;*.TXT'']}, ''MultiSelect'',''on''); if isstr(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PTload; PTviewerUIcontrol; PTplotLogViewer; end'); 
+     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); [filenameA, filepathA] = uigetfile({[logfile_directory ''*.BBL;*.BFL;*.TXT'']}, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PTload; PTviewerUIcontrol; PTplotLogViewer; end'); 
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PTfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
