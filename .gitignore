@@ -1,0 +1,8 @@
+blackbox_decode
+blackbox_decode_INAV
+*.csv
+*.bbl
+*.bfl
+*.swp
+*.swo
+*~
