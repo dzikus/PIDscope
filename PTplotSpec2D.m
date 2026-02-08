@@ -180,7 +180,7 @@ for k = 1 : length(tmpSpecVal)
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' num2str(gyro_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             else
-                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f)))) 'deg']);
+                                h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(get(guiHandlesSpec2.FileSelect, 'Value')(f))) 'deg']);
                                 set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
                             end
                         end
