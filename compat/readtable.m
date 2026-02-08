@@ -3,6 +3,9 @@ function T = readtable(filename, varargin)
 % Drop-in replacement for MATLAB's readtable() returning a struct
 % with columns accessible via dot notation (T.colname).
 %
+% Copyright (C) 2026 Grzegorz Sterniczuk
+% License: GPL v3 (see LICENSE)
+%
 % Usage:
 %   T = readtable(filename)
 %   T = readtable(filename, 'HeaderLines', N)
@@ -45,12 +48,71 @@ function T = readtable(filename, varargin)
 
   % Parse column names from header
   col_names = strsplit(strtrim(header_line), ',');
-  % Sanitize column names for use as struct field names
   clean_names = sanitize_varnames(col_names);
   ncols = length(clean_names);
 
-  % Read all remaining data
-  % Try numeric first, fall back to mixed
+  % Read first data line to detect column types
+  first_data_line = fgetl(fid);
+  if ~ischar(first_data_line)
+    fclose(fid);
+    T = struct();
+    for j = 1:ncols
+      T.(clean_names{j}) = [];
+    end
+    T.Properties = struct('VariableNames', {clean_names});
+    return;
+  end
+
+  % Detect which columns are numeric vs string
+  is_numeric = true(1, ncols);
+  first_fields = strsplit(first_data_line, ',');
+  for j = 1:min(length(first_fields), ncols)
+    val = strtrim(first_fields{j});
+    num = str2double(val);
+    % Non-numeric value, or column header contains "flags" -> force string
+    if (isnan(num) && ~strcmpi(val, 'nan')) || ~isempty(regexpi(col_names{j}, 'flags'))
+      is_numeric(j) = false;
+    end
+  end
+
+  % Build format string based on detected types
+  fmt_parts = cell(1, ncols);
+  for j = 1:ncols
+    if is_numeric(j)
+      fmt_parts{j} = '%f';
+    else
+      fmt_parts{j} = '%s';
+    end
+  end
+  fmt_str = strjoin(fmt_parts, '');
+
+  % Rewind to start of data (skip headerlines + column header line)
+  frewind(fid);
+  for i = 1:(headerlines + 1)
+    fgetl(fid);
+  end
+
+  % Use textscan directly on file handle - orders of magnitude faster
+  % than reading lines into cells and joining them
+  C = textscan(fid, fmt_str, 'Delimiter', ',', 'EmptyValue', NaN);
+  fclose(fid);
+
+  if length(C) == ncols && ~isempty(C{1})
+    T = struct();
+    for j = 1:ncols
+      T.(clean_names{j}) = C{j};
+    end
+    T.Properties = struct('VariableNames', {clean_names});
+    return;
+  end
+
+  % Fallback: reopen and parse line by line (slow, for edge cases)
+  warning('readtable: textscan returned %d/%d columns, falling back to line-by-line', length(C), ncols);
+  fid = fopen(filename, 'r');
+  for i = 1:(headerlines + 1)
+    fgetl(fid);
+  end
+
   data_lines = {};
   while ~feof(fid)
     line = fgetl(fid);
@@ -60,39 +122,7 @@ function T = readtable(filename, varargin)
   end
   fclose(fid);
 
-  if isempty(data_lines)
-    T = struct();
-    for j = 1:ncols
-      T.(clean_names{j}) = [];
-    end
-    T.Properties = struct('VariableNames', {clean_names});
-    return;
-  end
-
   nrows = length(data_lines);
-
-  % Try to parse all data as numeric
-  numeric_data = NaN(nrows, ncols);
-  is_numeric = true(1, ncols);
-
-  % Use textscan for faster parsing
-  all_text = strjoin(data_lines, '\n');
-  try
-    % Build format string: try all numeric
-    fmt_str = repmat('%f', 1, ncols);
-    C = textscan(all_text, fmt_str, 'Delimiter', ',', 'EmptyValue', NaN);
-    if length(C) == ncols && ~isempty(C{1})
-      T = struct();
-      for j = 1:ncols
-        T.(clean_names{j}) = C{j};
-      end
-      T.Properties = struct('VariableNames', {clean_names});
-      return;
-    end
-  catch
-  end
-
-  % Fallback: parse as mixed (string/numeric) line by line
   string_cols = cell(nrows, ncols);
   numeric_cols = NaN(nrows, ncols);
 
