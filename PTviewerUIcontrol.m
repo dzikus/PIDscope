@@ -49,35 +49,35 @@ checkpanel = uipanel('Title','','FontSize',fontsz,...
              'Position',[.096 .932 .68 .065]);        
 
 guiHandles.checkbox0=uicontrol(PTfig,'Style','checkbox','String','Debug','fontsize',fontsz,'ForegroundColor',[linec.col0],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox0],'callback','if ~isempty(fnameMaster),  PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox0],'callback','if ~isempty(fnameMaster),  PTplotLogViewer; end');
 guiHandles.checkbox1=uicontrol(PTfig,'Style','checkbox','String','Gyro','fontsize',fontsz,'ForegroundColor',[linec.col1],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox1],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox1],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox2=uicontrol(PTfig,'Style','checkbox','String','P-term','fontsize',fontsz,'ForegroundColor',[linec.col2],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox2],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox2],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox3=uicontrol(PTfig,'Style','checkbox','String','I-term','fontsize',fontsz,'ForegroundColor',[linec.col3],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox3],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox3],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox4=uicontrol(PTfig,'Style','checkbox','String','D-term (prefilt)','fontsize',fontsz,'ForegroundColor',[linec.col4],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox4],'callback','if (~isempty(filenameA) ), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox4],'callback','if (~isempty(filenameA) ), PTplotLogViewer; end');
 guiHandles.checkbox5=uicontrol(PTfig,'Style','checkbox','String','D-term','fontsize',fontsz,'ForegroundColor',[linec.col5],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox5],'callback','if (~isempty(filenameA) ), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox5],'callback','if (~isempty(filenameA) ), PTplotLogViewer; end');
 guiHandles.checkbox6=uicontrol(PTfig,'Style','checkbox','String','F-term','fontsize',fontsz,'ForegroundColor',[linec.col6],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox6],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox6],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox7=uicontrol(PTfig,'Style','checkbox','String','Set point','fontsize',fontsz,'ForegroundColor',[linec.col7],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox7],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox7],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox8=uicontrol(PTfig,'Style','checkbox','String','PID sum','fontsize',fontsz,'ForegroundColor',[linec.col8],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox8],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox8],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox9=uicontrol(PTfig,'Style','checkbox','String','PID error','fontsize',fontsz,'ForegroundColor',[linec.col9],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox9],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox9],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox10=uicontrol(PTfig,'Style','checkbox','String','Motor 1','fontsize',fontsz,'ForegroundColor',[linec.col10],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox10],'callback','if (~isempty(filenameA) ), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox10],'callback','if (~isempty(filenameA) ), PTplotLogViewer; end');
 guiHandles.checkbox11=uicontrol(PTfig,'Style','checkbox','String','Motor 2','fontsize',fontsz,'ForegroundColor',[linec.col11],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox11],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox11],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox12=uicontrol(PTfig,'Style','checkbox','String','Motor 3','fontsize',fontsz,'ForegroundColor',[linec.col12],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox12],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox12],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox13=uicontrol(PTfig,'Style','checkbox','String','Motor 4','fontsize',fontsz,'ForegroundColor',[linec.col13],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox13],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox13],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 guiHandles.checkbox14=uicontrol(PTfig,'Style','checkbox','String','Throttle','fontsize',fontsz,'ForegroundColor',[linec.col14],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox14],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox14],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
 
 set(guiHandles.checkbox1, 'Value', 1);
 set(guiHandles.checkbox7, 'Value', 1);
@@ -88,11 +88,11 @@ set(guiHandles.checkbox13, 'Value', 1);
 set(guiHandles.checkbox14, 'Value', 1);
 
 guiHandles.checkbox15=uicontrol(PTfig,'Style','checkbox','String','All','fontsize',fontsz,'TooltipString', ['Plot or clear all lines '],'ForegroundColor',[linec.col15],'BackgroundColor',bgcolor,...
-    'units','normalized','outerposition',[posInfo.checkbox15],'callback','if ~isempty(fnameMaster), plotall_flag=get(guiHandles.checkbox15, ''Value''); PTplotLogViewer; end');
+    'units','normalized','Position',[posInfo.checkbox15],'callback','if ~isempty(fnameMaster), plotall_flag=get(guiHandles.checkbox15, ''Value''); PTplotLogViewer; end');
  
 TooltipString_FileNum=['Select the file you wish to plot in the logviewer. '];
 guiHandles.FileNum = uicontrol(PTfig,'Style','popupmenu','string',[fnameMaster],'TooltipString', [TooltipString_FileNum],...
-    'fontsize',fontsz, 'units','normalized','outerposition', [posInfo.fnameAText],'callback','if ~isempty(fnameMaster), set(zoom, ''Enable'',''off''), expandON=0; PTplotLogViewer; if ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer, end, end');
+    'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText],'callback','if ~isempty(fnameMaster), set(zoom, ''Enable'',''off''), expandON=0; PTplotLogViewer; if ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer, end, end');
 
             
 if isempty(epoch1_A(get(guiHandles.FileNum, 'Value'))) || isempty(epoch2_A(get(guiHandles.FileNum, 'Value')))
@@ -106,12 +106,12 @@ for f = 1 : Nfiles
 end
 
 maxY_textToolTip = ['+/- Scaling factor for the Y axis in degs/s'];
-guiHandles.maxY_text = uicontrol(PTfig,'style','text','string','y scale','fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.maxYtext]);
-guiHandles.maxY_input = uicontrol(PTfig,'style','edit','string',int2str(maxY),'fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','outerposition',[posInfo.maxYinput],...
+guiHandles.maxY_text = uicontrol(PTfig,'style','text','string','y scale','fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYtext]);
+guiHandles.maxY_input = uicontrol(PTfig,'style','edit','string',int2str(maxY),'fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','Position',[posInfo.maxYinput],...
      'callback','PTplotLogViewer; ');
  
-guiHandles.nCols_text = uicontrol(PTfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.nCols_text]);
-guiHandles.nCols_input = uicontrol(PTfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','outerposition',[posInfo.nCols_input],...
+guiHandles.nCols_text = uicontrol(PTfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.nCols_text]);
+guiHandles.nCols_input = uicontrol(PTfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','Position',[posInfo.nCols_input],...
      'callback','if str2num(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2num(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PTlinecmap(str2num(get(guiHandles.nCols_input, ''String''))); ');
  
 subplot('position',[posInfo.YTstick]); 

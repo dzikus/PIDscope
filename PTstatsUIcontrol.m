@@ -10,7 +10,8 @@
 if ~isempty(filenameA) || ~isempty(filenameB)
 
 PTstatsfig=figure(6);
-set(PTstatsfig, 'units','normalized','outerposition',[.1 .1 .75 .8])
+set(PTstatsfig, 'units','normalized','Position',[.1 .1 .75 .8])
+set(PTstatsfig, 'units','pixels');
 set(PTstatsfig, 'NumberTitle', 'off');
 set(PTstatsfig, 'Name', ['PIDtoolbox (' PtbVersion ') - Flight stats']);
 set(PTstatsfig, 'InvertHardcopy', 'off');
@@ -79,26 +80,26 @@ statsCrtlpanel = uipanel('Title','','FontSize',fontsz5,...
               'BackgroundColor',[.95 .95 .95],...
               'Position',[.06 .935 .40 .06]);
 
-guiHandlesStats.saveFig5 = uicontrol(PTstatsfig,'string','Save Fig','fontsize',fontsz5,'TooltipString',[TooltipString_saveFig],'units','normalized','outerposition',[posInfo.saveFig5],...
+guiHandlesStats.saveFig5 = uicontrol(PTstatsfig,'string','Save Fig','fontsize',fontsz5,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig5],...
     'callback','set(guiHandlesStats.saveFig5, ''FontWeight'', ''bold'');PTsaveFig; set(guiHandlesStats.saveFig5, ''FontWeight'', ''normal'');');
 set(guiHandlesStats.saveFig5, 'BackgroundColor', [.8 .8 .8]);
 
-guiHandlesStats.refresh = uicontrol(PTstatsfig,'string','Refresh','fontsize',fontsz5,'TooltipString',[TooltipString_refresh],'units','normalized','outerposition',[posInfo.refresh3],...
+guiHandlesStats.refresh = uicontrol(PTstatsfig,'string','Refresh','fontsize',fontsz5,'TooltipString',[TooltipString_refresh],'units','normalized','Position',[posInfo.refresh3],...
     'callback','updateStats=1;PTplotStats;');
 set(guiHandlesStats.refresh, 'BackgroundColor', [1 1 .2]);
 
 guiHandlesStats.degsecStick =uicontrol(PTstatsfig,'Style','checkbox','String','rate of change','fontsize',fontsz5,'TooltipString',[TooltipString_degsecStick],...
-    'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.degsecStick],'callback','if (~isempty(filenameA) | ~isempty(filenameB)), end; PTplotStats;');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.degsecStick],'callback','if (~isempty(filenameA) | ~isempty(filenameB)), end; PTplotStats;');
 guiHandlesStats.crossAxesStats =uicontrol(PTstatsfig,'Style','popupmenu','String',{'Histograms'; 'Mean & Standard Deviation'; 'Mode 1 topography'; 'Mode 2 topography'; 'Axes X Throttle'},'fontsize',fontsz5,'TooltipString',[TooltipString_crossAxesStats],...
-    'units','normalized','BackgroundColor',[1 1 1 ],'outerposition',[posInfo.crossAxesStats],'callback','@selection; if (~isempty(filenameA) | ~isempty(filenameB)), end; PTplotStats;');
+    'units','normalized','BackgroundColor',[1 1 1 ],'Position',[posInfo.crossAxesStats],'callback','@selection; if (~isempty(filenameA) | ~isempty(filenameB)), end; PTplotStats;');
 %guiHandlesStats.crossAxesStats.Value=0;
 
-guiHandlesStats.crossAxesStats_text = uicontrol(PTstatsfig,'style','text','string','scale','fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.crossAxesStats_text]);
-guiHandlesStats.crossAxesStats_input = uicontrol(PTstatsfig,'style','edit','string',[num2str(zScale)],'fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','outerposition',[posInfo.crossAxesStats_input],...
+guiHandlesStats.crossAxesStats_text = uicontrol(PTstatsfig,'style','text','string','scale','fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text]);
+guiHandlesStats.crossAxesStats_input = uicontrol(PTstatsfig,'style','edit','string',[num2str(zScale)],'fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','Position',[posInfo.crossAxesStats_input],...
      'callback','@textinput_call4; zScale=str2num(get(guiHandlesStats.crossAxesStats_input, ''String''));updateStats=1;PTplotStats;');
  
-guiHandlesStats.crossAxesStats_text2 = uicontrol(PTstatsfig,'style','text','string','alpha','fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.crossAxesStats_text2]);
-guiHandlesStats.crossAxesStats_input2 = uicontrol(PTstatsfig,'style','edit','string',[num2str(zTransparency)],'fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','outerposition',[posInfo.crossAxesStats_input2],...
+guiHandlesStats.crossAxesStats_text2 = uicontrol(PTstatsfig,'style','text','string','alpha','fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text2]);
+guiHandlesStats.crossAxesStats_input2 = uicontrol(PTstatsfig,'style','edit','string',[num2str(zTransparency)],'fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','Position',[posInfo.crossAxesStats_input2],...
      'callback','@textinput_call4; zTransparency=str2num(get(guiHandlesStats.crossAxesStats_input2, ''String'')); if (zTransparency>1), zTransparency=1; end; if (zTransparency<0), zTransparency=0; end; updateStats=1;PTplotStats;');
 
 else

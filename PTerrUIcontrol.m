@@ -11,7 +11,8 @@
 if ~isempty(filenameA) || ~isempty(filenameB)
       
 PTerrfig=figure(3);
-set(PTerrfig, 'units','normalized','outerposition',[.1 .1 .75 .8])
+set(PTerrfig, 'units','normalized','Position',[.1 .1 .75 .8])
+set(PTerrfig, 'units','pixels');
 set(PTerrfig, 'NumberTitle', 'off');
 set(PTerrfig, 'Name', ['PIDtoolbox (' PtbVersion ') - PID Error Tool']);
 set(PTerrfig, 'InvertHardcopy', 'off');
@@ -49,15 +50,15 @@ errCrtlpanel = uipanel('Title','','FontSize',fontsz3,...
               'BackgroundColor',[.95 .95 .95],...
               'Position',[.085 .93 .23 .06]);
           
-guiHandlesPIDerr.refresh = uicontrol(PTerrfig,'string','Refresh','fontsize',fontsz3,'TooltipString',[TooltipString_refresh],'units','normalized','outerposition',[posInfo.refresh2],...
+guiHandlesPIDerr.refresh = uicontrol(PTerrfig,'string','Refresh','fontsize',fontsz3,'TooltipString',[TooltipString_refresh],'units','normalized','Position',[posInfo.refresh2],...
     'callback','updateErr=1;PTplotPIDerror;');
 set(guiHandlesPIDerr.refresh, 'BackgroundColor', [1 1 .2]);
 
-guiHandlesPIDerr.maxSticktext = uicontrol(PTerrfig,'style','text','string','max stick deg/s','fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','BackgroundColor',bgcolor,'outerposition',[posInfo.maxSticktext]);
-guiHandlesPIDerr.maxStick = uicontrol(PTerrfig,'style','edit','string',[int2str(maxDegsec)],'fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','outerposition',[posInfo.maxStick],...
+guiHandlesPIDerr.maxSticktext = uicontrol(PTerrfig,'style','text','string','max stick deg/s','fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxSticktext]);
+guiHandlesPIDerr.maxStick = uicontrol(PTerrfig,'style','edit','string',[int2str(maxDegsec)],'fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','Position',[posInfo.maxStick],...
      'callback','@textinput_call; maxDegsec=str2num(get(guiHandlesPIDerr.maxStick, ''String'')); updateErr=1;PTplotPIDerror; ');
 
-guiHandlesPIDerr.saveFig3 = uicontrol(PTerrfig,'string','Save Fig','fontsize',fontsz3,'TooltipString',[TooltipString_saveFig],'units','normalized','outerposition',[posInfo.saveFig3],...
+guiHandlesPIDerr.saveFig3 = uicontrol(PTerrfig,'string','Save Fig','fontsize',fontsz3,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig3],...
     'callback','set(guiHandlesPIDerr.saveFig3, ''FontWeight'', ''bold'');PTsaveFig; set(guiHandlesPIDerr.saveFig3, ''FontWeight'', ''normal'');');
 set(guiHandlesPIDerr.saveFig3, 'BackgroundColor', [.8 .8 .8]);
    
