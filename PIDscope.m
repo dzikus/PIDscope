@@ -306,17 +306,15 @@ if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_dire
         || ~exist(fullfile(main_directory, 'blackbox_decode'), 'file')
     main_directory = executableDir;
 end
-cd(main_directory)
+cd(configDir)
 
-try    
+try
     fid = fopen('logfileDir.txt','r');
     logfile_directory = fscanf(fid, '%c');
     fclose(fid);
-    if ~isempty(dir('*.bbl')), delete('*.bbl'); end
-    if ~isempty(dir('*.bfl')), delete('*.bfl'); end
-    if ~isempty(dir('*.csv')), delete('*.csv'); end
 catch
-    logfile_directory = [executableDir];
+    logfile_directory = getenv('HOME');
+    if isempty(logfile_directory), logfile_directory = executableDir; end
 end
     
 mdr = ['mainDirectory: ' main_directory ];

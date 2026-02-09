@@ -14,7 +14,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 %%
 set(gcf, 'pointer', 'watch')
 try
-    cd(main_directory)
+    cd(configDir)
     clear defaults
     if ~isfile('PTBdefaults.txt')
         clear var

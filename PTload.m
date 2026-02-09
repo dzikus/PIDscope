@@ -25,7 +25,7 @@ try
         pause(.2)
         
         try
-            cd(main_directory)
+            cd(configDir)
             if ~strcmp(main_directory, logfile_directory)
                 fid = fopen('logfileDir.txt','w');
                 fprintf(fid,'%c',logfile_directory);
@@ -34,13 +34,7 @@ try
         catch
         end
 
-        try
-            cd(logfile_directory)
-        catch
-            errordlg('please select file then click ''load+run'' ','error - no file selected!');
-        end
-        
-        cd(main_directory)
+        cd(configDir)
         ldr = ['logfileDirectory: ' logfile_directory ];
         try
             defaults = readtable('PTBdefaults.txt');
