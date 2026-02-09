@@ -13,7 +13,11 @@
 try
     a=colormap(parula);
 catch
-    a=colormap(viridis);
+    try
+        a=colormap(viridis);
+    catch
+        a=viridis(64);
+    end
 end
 viridis=[a(:,1) a(:,2) a(:,3)*.6];
 

@@ -26,7 +26,7 @@ ylab2={'roll';'pitch';'yaw'};
 
 axesOptions = find([get(guiHandlesTune.plotR, 'Value') get(guiHandlesTune.plotP, 'Value') get(guiHandlesTune.plotY, 'Value')]);
 lineStyle = {'-' ; '--' ; ':'};
-lnLabels = {'solid' ; 'dashed'; 'dotted'}
+lnLabels = {'solid' ; 'dashed'; 'dotted'};
 p = {'    P, I, D, Dm, F'; '    P, I, D, Dm, F'; '    P, I, D, cD'};
 pidlabels = p{get(guiHandles.Firmware, 'Value')};
 

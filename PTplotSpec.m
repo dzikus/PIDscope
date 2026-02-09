@@ -217,6 +217,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
 
     % color maps
     % standard set (Octave: viridis replaces parula at index 1)
+    try
     if get(guiHandlesSpec.ColormapSelect, 'Value')<=7,
         tmpCmapStr = get(guiHandlesSpec.ColormapSelect, 'String');
         tmpCmapVal = get(guiHandlesSpec.ColormapSelect, 'Value');
@@ -224,6 +225,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
     end
     if get(guiHandlesSpec.ColormapSelect, 'Value')==8, colormap(linearREDcmap); end
     if get(guiHandlesSpec.ColormapSelect, 'Value')==9, colormap(linearGREYcmap); end
+    catch, end
 
 end
 

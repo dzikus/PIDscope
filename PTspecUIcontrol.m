@@ -39,7 +39,7 @@ amp2d=[];%spec 2d
 freq=[];% freq
 
 % only need to call once to compute extra colormaps
-PTcolormap;
+try PTcolormap; catch, end
 SpecLineCols=[];
 SpecLineCols(:,:,1) = [colorA; colorA; colorA; colorA];  
 SpecLineCols(:,:,2) = [colorA; colorA; colorB; colorB]; 

@@ -92,9 +92,9 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     lineStyle2LVnames = {'solid' ; 'dashed' ; 'dotted'};
     axesOptionsLV = find([get(guiHandles.plotR, 'Value') get(guiHandles.plotP, 'Value') get(guiHandles.plotY, 'Value')]);
     
-    delete(hexpand1)
-    delete(hexpand2)
-    delete(hexpand3)
+    try delete(hexpand1); catch, end
+    try delete(hexpand2); catch, end
+    try delete(hexpand3); catch, end
     expandON = 0;
 
     ylabelname='';

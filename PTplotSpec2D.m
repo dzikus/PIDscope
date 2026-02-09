@@ -44,6 +44,8 @@ axesOptionsSpec = find([get(guiHandlesSpec2.plotR, 'Value') get(guiHandlesSpec2.
 set(PTspecfig2, 'pointer', 'watch')
 
 clear s dat a RC smat amp2d2 freq2d2
+freq2d2 = {};
+amp2d2 = {};
 p=0;
 hw = waitbar(0,['please wait... ' ]);
 tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');

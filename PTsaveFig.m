@@ -9,17 +9,32 @@
 
 %% create saveDirectory
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
-    cd(logfile_directory)
     saveDirectory='PTB_FIGS';
-    saveDirectory = [saveDirectory '_' currentDate]; % [saveDirectory '_' fnameMaster{1}(1:end-4) 'xx_' currentDate];
- 
-if ~isfolder(saveDirectory)
-   mkdir(saveDirectory)
-end
+    saveDirectory = [saveDirectory '_' currentDate];
+
+    % Try logfile_directory first, fall back to configDir (Flatpak: home is read-only)
+    saveBase = '';
+    try
+        cd(logfile_directory);
+        if ~isfolder(saveDirectory), mkdir(saveDirectory); end
+        saveBase = logfile_directory;
+    catch
+        try
+            cd(configDir);
+            if ~isfolder(saveDirectory), mkdir(saveDirectory); end
+            saveBase = configDir;
+        catch
+        end
+    end
+
+    if isempty(saveBase)
+        warndlg('Cannot create save directory (file system may be read-only)');
+        return;
+    end
 
 %%
 set(gcf, 'pointer', 'watch')
-cd(logfile_directory)
+cd(saveBase)
 cd(saveDirectory)
 FigDoesNotExist=1;
 n=0;
@@ -32,7 +47,7 @@ saveas(gcf, [figname '.png'] );
 print(figname,'-dpng','-r200')
 
 set(gcf, 'pointer', 'arrow')
-cd(main_directory)
+cd(configDir)
 
 else
      warndlg('Please select file(s)');
