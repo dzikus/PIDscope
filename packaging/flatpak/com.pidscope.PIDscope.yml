@@ -1,0 +1,95 @@
+# Flatpak manifest for PIDscope
+# Build: flatpak-builder --user --install --force-clean build-dir packaging/flatpak/com.pidscope.PIDscope.yml
+# Run:   flatpak run com.pidscope.PIDscope
+
+app-id: com.pidscope.PIDscope
+base: org.octave.Octave
+base-version: stable
+# Octave uses Sdk (not Platform) as runtime - needs compilers for Forge packages
+runtime: org.kde.Sdk
+runtime-version: '5.15-24.08'
+sdk: org.kde.Sdk
+command: pidscope
+
+finish-args:
+  # GUI access (match org.octave.Octave permissions)
+  - --socket=wayland
+  - --socket=x11
+  - --share=ipc
+  - --share=network
+  - --device=dri
+  # Read flight logs from home and removable media
+  - --filesystem=home:ro
+  - --filesystem=/media:ro
+  - --filesystem=/run/media:ro
+  # Config directory (read-write)
+  - --filesystem=xdg-config/PIDscope:create
+  - --filesystem=xdg-config/kdeglobals:ro
+  # Temporary files for CSV conversion
+  - --filesystem=/tmp
+  # KDE integration
+  - --talk-name=com.canonical.AppMenu.Registrar
+  - --talk-name=org.kde.kconfig.notify
+  - --talk-name=org.kde.KGlobalSettings
+  - --talk-name=org.freedesktop.Flatpak
+  # Octave environment
+  - --env=LD_LIBRARY_PATH=/app/lib
+  - --env=OCTAVE_HOME=/app
+  - --env=PATH=/app/bin:/usr/bin
+
+modules:
+  # --- Octave Forge packages (pre-downloaded tarballs) ---
+  - name: octave-forge-packages
+    buildsystem: simple
+    sources:
+      - type: file
+        url: https://packages.octave.org/download/control-4.2.1.tar.gz
+        sha256: abd13286b717c71b420591201255be9c295b77731f94c5eb591cb7d488f5f247
+      - type: file
+        url: https://packages.octave.org/download/signal-1.4.7.tar.gz
+        sha256: 6a8b4b8cf0b3019d984fde75af947ae73e9a1c509890552cd5e113f7ba89038c
+      - type: file
+        url: https://packages.octave.org/download/datatypes-1.1.7.tar.gz
+        sha256: 2320c964c6f640bc07f553ba12acab602fd20c3ab805b746c419be80eeb53e0b
+      - type: file
+        url: https://packages.octave.org/download/statistics-1.8.0.tar.gz
+        sha256: 38f45268a509e1a2ce1103b0d192709a4887920776567f761054519873e06b27
+      - type: file
+        url: https://packages.octave.org/download/image-2.18.1.tar.gz
+        sha256: d4eed0579782c2efaa0818de2f20f13b276eb3d4b4b3d63347c7317d84e29531
+    build-commands:
+      # Install all packages globally into /app in dependency order
+      - |
+        octave --eval "
+          pkg install -global control-4.2.1.tar.gz;
+          pkg install -global signal-1.4.7.tar.gz;
+          pkg install -global datatypes-1.1.7.tar.gz;
+          pkg install -global statistics-1.8.0.tar.gz;
+          pkg install -global image-2.18.1.tar.gz;
+          pkg list;
+        "
+
+  # --- PIDscope application ---
+  - name: pidscope
+    buildsystem: simple
+    build-commands:
+      # Install .m source files
+      - install -d /app/share/pidscope
+      - install -m644 *.m /app/share/pidscope/
+      - install -d /app/share/pidscope/compat
+      - install -m644 compat/*.m /app/share/pidscope/compat/
+      # Install blackbox_decode binaries
+      - install -m755 blackbox_decode /app/share/pidscope/
+      - install -m755 blackbox_decode_INAV /app/share/pidscope/
+      # Install launcher
+      - install -Dm755 packaging/flatpak/pidscope-launcher.sh /app/bin/pidscope
+      # Install desktop integration
+      - install -Dm644 packaging/pidscope.desktop /app/share/applications/com.pidscope.PIDscope.desktop
+      - install -Dm644 packaging/com.pidscope.PIDscope.appdata.xml /app/share/metainfo/com.pidscope.PIDscope.appdata.xml
+      - install -Dm644 packaging/com.pidscope.PIDscope.mime.xml /app/share/mime/packages/com.pidscope.PIDscope.mime.xml
+      - install -Dm644 packaging/com.pidscope.PIDscope-64.png /app/share/icons/hicolor/64x64/apps/com.pidscope.PIDscope.png
+      - install -Dm644 packaging/com.pidscope.PIDscope-128.png /app/share/icons/hicolor/128x128/apps/com.pidscope.PIDscope.png
+      - install -Dm644 packaging/com.pidscope.PIDscope.png /app/share/icons/hicolor/256x256/apps/com.pidscope.PIDscope.png
+    sources:
+      - type: dir
+        path: ../../

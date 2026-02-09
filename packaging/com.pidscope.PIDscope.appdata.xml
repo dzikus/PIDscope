@@ -15,7 +15,9 @@
     </p>
   </description>
 
-  <launchable type="desktop-id">pidscope.desktop</launchable>
+  <launchable type="desktop-id">com.pidscope.PIDscope.desktop</launchable>
+
+  <icon type="stock">com.pidscope.PIDscope</icon>
 
   <url type="homepage">https://buymeacoffee.com/dzikus</url>
 
