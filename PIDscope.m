@@ -43,8 +43,13 @@ else
 end
 cd(configDir)
 if isempty(dir(['mainDir-PTB' PtbVersion '.txt']))
-    uiwait(helpdlg(setupStr));
-    main_directory = uigetdir('Navigate to Main folder');
+    % Auto-detect if blackbox_decode is in executableDir (e.g. AppImage)
+    if exist(fullfile(executableDir, 'blackbox_decode'), 'file')
+        main_directory = executableDir;
+    else
+        uiwait(helpdlg(setupStr));
+        main_directory = uigetdir('Navigate to Main folder');
+    end
     fid = fopen(['mainDir-PTB' PtbVersion '.txt'],'w');
     fprintf(fid,'%s\n',main_directory);
     fclose(fid);
@@ -299,7 +304,8 @@ try
     fclose(fid);
 catch
 end
-if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_directory,'dir')
+if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_directory,'dir') ...
+        || ~exist(fullfile(main_directory, 'blackbox_decode'), 'file')
     main_directory = executableDir;
 end
 cd(main_directory)

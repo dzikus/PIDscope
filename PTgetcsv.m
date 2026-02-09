@@ -32,9 +32,9 @@ mainFname=filename;
 if strcmp(filename(end-3:end),'.BFL') || strcmp(filename(end-3:end),'.BBL') || strcmp(filename(end-3:end),'.bfl') || strcmp(filename(end-3:end),'.bbl') || strcmp(filename(end-3:end),'.txt') || strcmp(filename(end-3:end),'.TXT')          
 
     if firmware_flag < 3
-        [status,result]=system(['./blackbox_decode ' filename]);  
+        [status,result]=system(['./blackbox_decode ' filename]);
     else
-        [status,result]=system(['./blackbox_decode_INAV ' filename]);        
+        [status,result]=system(['./blackbox_decode_INAV ' filename]);
     end
     files=dir([filename(1:end-4) '*.csv']);
     

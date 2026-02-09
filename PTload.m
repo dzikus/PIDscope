@@ -60,15 +60,29 @@ try
     
         n = size(filenameA,2);
         waitbarFid = waitbar(0,'Please wait...');
-        for ii = 1 : n    
-            % temporarily copy logfile to 'main' where blackbox_decode is
-            try % 
-                source = fullfile(logfile_directory,filenameA{ii}); 
-                destination = fullfile(main_directory,filenameA{ii}); 
-                copyfile(source,destination); 
-            catch
+        % Work in temp dir (main_directory may be read-only in AppImage)
+        workdir = tempname();
+        mkdir(workdir);
+        prev_dir = pwd();
+
+        % Copy blackbox_decode into workdir so ./blackbox_decode works
+        for dec = {'blackbox_decode', 'blackbox_decode_INAV'}
+            src = fullfile(main_directory, dec{1});
+            if exist(src, 'file')
+                copyfile(src, workdir);
             end
-            
+        end
+
+        cd(workdir);
+
+        for ii = 1 : n
+            source = fullfile(logfile_directory, filenameA{ii});
+            try
+                copyfile(source, workdir);
+            catch e
+                warning('PTload: cannot copy %s to workdir: %s', source, e.message);
+            end
+
             clear subFiles;
             [filenameA{ii} subFiles] = PTgetcsv(filenameA{ii}, get(guiHandles.Firmware, 'Value'));
             
@@ -173,15 +187,16 @@ try
                     end
                 end
             end
-            % delete bbl from main directory only if not same as logfile_directory
-           if ~strcmp(main_directory, logfile_directory)
-              delete(filenameA{ii})
-           end
         end
+        % Clean up workdir
+        cd(prev_dir);
+        try system(['rm -rf ' workdir]); catch, end
     end
-  
+
     try close(waitbarFid), catch, end
 catch  ME
+    try cd(prev_dir); catch, end
+    try system(['rm -rf ' workdir]); catch, end
     try close(waitbarFid); catch, end
     warning('PTload error: %s', ME.message);
     for k = 1:numel(ME.stack)
