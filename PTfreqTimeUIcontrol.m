@@ -40,25 +40,26 @@ clear specMat
 
 % Control panel layout (consistent with Log Viewer cpL/cpW)
 cpL = .875; cpW = .12;
+rh = .030; rs = .034;
 
-posInfo.fileListWindowSpec=  [cpL+.003 .86 cpW-.006 .03];
-posInfo.TermListWindowSpec=  [cpL+.003 .83 cpW-.006 .03];
+posInfo.fileListWindowSpec=  [cpL+.003 .870 cpW-.006 rh];
+posInfo.TermListWindowSpec=  [cpL+.003 .836 cpW-.006 rh];
 
-posInfo.computeSpec3=        [cpL+.006 .795 cpW/2-.006 .026];
-posInfo.resetSpec3=          [cpL+cpW/2 .795 cpW/2-.006 .026];
-posInfo.saveFig3=            [cpL+.006 .765 cpW/2-.006 .026];
-posInfo.saveSettings3=       [cpL+cpW/2 .765 cpW/2-.006 .026];
-posInfo.smooth_select3 =     [cpL+.003 .735 cpW-.006 .026];
-posInfo.subsampling_select3= [cpL+.003 .705 cpW-.006 .026];
-posInfo.ColormapSelect2 =    [cpL+.003 .675 cpW-.006 .026];
+posInfo.computeSpec3=        [cpL+.006 .802 cpW/2-.006 rh];
+posInfo.resetSpec3=          [cpL+cpW/2 .802 cpW/2-.006 rh];
+posInfo.saveFig3=            [cpL+.006 .768 cpW/2-.006 rh];
+posInfo.saveSettings3=       [cpL+cpW/2 .768 cpW/2-.006 rh];
+posInfo.smooth_select3 =     [cpL+.003 .734 cpW-.006 rh];
+posInfo.subsampling_select3= [cpL+.003 .700 cpW-.006 rh];
+posInfo.ColormapSelect2 =    [cpL+.003 .666 cpW-.006 rh];
 
-posInfo.clim3Max1_text =     [cpL+.003 .65 cpW/4 .024];
-posInfo.clim3Max1_input =    [cpL+cpW/4 .625 cpW/4 .024];
-posInfo.clim3Max2_text =     [cpL+cpW/2 .65 cpW/4 .024];
-posInfo.clim3Max2_input =    [cpL+3*cpW/4 .625 cpW/4 .024];
+posInfo.clim3Max1_text =     [cpL+.003 .632 cpW/4 .024];
+posInfo.clim3Max1_input =    [cpL+cpW/4 .598 cpW/4 .024];
+posInfo.clim3Max2_text =     [cpL+cpW/2 .632 cpW/4 .024];
+posInfo.clim3Max2_input =    [cpL+3*cpW/4 .598 cpW/4 .024];
 ClimScale3 = [-30 10];
 
-posInfo.sub100HzfreqTime  =  [cpL+.003 .60 cpW-.006 .024];
+posInfo.sub100HzfreqTime  =  [cpL+.003 .564 cpW-.006 .025];
 
 PTspecfig3=figure(31);
 set(PTspecfig3, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
@@ -75,7 +76,7 @@ end
 
 Spec3Crtlpanel = uipanel('Title','select file ','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
-              'Position',[cpL .59 cpW .31]);
+              'Position',[cpL .55 cpW .37]);
  
 guiHandlesSpec3.computeSpec = uicontrol(PTspecfig3,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec3],...
     'callback','updateSpec = 0; clear specMat; PTfreqTime;');

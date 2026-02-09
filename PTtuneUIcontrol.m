@@ -50,25 +50,25 @@ end
 
 % Control panel layout (consistent with Log Viewer cpL/cpW)
 cpL = .875; cpW = .12;
+rh = .030; rs = .034;
 
-posInfo.linewidth4=          [cpL+.003 .94 cpW-.006 .026];
-posInfo.fileListWindowStep=  [cpL+.003 .66 cpW-.006 .24];
-posInfo.run4=                [cpL+.006 .63 cpW/2-.006 .026];
-posInfo.clearPlots=          [cpL+cpW/2 .63 cpW/2-.006 .026];
-posInfo.saveFig4=            [cpL+.006 .605 cpW/2-.006 .026];
-posInfo.saveSettings4=       [cpL+cpW/2 .605 cpW/2-.006 .026];
-posInfo.smooth_tuning=       [cpL+.003 .57 cpW-.006 .035];
-posInfo.plotR=               [cpL+.005 .54 .035 .025];
-posInfo.plotP=               [cpL+.04 .54 .035 .025];
-posInfo.plotY=               [cpL+.075 .54 .035 .025];
-posInfo.RPYcombo=            [cpL+.005 .515 cpW-.01 .025];
-posInfo.Ycorrection=         [cpL+.005 .49 cpW-.01 .025];
-posInfo.maxYStepInput=       [cpL+.005 .465 cpW/3 .025];
-posInfo.maxYStepTxt=         [cpL+cpW/3+.005 .465 cpW/2 .025];
+posInfo.fileListWindowStep=  [cpL+.003 .660 cpW-.006 .24];
+posInfo.run4=                [cpL+.006 .625 cpW/2-.006 rh];
+posInfo.clearPlots=          [cpL+cpW/2 .625 cpW/2-.006 rh];
+posInfo.saveFig4=            [cpL+.006 .591 cpW/2-.006 rh];
+posInfo.saveSettings4=       [cpL+cpW/2 .591 cpW/2-.006 rh];
+posInfo.smooth_tuning=       [cpL+.003 .557 cpW-.006 rh];
+posInfo.plotR=               [cpL+.005 .523 .035 .025];
+posInfo.plotP=               [cpL+.04 .523 .035 .025];
+posInfo.plotY=               [cpL+.075 .523 .035 .025];
+posInfo.RPYcombo=            [cpL+.005 .489 cpW-.01 .025];
+posInfo.Ycorrection=         [cpL+.005 .455 cpW-.01 .025];
+posInfo.maxYStepInput=       [cpL+.005 .421 cpW/3 .025];
+posInfo.maxYStepTxt=         [cpL+cpW/3+.005 .421 cpW/2 .025];
 
 guiHandlesTune.tuneCrtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
-              'Position',[cpL .45 cpW .47]);
+              'Position',[cpL .41 cpW .51]);
        
 guiHandlesTune.run4 = uicontrol(PTtunefig,'string','Run','fontsize',fontsz,'TooltipString',[TooltipString_steprun],'units','normalized','Position',[posInfo.run4],...
     'callback','PTtuningParams;'); 

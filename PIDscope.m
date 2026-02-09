@@ -67,10 +67,7 @@ currentDate = datestr(t, 'yyyy-mm-dd HH:MM:SS'); % Octave compatible (was: datet
 currentDate = currentDate(1:strfind(currentDate,' ')-1);
 
 set(0,'defaultUicontrolFontName', 'Helvetica')
-set(0,'defaultUicontrolFontSize', 10)
-% set(0,'defaultUicontrolFontName', 'Arial')
-% set(0,'defaultUicontrolFontSize', 9)
-% set(0,'defaultUicontrolFontWeight', 'bold')
+% defaultUicontrolFontSize is set after fontsz is calculated (below)
 
 %%%% assign main figure handle and define some UI variables 
 PTfig = figure(1);
@@ -145,6 +142,7 @@ if isOctave
     fontsz = fontsz * 0.85;
     rs = 0.034; rh = 0.030;
 end
+set(0,'defaultUicontrolFontSize', fontsz)
 
 row = 1;
 posInfo.firmware =[cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
@@ -228,7 +226,7 @@ TooltipString_selectButton = ['With box checked, position mouse over desired sta
 guiHandles.Firmware = uicontrol(PTfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
 
 guiHandles.fileA = uicontrol(PTfig,'string','Select ','fontsize',fontsz,'TooltipString', [TooltipString_loadRun], 'units','normalized','Position',[posInfo.fileA],...
-     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); [filenameA, filepathA] = uigetfile({[logfile_directory ''*.BBL;*.BFL;*.TXT'']}, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PTload; PTviewerUIcontrol; PTplotLogViewer; end'); 
+     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); [filenameA, filepathA] = uigetfile({''*.BBL;*.BFL;*.TXT'', ''Blackbox Log Files''}, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PTload; PTviewerUIcontrol; PTplotLogViewer; end'); 
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PTfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
@@ -325,7 +323,7 @@ mdr = ['mainDirectory: ' main_directory ];
 ldr = ['logfileDirectory: ' logfile_directory ];
 
 
-pause(1);
+drawnow; pause(0.2);
 try
     defaults = readtable('PTBdefaults.txt');
     a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
@@ -347,3 +345,12 @@ try set(guiHandles.plotY, 'Value', defaults.Values(find(strcmp(defaults.Paramete
 try set(guiHandles.lineSmooth, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-lineSmooth')))), catch, set(guiHandles.lineSmooth, 'Value', 1), end
 try set(guiHandles.linewidth, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-lineWidth')))), catch, set(guiHandles.linewidth, 'Value', 3), end
 
+% Force Octave Qt to do a full layout pass so widgets render at correct size
+if isOctave
+    drawnow;
+    tmpPos = get(PTfig, 'Position');
+    set(PTfig, 'Position', tmpPos + [0 0 1 0]);
+    drawnow;
+    set(PTfig, 'Position', tmpPos);
+    drawnow;
+end
