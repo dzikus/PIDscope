@@ -8,7 +8,7 @@
 % ----------------------------------------------------------------------------------
 
 
-if ~isempty(fnameMaster)
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
     set(PTfig, 'pointer', 'watch')
 
@@ -79,7 +79,7 @@ if ~isempty(fnameMaster)
 %     set(jRangeSlider, 'MajorTickSpacing',50, 'PaintTicks',true, 'PaintLabels',true, 'Background',java.awt.Color.white)
 %     jRangeSlider.LowValue = 20;, jRangeSlider.HighValue = 180;
 
-    guiHandles.slider = uicontrol(PTfig, 'style','slider','SliderStep',[0.001 0.01],'Visible', 'on', 'units','normalized','position',[0.0826 0.905 0.795 0.02],...
+    guiHandles.slider = uicontrol(PTfig, 'style','slider','SliderStep',[0.001 0.01],'Visible', 'on', 'units','normalized','position',[0.0826 0.905 0.787 0.02],...
         'min',0,'max',1, 'callback','PTslider1Actions;');
 
         
@@ -133,7 +133,7 @@ if ~isempty(fnameMaster)
     cntLV = 0;
     lnstyle = lineStyleLV;
     
-    if ~isempty(fnameMaster)
+    if exist('fnameMaster','var') && ~isempty(fnameMaster)
         for ii = axesOptionsLV  
             if get(guiHandles.RPYcomboLV, 'Value'), expandON = 0; end
             %%%%%%%

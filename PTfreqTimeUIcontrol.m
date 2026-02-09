@@ -7,7 +7,7 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
     
-if ~isempty(fnameMaster)
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
    
 %%% tooltips
 TooltipString_specRun=['Run current spectral configuration'];
@@ -31,27 +31,34 @@ for c=1 : size(cols,2)
     end
 end
 
+if exist('isOctave','var') && isOctave
+    posInfo.Spec3Pos(:,3) = 0.74;
+end
+
 updateSpec = 0;
 clear specMat
- 
-posInfo.fileListWindowSpec=[.895 .865 .096 .04];
-posInfo.TermListWindowSpec=[.895 .84 .096 .04];
 
-posInfo.computeSpec3=            [.896 .83 .0455 .026];
-posInfo.resetSpec3=              [.942 .83 .0455 .026]; 
-posInfo.saveFig3=               [.896 .805 .0455 .026]; % .896 .495 .092 .026
-posInfo.saveSettings3=           [.942 .805 .0455 .026];
-posInfo.smooth_select3 =         [.895 .78 .096 .026];
-posInfo.subsampling_select3=     [.895 .755 .096 .026];
-posInfo.ColormapSelect2 =        [.895 .73 .096 .026];
+% Control panel layout (consistent with Log Viewer cpL/cpW)
+cpL = .875; cpW = .12;
 
-posInfo.clim3Max1_text = [.91 .71 .035 .024];
-posInfo.clim3Max1_input = [.915 .69 .025 .024];
-posInfo.clim3Max2_text = [.94 .71 .035 .024];
-posInfo.clim3Max2_input = [.945 .69 .025 .024];
-ClimScale3 = [-30 10]; 
+posInfo.fileListWindowSpec=  [cpL+.003 .86 cpW-.006 .03];
+posInfo.TermListWindowSpec=  [cpL+.003 .83 cpW-.006 .03];
 
-posInfo.sub100HzfreqTime  = [.915 .665 .06 .024];
+posInfo.computeSpec3=        [cpL+.006 .795 cpW/2-.006 .026];
+posInfo.resetSpec3=          [cpL+cpW/2 .795 cpW/2-.006 .026];
+posInfo.saveFig3=            [cpL+.006 .765 cpW/2-.006 .026];
+posInfo.saveSettings3=       [cpL+cpW/2 .765 cpW/2-.006 .026];
+posInfo.smooth_select3 =     [cpL+.003 .735 cpW-.006 .026];
+posInfo.subsampling_select3= [cpL+.003 .705 cpW-.006 .026];
+posInfo.ColormapSelect2 =    [cpL+.003 .675 cpW-.006 .026];
+
+posInfo.clim3Max1_text =     [cpL+.003 .65 cpW/4 .024];
+posInfo.clim3Max1_input =    [cpL+cpW/4 .625 cpW/4 .024];
+posInfo.clim3Max2_text =     [cpL+cpW/2 .65 cpW/4 .024];
+posInfo.clim3Max2_input =    [cpL+3*cpW/4 .625 cpW/4 .024];
+ClimScale3 = [-30 10];
+
+posInfo.sub100HzfreqTime  =  [cpL+.003 .60 cpW-.006 .024];
 
 PTspecfig3=figure(31);
 set(PTspecfig3, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
@@ -68,7 +75,7 @@ end
 
 Spec3Crtlpanel = uipanel('Title','select file ','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
-              'Position',[.89 .66 .105 .26]);
+              'Position',[cpL .59 cpW .31]);
  
 guiHandlesSpec3.computeSpec = uicontrol(PTspecfig3,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec3],...
     'callback','updateSpec = 0; clear specMat; PTfreqTime;');

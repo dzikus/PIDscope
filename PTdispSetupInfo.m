@@ -7,7 +7,7 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
 
-if ~isempty(fnameMaster) 
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
     if Nfiles < 2
         str=repmat({':'}, size(dataA(get(guiHandlesInfo.FileNumDispA, 'Value')).SetupInfo,1), 1); % Octave compatible (was: strings)
         str2=strcat(dataA(get(guiHandlesInfo.FileNumDispA, 'Value')).SetupInfo(:,1), str);

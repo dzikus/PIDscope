@@ -8,8 +8,8 @@
 % ----------------------------------------------------------------------------------
 
     
-if ~isempty(fnameMaster)
-    
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
+
 PTdisp=figure(5);
 screensz = get(0,'ScreenSize');
 set(PTdisp, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));

@@ -8,7 +8,7 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
 
-if ~isempty(fnameMaster) 
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
 %% update fonts 
 PTspecfig2_pos = get(PTspecfig2, 'Position');
 screensz_tmp = get(0,'ScreenSize'); if PTspecfig2_pos(3) > 10, PTspecfig2_pos(3:4) = PTspecfig2_pos(3:4) ./ screensz_tmp(3:4); end
@@ -253,8 +253,8 @@ for m = 1 : length(tmpSpecListVal)
 end
 if ~isempty(freq2d2) && ~isempty(amp2d2)
     if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
-        h=legend(legnd);     
-        hPos = get(h, 'Position'); set(h, 'Position', [0.88 0.33-hPos(4) hPos(3:4)]);
+        h=legend(legnd);
+        hPos = get(h, 'Position'); set(h, 'Position', [0.35 0.01 hPos(3:4)]);
     else
         h=legend(legnd, 'Location','NorthEast')
     end

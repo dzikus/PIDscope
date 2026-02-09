@@ -7,7 +7,7 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
     
-if ~isempty(fnameMaster)
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
     
 PTtunefig=figure(4);
 set(PTtunefig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
@@ -48,26 +48,27 @@ for c=1 : size(cols,2)
     end
 end
 
-posInfo.linewidth4=[.9 .94 .07 .026];
-posInfo.fileListWindowStep=[.898 .66 .088 .24];
-posInfo.run4=[.896 .63 .0455 .026];
-posInfo.clearPlots=[.942 .63 .0455 .026];
-posInfo.saveFig4=[.896 .605 .0455 .026];
-posInfo.saveSettings4=[.942 .605 .0455 .026];
-posInfo.smooth_tuning=[.895 .565 .095 .04];
-posInfo.plotR=[.91 .555 .03 .025];
-posInfo.plotP=[.935 .555 .03 .025];
-posInfo.plotY=[.96 .555 .03 .025];
-posInfo.RPYcombo=[.91 .53 .065 .025];
-posInfo.Ycorrection=[.91 .505 .065 .025];
-posInfo.maxYStepTxt = [.92 .48 .06 .025];
-posInfo.maxYStepInput = [.91 .48 .025 .025];
+% Control panel layout (consistent with Log Viewer cpL/cpW)
+cpL = .875; cpW = .12;
 
+posInfo.linewidth4=          [cpL+.003 .94 cpW-.006 .026];
+posInfo.fileListWindowStep=  [cpL+.003 .66 cpW-.006 .24];
+posInfo.run4=                [cpL+.006 .63 cpW/2-.006 .026];
+posInfo.clearPlots=          [cpL+cpW/2 .63 cpW/2-.006 .026];
+posInfo.saveFig4=            [cpL+.006 .605 cpW/2-.006 .026];
+posInfo.saveSettings4=       [cpL+cpW/2 .605 cpW/2-.006 .026];
+posInfo.smooth_tuning=       [cpL+.003 .57 cpW-.006 .035];
+posInfo.plotR=               [cpL+.005 .54 .035 .025];
+posInfo.plotP=               [cpL+.04 .54 .035 .025];
+posInfo.plotY=               [cpL+.075 .54 .035 .025];
+posInfo.RPYcombo=            [cpL+.005 .515 cpW-.01 .025];
+posInfo.Ycorrection=         [cpL+.005 .49 cpW-.01 .025];
+posInfo.maxYStepInput=       [cpL+.005 .465 cpW/3 .025];
+posInfo.maxYStepTxt=         [cpL+cpW/3+.005 .465 cpW/2 .025];
 
- 
 guiHandlesTune.tuneCrtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
-              'Position',[.89 .47 .105 .45]);
+              'Position',[cpL .45 cpW .47]);
        
 guiHandlesTune.run4 = uicontrol(PTtunefig,'string','Run','fontsize',fontsz,'TooltipString',[TooltipString_steprun],'units','normalized','Position',[posInfo.run4],...
     'callback','PTtuningParams;'); 

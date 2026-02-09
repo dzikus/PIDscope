@@ -8,7 +8,7 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
 
-if ~isempty(fnameMaster) 
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
    
 PTspecfig_pos = get(PTspecfig, 'Position');
 screensz_tmp = get(0,'ScreenSize'); if PTspecfig_pos(3) > 10, PTspecfig_pos(3:4) = PTspecfig_pos(3:4) ./ screensz_tmp(3:4); end

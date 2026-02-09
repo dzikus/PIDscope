@@ -7,7 +7,7 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
     
-if ~isempty(fnameMaster)
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
    
 %%% tooltips
 TooltipString_specRun=['Run current spectral configuration'];
@@ -28,17 +28,13 @@ freq2d2=[];% freq
   
 
 clear posInfo.Spec2Pos
-cols=[0.05 0.48];
+cols=[0.05 0.47];
 rows=[0.69 0.395 0.1];
 k=0;
 for c=1 : size(cols,2)
     for r=1 : size(rows,2)
         k=k+1;
-        if c == 1
-            posInfo.Spec2Pos(k,:)=[cols(c) rows(r) 0.38 0.25];
-        else
-            posInfo.Spec2Pos(k,:)=[cols(c) rows(r) 0.38 0.25];
-        end
+        posInfo.Spec2Pos(k,:)=[cols(c) rows(r) 0.37 0.25];
     end
 end
 
@@ -48,51 +44,54 @@ if exist('isOctave','var') && isOctave
     sp2_rh = .030; sp2_ddh = .035;
 end
 
-posInfo.fileListWindowSpec=[.898 .7+vPosSpec2d .088 .20];
-posInfo.TermListWindowSpec=[.898 .55+vPosSpec2d .088 .14];
+% Control panel layout (consistent with Log Viewer cpL/cpW)
+cpL = .875; cpW = .12;
 
-posInfo.computeSpec=            [.896 .52+vPosSpec2d .0455 sp2_rh];
-posInfo.resetSpec=              [.942 .52+vPosSpec2d .0455 sp2_rh];
-posInfo.spectrogramButton2=     [.896 .49+vPosSpec2d .0915 sp2_rh];
-posInfo.spectrogramButton3=    [.896 .46+vPosSpec2d .0915 sp2_rh];
-posInfo.saveFig2=               [.896 .43+vPosSpec2d .0455 sp2_rh];
-posInfo.saveSettings2=          [.942 .43+vPosSpec2d .0455 sp2_rh];
+posInfo.fileListWindowSpec=  [cpL+.003 .7+vPosSpec2d cpW-.006 .20];
+posInfo.TermListWindowSpec=  [cpL+.003 .55+vPosSpec2d cpW-.006 .14];
 
-posInfo.smooth_select =         [.895 .395+vPosSpec2d .0955 sp2_ddh];
-posInfo.Delay =                 [.895 .36+vPosSpec2d .0955 sp2_ddh];
+posInfo.computeSpec=         [cpL+.006 .52+vPosSpec2d cpW/2-.006 sp2_rh];
+posInfo.resetSpec=           [cpL+cpW/2 .52+vPosSpec2d cpW/2-.006 sp2_rh];
+posInfo.spectrogramButton2=  [cpL+.003 .49+vPosSpec2d cpW-.006 sp2_rh];
+posInfo.spectrogramButton3=  [cpL+.003 .46+vPosSpec2d cpW-.006 sp2_rh];
+posInfo.saveFig2=            [cpL+.006 .43+vPosSpec2d cpW/2-.006 sp2_rh];
+posInfo.saveSettings2=       [cpL+cpW/2 .43+vPosSpec2d cpW/2-.006 sp2_rh];
 
-posInfo.plotRspec =                 [.90 .335+vPosSpec2d .03 .025];
-posInfo.plotPspec =                 [.925 .335+vPosSpec2d .03 .025];
-posInfo.plotYspec =                 [.95 .335+vPosSpec2d .03 .025];
+posInfo.smooth_select =      [cpL+.003 .395+vPosSpec2d cpW-.006 sp2_ddh];
+posInfo.Delay =              [cpL+.003 .36+vPosSpec2d cpW-.006 sp2_ddh];
 
-posInfo.checkboxPSD =            [.90 .315+vPosSpec2d .03 .02];
-posInfo.RPYcomboSpec =           [.932 .315+vPosSpec2d .055 .02];
+posInfo.plotRspec =          [cpL+.005 .335+vPosSpec2d .035 .025];
+posInfo.plotPspec =          [cpL+.04 .335+vPosSpec2d .035 .025];
+posInfo.plotYspec =          [cpL+.075 .335+vPosSpec2d .035 .025];
 
-posInfo.climMax1_text = [.894 .292+vPosSpec2d .026 .022];
-posInfo.climMax1_input = [.918 .270+vPosSpec2d .022 .022];
-posInfo.climMax2_text = [.943 .292+vPosSpec2d .026 .022];
-posInfo.climMax2_input = [.968 .270+vPosSpec2d .022 .022];
+posInfo.checkboxPSD =        [cpL+.005 .315+vPosSpec2d .04 .02];
+posInfo.RPYcomboSpec =       [cpL+cpW/2-.01 .315+vPosSpec2d cpW/2+.004 .02];
+
+posInfo.climMax1_text =      [cpL+.003 .292+vPosSpec2d cpW/4 .022];
+posInfo.climMax1_input =     [cpL+cpW/4 .270+vPosSpec2d cpW/4 .022];
+posInfo.climMax2_text =      [cpL+cpW/2 .292+vPosSpec2d cpW/4 .022];
+posInfo.climMax2_input =     [cpL+3*cpW/4 .270+vPosSpec2d cpW/4 .022];
 
 if exist('isOctave','var') && isOctave
-    % Octave Qt widgets need more vertical space - spread out panel elements
+    % Octave Qt widgets need more vertical space
     vPosSpec2d = .037;
-    posInfo.computeSpec=            [.896 .52+vPosSpec2d .0455 .030];
-    posInfo.resetSpec=              [.942 .52+vPosSpec2d .0455 .030];
-    posInfo.spectrogramButton2=     [.896 .485+vPosSpec2d .0915 .030];
-    posInfo.spectrogramButton3=     [.896 .450+vPosSpec2d .0915 .030];
-    posInfo.saveFig2=               [.896 .415+vPosSpec2d .0455 .030];
-    posInfo.saveSettings2=          [.942 .415+vPosSpec2d .0455 .030];
-    posInfo.smooth_select=          [.895 .375+vPosSpec2d .0955 .035];
-    posInfo.Delay=                  [.895 .338+vPosSpec2d .0955 .035];
-    posInfo.plotRspec=              [.90 .313+vPosSpec2d .03 .025];
-    posInfo.plotPspec=              [.925 .313+vPosSpec2d .03 .025];
-    posInfo.plotYspec=              [.95 .313+vPosSpec2d .03 .025];
-    posInfo.checkboxPSD=            [.90 .290+vPosSpec2d .03 .025];
-    posInfo.RPYcomboSpec=           [.932 .290+vPosSpec2d .055 .025];
-    posInfo.climMax1_text=          [.894 .267+vPosSpec2d .026 .024];
-    posInfo.climMax1_input=         [.918 .245+vPosSpec2d .022 .024];
-    posInfo.climMax2_text=          [.943 .267+vPosSpec2d .026 .024];
-    posInfo.climMax2_input=         [.968 .245+vPosSpec2d .022 .024];
+    posInfo.computeSpec=         [cpL+.006 .52+vPosSpec2d cpW/2-.006 .030];
+    posInfo.resetSpec=           [cpL+cpW/2 .52+vPosSpec2d cpW/2-.006 .030];
+    posInfo.spectrogramButton2=  [cpL+.003 .485+vPosSpec2d cpW-.006 .030];
+    posInfo.spectrogramButton3=  [cpL+.003 .450+vPosSpec2d cpW-.006 .030];
+    posInfo.saveFig2=            [cpL+.006 .415+vPosSpec2d cpW/2-.006 .030];
+    posInfo.saveSettings2=       [cpL+cpW/2 .415+vPosSpec2d cpW/2-.006 .030];
+    posInfo.smooth_select=       [cpL+.003 .375+vPosSpec2d cpW-.006 .035];
+    posInfo.Delay=               [cpL+.003 .338+vPosSpec2d cpW-.006 .035];
+    posInfo.plotRspec=           [cpL+.005 .313+vPosSpec2d .035 .025];
+    posInfo.plotPspec=           [cpL+.04 .313+vPosSpec2d .035 .025];
+    posInfo.plotYspec=           [cpL+.075 .313+vPosSpec2d .035 .025];
+    posInfo.checkboxPSD=         [cpL+.005 .290+vPosSpec2d .04 .025];
+    posInfo.RPYcomboSpec=        [cpL+cpW/2-.01 .290+vPosSpec2d cpW/2+.004 .025];
+    posInfo.climMax1_text=       [cpL+.003 .267+vPosSpec2d cpW/4 .024];
+    posInfo.climMax1_input=      [cpL+cpW/4 .245+vPosSpec2d cpW/4 .024];
+    posInfo.climMax2_text=       [cpL+cpW/2 .267+vPosSpec2d cpW/4 .024];
+    posInfo.climMax2_input=      [cpL+3*cpW/4 .245+vPosSpec2d cpW/4 .024];
 end
 
 climScale1=[0 ; -50 ];
@@ -111,9 +110,9 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PTdatatip);
 end
 
-spec2CrtlpanelPos = [.89 .27+vPosSpec2d .105 .65];
+spec2CrtlpanelPos = [cpL .27+vPosSpec2d cpW .65];
 if exist('isOctave','var') && isOctave
-    spec2CrtlpanelPos = [.89 .24+vPosSpec2d .105 .68];
+    spec2CrtlpanelPos = [cpL .24+vPosSpec2d cpW .68];
 end
 spec2Crtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...

@@ -7,8 +7,8 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
     
-if ~isempty(fnameMaster)
-   
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
+
 %%% tooltips
 TooltipString_specRun=['Run current spectral configuration',...
     newline, 'Warning: Set subsampling dropdown @ or < medium for faster processing.'];
@@ -47,82 +47,85 @@ SpecLineCols(:,:,3) = [colorA; colorB; colorC; colorD];
     
 
 clear posInfo.SpecPos
-cols=[0.04 0.261 0.482 0.703];
+cols=[0.04 0.25 0.46 0.67];
 rows=[0.64 0.35 0.06];
 k=0;
 for c=1:4
     for r=1:3
         k=k+1;
-        posInfo.SpecPos(k,:)=[cols(c) rows(r) 0.18 0.24];
+        posInfo.SpecPos(k,:)=[cols(c) rows(r) 0.175 0.24];
     end
 end
 
 
-posInfo.computeSpec=            [.896 .87 .0455 .026];
-posInfo.resetSpec=              [.942 .87 .0455 .026];
-posInfo.saveFig1=               [.8965 .845 .0455 .026];
-posInfo.saveSettings1=          [.942 .845 .0455 .026];
+% Control panel layout (consistent with Log Viewer cpL/cpW)
+cpL = .875; cpW = .12;
 
-posInfo.specPresets=            [.8945 .802 .096 .04];
-posInfo.ColormapSelect=         [.8945 .778 .096 .04];
-posInfo.smooth_select =         [.8945 .754 .096 .04];
-posInfo.controlFreq1Cutoff =    [.91 .715 .023 .025];
-posInfo.controlFreq2Cutoff =    [.945 .715 .023 .025];
-posInfo.controlFreqCutoff_text =[.9 .74 .07 .025];
-posInfo.checkbox2d=             [.91 .685 .04 .02];
-posInfo.checkboxPSD=            [.94 .685 .04 .02];
+posInfo.computeSpec=            [cpL+.006 .87 cpW/2-.006 .026];
+posInfo.resetSpec=              [cpL+cpW/2 .87 cpW/2-.006 .026];
+posInfo.saveFig1=               [cpL+.006 .845 cpW/2-.006 .026];
+posInfo.saveSettings1=          [cpL+cpW/2 .845 cpW/2-.006 .026];
+
+posInfo.specPresets=            [cpL+.003 .805 cpW-.006 .035];
+posInfo.ColormapSelect=         [cpL+.003 .775 cpW-.006 .035];
+posInfo.smooth_select =         [cpL+.003 .745 cpW-.006 .035];
+posInfo.controlFreqCutoff_text =[cpL+.003 .725 cpW-.006 .025];
+posInfo.controlFreq1Cutoff =    [cpL+.005 .700 cpW/2-.005 .025];
+posInfo.controlFreq2Cutoff =    [cpL+cpW/2 .700 cpW/2-.005 .025];
+posInfo.checkbox2d=             [cpL+.005 .675 cpW/2-.005 .025];
+posInfo.checkboxPSD=            [cpL+cpW/2 .675 cpW/2-.005 .025];
 
 if exist('isOctave','var') && isOctave
-    % Octave Qt widgets need more vertical space - spread out Params panel elements
-    posInfo.computeSpec=            [.896 .87 .0455 .030];
-    posInfo.resetSpec=              [.942 .87 .0455 .030];
-    posInfo.saveFig1=               [.8965 .838 .0455 .030];
-    posInfo.saveSettings1=          [.942 .838 .0455 .030];
-    posInfo.specPresets=            [.8945 .795 .096 .035];
-    posInfo.ColormapSelect=         [.8945 .758 .096 .035];
-    posInfo.smooth_select=          [.8945 .721 .096 .035];
-    posInfo.controlFreqCutoff_text= [.9 .700 .07 .024];
-    posInfo.controlFreq1Cutoff=     [.91 .675 .023 .024];
-    posInfo.controlFreq2Cutoff=     [.945 .675 .023 .024];
-    posInfo.checkbox2d=             [.91 .650 .04 .025];
-    posInfo.checkboxPSD=            [.94 .650 .04 .025];
+    % Octave Qt widgets need more vertical space
+    posInfo.computeSpec=            [cpL+.006 .87 cpW/2-.006 .030];
+    posInfo.resetSpec=              [cpL+cpW/2 .87 cpW/2-.006 .030];
+    posInfo.saveFig1=               [cpL+.006 .838 cpW/2-.006 .030];
+    posInfo.saveSettings1=          [cpL+cpW/2 .838 cpW/2-.006 .030];
+    posInfo.specPresets=            [cpL+.003 .795 cpW-.006 .035];
+    posInfo.ColormapSelect=         [cpL+.003 .758 cpW-.006 .035];
+    posInfo.smooth_select=          [cpL+.003 .721 cpW-.006 .035];
+    posInfo.controlFreqCutoff_text= [cpL+.003 .700 cpW-.006 .024];
+    posInfo.controlFreq1Cutoff=     [cpL+.005 .675 cpW/2-.005 .024];
+    posInfo.controlFreq2Cutoff=     [cpL+cpW/2 .675 cpW/2-.005 .024];
+    posInfo.checkbox2d=             [cpL+.005 .650 cpW/2-.005 .025];
+    posInfo.checkboxPSD=            [cpL+cpW/2 .650 cpW/2-.005 .025];
 end
 
 posInfo.AphasedelayText1=[.06 .984 .14 .02];
-posInfo.AphasedelayText2=[.282 .984 .14 .02];
-posInfo.AphasedelayText3=[.504 .984 .14 .02];
-posInfo.AphasedelayText4=[.726 .984 .14 .02];
- 
-posInfo.hCbar1pos=[0.04 0.89 0.18  0.02];
-posInfo.hCbar2pos=[0.262 0.89 0.18  0.02];
-posInfo.hCbar3pos=[0.484 0.89 0.18  0.02];
-posInfo.hCbar4pos=[0.706 0.89 0.18  0.02];
- 
+posInfo.AphasedelayText2=[.27 .984 .14 .02];
+posInfo.AphasedelayText3=[.48 .984 .14 .02];
+posInfo.AphasedelayText4=[.69 .984 .14 .02];
+
+posInfo.hCbar1pos=[0.04 0.89 0.175  0.02];
+posInfo.hCbar2pos=[0.25 0.89 0.175  0.02];
+posInfo.hCbar3pos=[0.46 0.89 0.175  0.02];
+posInfo.hCbar4pos=[0.67 0.89 0.175  0.02];
+
 ddh = 0.01; % dropdown height
 if exist('isOctave','var') && isOctave, ddh = 0.025; end
 posInfo.hDropdn1pos=[0.08 0.97 0.095   ddh];
-posInfo.hDropdn2pos=[0.302 0.97 0.095   ddh];
-posInfo.hDropdn3pos=[0.524 0.97 0.095   ddh];
-posInfo.hDropdn4pos=[0.746 0.97 0.095   ddh];
+posInfo.hDropdn2pos=[0.29 0.97 0.095   ddh];
+posInfo.hDropdn3pos=[0.50 0.97 0.095   ddh];
+posInfo.hDropdn4pos=[0.71 0.97 0.095   ddh];
 
 posInfo.fDropdn1pos=[0.08 0.942 0.095  ddh];
-posInfo.fDropdn2pos=[0.302 0.942 0.095  ddh];
-posInfo.fDropdn3pos=[0.524 0.942 0.095  ddh];
-posInfo.fDropdn4pos=[0.746 0.942 0.095  ddh];
+posInfo.fDropdn2pos=[0.29 0.942 0.095  ddh];
+posInfo.fDropdn3pos=[0.50 0.942 0.095  ddh];
+posInfo.fDropdn4pos=[0.71 0.942 0.095  ddh];
 
 posInfo.Sub100HzCheck1=[0.175 0.942 .06 .025];
-posInfo.Sub100HzCheck2=[.4 .942 .06 .025];
-posInfo.Sub100HzCheck3=[0.62 0.942 .06 .025];
-posInfo.Sub100HzCheck4=[.84 .942 .06 .025];
+posInfo.Sub100HzCheck2=[.385 .942 .06 .025];
+posInfo.Sub100HzCheck3=[.595 .942 .06 .025];
+posInfo.Sub100HzCheck4=[.805 .942 .06 .025];
 
 posInfo.climMax_text = [.01 .913 .025 .024];
 posInfo.climMax_input = [.01 .888 .025 .024];
-posInfo.climMax_text2 = [.232 .913 .025 .024]; 
-posInfo.climMax_input2 = [.232 .888 .025 .024];
-posInfo.climMax_text3 = [.455 .913 .025 .024]; 
-posInfo.climMax_input3 = [.455 .888 .025 .024];
-posInfo.climMax_text4 = [.677 .913 .025 .024]; 
-posInfo.climMax_input4 = [.677 .888 .025 .024];
+posInfo.climMax_text2 = [.22 .913 .025 .024];
+posInfo.climMax_input2 = [.22 .888 .025 .024];
+posInfo.climMax_text3 = [.43 .913 .025 .024];
+posInfo.climMax_input3 = [.43 .888 .025 .024];
+posInfo.climMax_text4 = [.64 .913 .025 .024];
+posInfo.climMax_input4 = [.64 .888 .025 .024];
 climScale=[0.5 0.5 0.5 0.5; 10 10 10 10];
 Flim1=20; % 3.3333Hz steps
 Flim2=60;
@@ -140,9 +143,9 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PTdatatip);
 end
 
-specCrtlpanelPos = [.89 .68 .105 .24];
+specCrtlpanelPos = [cpL .66 cpW .26];
 if exist('isOctave','var') && isOctave
-    specCrtlpanelPos = [.89 .64 .105 .28];
+    specCrtlpanelPos = [cpL .64 cpW .28];
 end
 specCrtlpanel = uipanel('Title','Params','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...

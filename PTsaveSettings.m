@@ -8,8 +8,8 @@
 % ----------------------------------------------------------------------------------
 
 %% create saveDirectory
-if ~isempty(fnameMaster) 
-  
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
+
 
 %%
 set(gcf, 'pointer', 'watch')

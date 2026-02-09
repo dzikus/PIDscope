@@ -8,7 +8,7 @@
 % ----------------------------------------------------------------------------------
 
 %% create saveDirectory
-if ~isempty(fnameMaster) 
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
     cd(logfile_directory)
     saveDirectory='PTB_FIGS';
     saveDirectory = [saveDirectory '_' currentDate]; % [saveDirectory '_' fnameMaster{1}(1:end-4) 'xx_' currentDate];
