@@ -62,13 +62,18 @@ for i = 1 : 3
     set(gca,'YLim', [st nd])
     set(gca,'Ytick', [st : (nd-st) / 5: nd], 'YTickLabel',[freqStr], 'YMinorTick', 'on', 'Xtick', [0 : round( (size(specMat{i},2)-1) / 10) : size(specMat{i},2)],'XTickLabel',[timeStr], 'XMinorTick', 'on', 'TickDir', 'out');
         
-    if get(guiHandlesSpec3.ColormapSelect, 'Value')<=7,
-        tmpCmapStr = get(guiHandlesSpec3.ColormapSelect, 'String');
+    try
         tmpCmapVal = get(guiHandlesSpec3.ColormapSelect, 'Value');
-        colormap(char(tmpCmapStr(tmpCmapVal)));
-    end
-    if get(guiHandlesSpec3.ColormapSelect, 'Value')==8, colormap(linearREDcmap); end
-    if get(guiHandlesSpec3.ColormapSelect, 'Value')==9, colormap(linearGREYcmap); end
+        if tmpCmapVal <= 7
+            tmpCmapStr = get(guiHandlesSpec3.ColormapSelect, 'String');
+            cm = feval(char(tmpCmapStr(tmpCmapVal)), 64);
+        elseif tmpCmapVal == 8
+            cm = linearREDcmap;
+        else
+            cm = linearGREYcmap;
+        end
+        set(PTspecfig3, 'Colormap', cm);
+    catch, end
     cbar = colorbar('EastOutside');
     set(get(cbar, 'Label'), 'String', 'Power Spectral density (dB)');
   

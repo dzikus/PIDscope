@@ -9,15 +9,11 @@
 % ----------------------------------------------------------------------------------
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Octave compatible: use viridis instead of parula (parula is MATLAB-only)
+% Get colormap data without setting any figure's colormap (avoids stale colorbar errors)
 try
-    a=colormap(parula);
+    a=parula(64);
 catch
-    try
-        a=colormap(viridis);
-    catch
-        a=viridis(64);
-    end
+    a=viridis(64);
 end
 viridis=[a(:,1) a(:,2) a(:,3)*.6];
 

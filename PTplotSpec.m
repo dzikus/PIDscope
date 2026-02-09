@@ -215,16 +215,18 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
         set(hCbar4,'Position', [posInfo.hCbar4pos])
     end
 
-    % color maps
-    % standard set (Octave: viridis replaces parula at index 1)
+    % color maps - use set() to avoid stale colorbar listener errors in colormap()
     try
-    if get(guiHandlesSpec.ColormapSelect, 'Value')<=7,
-        tmpCmapStr = get(guiHandlesSpec.ColormapSelect, 'String');
         tmpCmapVal = get(guiHandlesSpec.ColormapSelect, 'Value');
-        colormap(char(tmpCmapStr(tmpCmapVal)));
-    end
-    if get(guiHandlesSpec.ColormapSelect, 'Value')==8, colormap(linearREDcmap); end
-    if get(guiHandlesSpec.ColormapSelect, 'Value')==9, colormap(linearGREYcmap); end
+        if tmpCmapVal <= 7
+            tmpCmapStr = get(guiHandlesSpec.ColormapSelect, 'String');
+            cm = feval(char(tmpCmapStr(tmpCmapVal)), 64);
+        elseif tmpCmapVal == 8
+            cm = linearREDcmap;
+        else
+            cm = linearGREYcmap;
+        end
+        set(PTspecfig, 'Colormap', cm);
     catch, end
 
 end

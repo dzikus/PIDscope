@@ -17,6 +17,9 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     try
         cd(logfile_directory);
         if ~isfolder(saveDirectory), mkdir(saveDirectory); end
+        % Verify directory is writable (Flatpak mounts home read-only)
+        testf = fullfile(saveDirectory, '.writetest');
+        fid = fopen(testf, 'w'); fclose(fid); delete(testf);
         saveBase = logfile_directory;
     catch
         try
@@ -44,7 +47,7 @@ while FigDoesNotExist,
 end
 figname=[saveDirectory '-' int2str(n)];
 saveas(gcf, [figname '.png'] );
-print(figname,'-dpng','-r200')
+try, print(figname,'-dpng','-r200'); catch, end
 
 set(gcf, 'pointer', 'arrow')
 cd(configDir)
