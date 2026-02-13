@@ -125,7 +125,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     end
 
             
-    PTdatatipSetup(PTfig);
+    try  % datacursormode not available in Octave
+      dcm_obj = datacursormode(PTfig);
+      set(dcm_obj,'UpdateFcn',@PTdatatip);
+    end
 
     cntLV = 0;
     lnstyle = lineStyleLV;
@@ -278,8 +281,11 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         end
     end
 
+    % Set up click-to-show-value datatips on all axes
+    PTdatatipSetup(PTfig);
+
     set(PTfig, 'pointer', 'arrow')
-else 
+else
      warndlg('Please select file(s)');
 end
 

@@ -88,5 +88,8 @@ for i = 1 : 3
 end
 updateSpec = 0;
 
+% Set up click-to-show-value datatips on all axes
+PTdatatipSetup(PTspecfig3);
+
 set(PTspecfig3, 'pointer', 'arrow')
 

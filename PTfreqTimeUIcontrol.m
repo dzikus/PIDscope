@@ -69,7 +69,10 @@ set(PTspecfig3, 'InvertHardcopy', 'off');
 set(PTspecfig3,'color',bgcolor);
 
 
-PTdatatipSetup(PTspecfig3);
+try  % datacursormode not available in Octave
+  dcm_obj2 = datacursormode(PTspecfig3);
+  set(dcm_obj2,'UpdateFcn',@PTdatatip);
+end
 
 Spec3Crtlpanel = uipanel('Title','select file ','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...

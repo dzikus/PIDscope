@@ -287,6 +287,9 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
         end
     end
 end
+% Set up click-to-show-value datatips on all axes
+PTdatatipSetup(PTspecfig);
+
 set(PTspecfig, 'pointer', 'arrow')
 updateSpec=0;
 

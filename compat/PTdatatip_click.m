@@ -1,18 +1,19 @@
-function PTdatatip_click(fig)
+function PTdatatip_click(ax)
 % PTdatatip_click - Octave replacement for datacursormode click handler
 %
-% Called by WindowButtonDownFcn set up by PTdatatipSetup.
-% On left-click in axes: finds nearest data (line point or image pixel),
+% Called by axes ButtonDownFcn set up by PTdatatipSetup.
+% On left-click: finds nearest data (line point or image pixel),
 % shows formatted text annotation. On right-click: removes annotation.
+%
+% ax - axes handle (from ButtonDownFcn callback)
 
   global logviewerYscale
 
+  fig = ancestor(ax, 'figure');
+
   % Right-click = remove annotation
   if strcmp(get(fig, 'SelectionType'), 'alt')
-    ax = get(fig, 'CurrentAxes');
-    if ~isempty(ax)
-      delete(findobj(ax, 'Tag', 'PTdatatip'));
-    end
+    delete(findobj(ax, 'Tag', 'PTdatatip'));
     return
   end
 
@@ -20,9 +21,6 @@ function PTdatatip_click(fig)
   if ~strcmp(get(fig, 'SelectionType'), 'normal')
     return
   end
-
-  ax = get(fig, 'CurrentAxes');
-  if isempty(ax), return; end
 
   cp = get(ax, 'CurrentPoint');
   x = cp(1,1);
@@ -35,7 +33,7 @@ function PTdatatip_click(fig)
     return
   end
 
-  % Remove previous annotation
+  % Remove previous annotation in this axes
   delete(findobj(ax, 'Tag', 'PTdatatip'));
 
   % Find what was clicked - scan axes children

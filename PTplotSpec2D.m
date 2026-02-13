@@ -263,6 +263,9 @@ if ~isempty(freq2d2) && ~isempty(amp2d2)
 end
 
 
+% Set up click-to-show-value datatips on all axes
+PTdatatipSetup(PTspecfig2);
+
 set(PTspecfig2, 'pointer', 'arrow')
 updateSpec=0;
 end
