@@ -9,7 +9,14 @@
 % ----------------------------------------------------------------------------------
   
 
-PtbVersion='v0.58';
+% Read version from VERSION file (generated from git tag)
+try
+  vfid = fopen(fullfile(fileparts(mfilename('fullpath')), 'VERSION'), 'r');
+  PtbVersion = ['v' strtrim(fgets(vfid))];
+  fclose(vfid);
+catch
+  PtbVersion = 'v0.0-dev';
+end
 
 %% Octave compatibility setup
 isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;

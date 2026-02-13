@@ -7,8 +7,14 @@ set -euo pipefail
 
 SRC_DIR="${1:-/src}"
 DIST_DIR="${2:-/dist}"
-# Version from PIDSCOPE_VERSION env, or git tag, or fallback
-VERSION="${PIDSCOPE_VERSION:-$(cd "${SRC_DIR}" && git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "dev")}"
+# Version: env > VERSION file > git tag > fallback
+if [ -n "${PIDSCOPE_VERSION:-}" ]; then
+    VERSION="${PIDSCOPE_VERSION}"
+elif [ -f "${SRC_DIR}/VERSION" ]; then
+    VERSION=$(tr -d '[:space:]' < "${SRC_DIR}/VERSION")
+else
+    VERSION=$(cd "${SRC_DIR}" && git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "dev")
+fi
 STAGING="/tmp/PIDscope-${VERSION}-windows"
 
 echo "=== Building PIDscope Windows package v${VERSION} ==="
