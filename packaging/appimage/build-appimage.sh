@@ -8,7 +8,8 @@ set -euo pipefail
 SRC_DIR="${1:-/src}"
 DIST_DIR="${2:-/dist}"
 APPDIR="/tmp/PIDscope.AppDir"
-VERSION="0.58"
+# Version from PIDSCOPE_VERSION env, or git tag, or fallback
+VERSION="${PIDSCOPE_VERSION:-$(cd "${SRC_DIR}" && git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "dev")}"
 
 echo "=== Building PIDscope AppImage v${VERSION} ==="
 
