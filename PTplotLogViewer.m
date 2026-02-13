@@ -125,10 +125,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     end
 
             
-    try  % datacursormode not available in Octave
-      dcm_obj = datacursormode(PTfig);
-      set(dcm_obj,'UpdateFcn',@PTdatatip);
-    end
+    PTdatatipSetup(PTfig);
 
     cntLV = 0;
     lnstyle = lineStyleLV;

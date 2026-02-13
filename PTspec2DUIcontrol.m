@@ -105,10 +105,7 @@ set(PTspecfig2, 'InvertHardcopy', 'off');
 set(PTspecfig2,'color',bgcolor);
 
 
-try  % datacursormode not available in Octave
-  dcm_obj2 = datacursormode(PTspecfig2);
-  set(dcm_obj2,'UpdateFcn',@PTdatatip);
-end
+PTdatatipSetup(PTspecfig2);
 
 spec2CrtlpanelPos = [cpL .27+vPosSpec2d cpW .65];
 if exist('isOctave','var') && isOctave
