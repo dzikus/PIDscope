@@ -62,6 +62,13 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     %% where you want full range of data
     fileIdx = get(guiHandles.FileNum, 'Value');
 
+    % Update Debug checkbox label for RC_INTERPOLATION mode
+    if exist('debugmode','var') && numel(debugmode) >= fileIdx && debugmode(fileIdx) == RC_INTERPOLATION
+        set(guiHandles.checkbox0, 'String', 'SP (raw)');
+    else
+        set(guiHandles.checkbox0, 'String', 'Debug');
+    end
+
     % if start or end > length of file, or start > end
     if (epoch1_A(fileIdx) > (tta{fileIdx}(end) / us2sec))  ||  (epoch2_A(fileIdx) > (tta{fileIdx}(end) / us2sec)) || (epoch1_A(fileIdx) > epoch2_A(fileIdx))
         epoch1_A(fileIdx) = 2;

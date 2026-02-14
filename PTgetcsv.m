@@ -29,14 +29,22 @@ if size(filename,2)>20
 end
  
 mainFname=filename;
-if strcmp(filename(end-3:end),'.BFL') || strcmp(filename(end-3:end),'.BBL') || strcmp(filename(end-3:end),'.bfl') || strcmp(filename(end-3:end),'.bbl') || strcmp(filename(end-3:end),'.txt') || strcmp(filename(end-3:end),'.TXT')          
+[fdir, fname, fext] = fileparts(filename);
+fbase = fullfile(fdir, fname);
+if strcmpi(fext, '.json')
+    % QuickSilver JSON blackbox export - parse directly
+    [headerFile, csvFile] = PTquicJson2csv(filename);
+    filename = headerFile;
+    files(1).name = csvFile;
+    fnums = 1;
+elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
 
-    if firmware_flag < 3
-        [status,result]=system(['./blackbox_decode ' filename]);
+    if firmware_flag == 3
+        [status,result]=system(['./blackbox_decode_INAV ' filename ' 2>&1']);
     else
-        [status,result]=system(['./blackbox_decode_INAV ' filename]);
+        [status,result]=system(['./blackbox_decode ' filename ' 2>&1']);
     end
-    files=dir([filename(1:end-4) '*.csv']);
+    files=dir([fbase '*.csv']);
     
     % only choose files that don't have .bbl or .bfl extension
     clear f2;m=1;
@@ -54,21 +62,21 @@ if strcmp(filename(end-3:end),'.BFL') || strcmp(filename(end-3:end),'.BBL') || s
     end
     
     % get rid of all event files and gps.gpx files 
-    fevt=dir([filename(1:end-4) '*.event']);
+    fevt=dir([fbase '*.event']);
     for k=1:size(fevt,1)
         delete([fevt(k).name]);
     end
-    fevt=dir([filename(1:end-4) '*.gps.gpx']);
+    fevt=dir([fbase '*.gps.gpx']);
     for k=1:size(fevt,1)
         delete([fevt(k).name]);
     end    
-    fevt=dir([filename(1:end-4) '*.gps.csv']);
+    fevt=dir([fbase '*.gps.csv']);
     for k=1:size(fevt,1)
         delete([fevt(k).name]);
     end
     
     % get list of files after erasing junk
-    files = dir([filename(1:end-4) '*.csv']);
+    files = dir([fbase '*.csv']);
     
     % if more than one file
     if size(files,1) > 1

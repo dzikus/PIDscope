@@ -230,10 +230,10 @@ TooltipString_selectButton = ['With box checked, position mouse over desired sta
 
 %%%
 
-guiHandles.Firmware = uicontrol(PTfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
+guiHandles.Firmware = uicontrol(PTfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'; 'FETTEC logfiles'; 'QuickSilver logfiles'; 'Rotorflight logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
 
 guiHandles.fileA = uicontrol(PTfig,'string','Select ','fontsize',fontsz,'TooltipString', [TooltipString_loadRun], 'units','normalized','Position',[posInfo.fileA],...
-     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); [filenameA, filepathA] = uigetfile({''*.BBL;*.BFL;*.TXT'', ''Blackbox Log Files''}, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PTload; PTviewerUIcontrol; PTplotLogViewer; end'); 
+     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); fwv=get(guiHandles.Firmware,''Value''); if fwv==5, filt={''*.json;*.btfl;*.BTFL;*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''QuickSilver Log Files''}; else filt={''*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''Blackbox Log Files''}; end; [filenameA, filepathA] = uigetfile(filt, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PTload; PTviewerUIcontrol; PTplotLogViewer; end');
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PTfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
