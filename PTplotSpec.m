@@ -181,8 +181,29 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 set(ax, 'GridColor', [0 0 0]); % black on white background
                 set(h,'Color',[0 0 0],'fontsize',fontsz,'fontweight','bold')             
             end
-             ylabel('Frequency (Hz)','fontweight','bold') 
+             ylabel('Frequency (Hz)','fontweight','bold')
              xlabel('% Throttle','fontweight','bold')
+
+            %% Dynamic notch overlay for FFT_FREQ mode
+            if exist('notchData','var') && exist('debugmode','var') && exist('debugIdx','var')
+                tmpFileK = get(guiHandlesSpec.FileSelect{c1(p)}, 'Value');
+                tmpFFTk = FFT_FREQ;
+                if numel(debugIdx) >= tmpFileK
+                    tmpFFTk = debugIdx{tmpFileK}.FFT_FREQ;
+                end
+                if debugmode(tmpFileK) == tmpFFTk && numel(notchData) >= tmpFileK && ~isempty(notchData{tmpFileK})
+                    % Only overlay on the axis matching gyro_debug_axis
+                    tmpGdaK = 0;
+                    if exist('gyro_debug_axis','var') && numel(gyro_debug_axis) >= tmpFileK
+                        tmpGdaK = gyro_debug_axis(tmpFileK);
+                    end
+                    if (c2(p) - 1) == tmpGdaK
+                        maxHzOverlay = (A_lograte(tmpFileK) / 2) * 1000;
+                        PTplotDynNotchOverlay(gca, notchData{tmpFileK}, T{tmpFileK}.setpoint_3_(tIND{tmpFileK}) / 10, size(img, 1), maxHzOverlay, 'throttle');
+                    end
+                end
+            end
+
         catch ME
             warning('PTplotSpec render p=%d: %s', p, ME.message);
         end

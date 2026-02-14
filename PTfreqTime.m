@@ -81,7 +81,25 @@ for i = 1 : 3
         delete(subplot('position',posInfo.Spec3Pos(i,:))); 
     end
     box off
-    
+
+    %% Dynamic notch overlay for FFT_FREQ mode
+    if exist('notchData','var') && exist('debugmode','var') && exist('debugIdx','var')
+        tmpFFTft = FFT_FREQ;
+        if numel(debugIdx) >= tmpFileVal3
+            tmpFFTft = debugIdx{tmpFileVal3}.FFT_FREQ;
+        end
+        if debugmode(tmpFileVal3) == tmpFFTft && numel(notchData) >= tmpFileVal3 && ~isempty(notchData{tmpFileVal3})
+            % Only overlay on the axis matching gyro_debug_axis
+            tmpGdaFt = 0;
+            if exist('gyro_debug_axis','var') && numel(gyro_debug_axis) >= tmpFileVal3
+                tmpGdaFt = gyro_debug_axis(tmpFileVal3);
+            end
+            if (i - 1) == tmpGdaFt
+                PTplotDynNotchOverlay(gca, notchData{tmpFileVal3}, size(specMat{i}, 2), size(specMat{i}, 1), F(end), 'time');
+            end
+        end
+    end
+
     catch
         delete(subplot('position',posInfo.Spec3Pos(i,:))); 
     end

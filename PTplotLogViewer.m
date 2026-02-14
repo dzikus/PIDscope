@@ -62,8 +62,12 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     %% where you want full range of data
     fileIdx = get(guiHandles.FileNum, 'Value');
 
-    % Update Debug checkbox label for RC_INTERPOLATION mode
-    if exist('debugmode','var') && numel(debugmode) >= fileIdx && debugmode(fileIdx) == RC_INTERPOLATION
+    % Update Debug checkbox label for RC_INTERPOLATION mode (version-aware)
+    tmpRCidx = RC_INTERPOLATION; % global default
+    if exist('debugIdx','var') && numel(debugIdx) >= fileIdx
+        tmpRCidx = debugIdx{fileIdx}.RC_INTERPOLATION;
+    end
+    if exist('debugmode','var') && numel(debugmode) >= fileIdx && debugmode(fileIdx) == tmpRCidx
         set(guiHandles.checkbox0, 'String', 'SP (raw)');
     else
         set(guiHandles.checkbox0, 'String', 'Debug');

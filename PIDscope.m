@@ -63,11 +63,16 @@ if isempty(dir(['mainDir-PTB' PtbVersion '.txt']))
 end
 
 
-%%%%%%%%%% used debug modes %%%%%%% - must consider emu and INAV
+%%%%%%%%%% debug mode defaults (BF 4.x) — overridden per-file by debugIdx{k} after loading
 GYRO_SCALED = 6;
 RC_INTERPOLATION = 7;
 FEEDFORWARD = 59;
 FFT_FREQ = 17;
+debugIdx = {};
+fwType = {};
+fwMajor = [];
+fwMinor = [];
+gyro_debug_axis = [];
 
 t = now;
 currentDate = datestr(t, 'yyyy-mm-dd HH:MM:SS'); % Octave compatible (was: datetime)
@@ -237,7 +242,7 @@ guiHandles.fileA = uicontrol(PTfig,'string','Select ','fontsize',fontsz,'Tooltip
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PTfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
-     'callback','clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster; fcnt = 0; filenameA={};fnameMaster = {}; try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;'); 
+     'callback','clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster; fcnt = 0; filenameA={};fnameMaster = {}; try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;');
 set(guiHandles.clr, 'ForegroundColor', cautionCol);
 
 guiHandles.startEndButton = uicontrol(PTfig,'style','checkbox', 'string','Trim ','fontsize',fontsz,'TooltipString', [TooltipString_selectButton], 'units','normalized','Position',[posInfo.startEndButton],...

@@ -99,20 +99,41 @@ try
 
                 clear a b r p y dm ff
                 SetupInfo{fcnt}=dataA(fcnt).SetupInfo;
-                r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));  
+                r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));
                 p = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'pitchPID')),2));
                 y = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'yawPID')),2));
-                
+
+                %%%%%%%%%% parse firmware version for per-file debug mode indices %%%%%%%%%%
+                [fwType{fcnt}, fwMajor(fcnt), fwMinor(fcnt)] = PTparseBFversion(SetupInfo{fcnt});
+                debugIdx{fcnt} = PTdebugModeIndices(fwType{fcnt}, fwMajor(fcnt), fwMinor(fcnt));
+
                 %%%%%%%%%% collect debug mode info %%%%%%%%%%
                 try
                     debugmode(fcnt) = str2num(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'debug_mode')),2)));
                 catch
-                    debugmode(fcnt) = 6;% default to gyro_scaled
+                    % BF 2025.12+: GYRO_SCALED removed, use GYRO_FILTERED as default
+                    if debugIdx{fcnt}.GYRO_SCALED == -1
+                        debugmode(fcnt) = debugIdx{fcnt}.GYRO_FILTERED;
+                    else
+                        debugmode(fcnt) = 6;% default to gyro_scaled
+                    end
+                end
+
+                %%%%%%%%%% parse gyro_debug_axis (BF 2025.12+, for FFT_FREQ axis) %%%%%%%%%%
+                try
+                    gyro_debug_axis(fcnt) = str2num(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'gyro_debug_axis')),2)));
+                catch
+                    gyro_debug_axis(fcnt) = 0; % default Roll
                 end
 
                 dm = {};
-                if ~isempty(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'd_min')),2))
-                    dm = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'd_min')),2));
+                % Try d_max first (BF 2025.12+), fallback to d_min (older)
+                dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_max'));
+                if isempty(dm_idx)
+                    dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_min'));
+                end
+                if ~isempty(dm_idx) && ~isempty(SetupInfo{fcnt}(dm_idx,2))
+                    dm = SetupInfo{fcnt}(dm_idx, 2);
                 else
                     dm = {' , , '};
                 end

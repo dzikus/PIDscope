@@ -255,6 +255,24 @@ for k = 1 : Nfiles
     if ~isempty(str2num(FilterDelayDterm{k})) && ~isempty(SPGyroDelay(k,1))
         [dterm_phase_shift_deg(k,1)] = round(PTphaseShiftDeg(str2num(FilterDelayDterm{k}), 1000/(SPGyroDelay(k,1)) ));
     end
+
+    %%%%%%%%%% extract dynamic notch data for FFT_FREQ overlay %%%%%%%%%%
+    tmpFFTidx = FFT_FREQ; % global default
+    if exist('debugIdx','var') && numel(debugIdx) >= k
+        tmpFFTidx = debugIdx{k}.FFT_FREQ;
+    end
+    if exist('debugmode','var') && numel(debugmode) >= k && debugmode(k) == tmpFFTidx
+        % FFT_FREQ debug field layout depends on BF version
+        if exist('fwMajor','var') && numel(fwMajor) >= k && fwMajor(k) >= 2025
+            % BF 2025.12+: [0]=pre_DN_gyro, [1-3]=notch_Hz
+            notchData{k} = [T{k}.debug_1_(tIND{k}), T{k}.debug_2_(tIND{k}), T{k}.debug_3_(tIND{k})];
+        else
+            % BF 4.3-4.5: [0-2]=notch_Hz, [3]=pre_DN_gyro
+            notchData{k} = [T{k}.debug_0_(tIND{k}), T{k}.debug_1_(tIND{k}), T{k}.debug_2_(tIND{k})];
+        end
+    else
+        notchData{k} = [];
+    end
 end
 
 
