@@ -43,19 +43,19 @@ modules:
     buildsystem: simple
     sources:
       - type: file
-        url: https://packages.octave.org/download/control-4.2.1.tar.gz
+        url: https://github.com/gnu-octave/pkg-control/releases/download/control-4.2.1/control-4.2.1.tar.gz
         sha256: abd13286b717c71b420591201255be9c295b77731f94c5eb591cb7d488f5f247
       - type: file
-        url: https://packages.octave.org/download/signal-1.4.7.tar.gz
+        url: https://github.com/gnu-octave/octave-signal/releases/download/1.4.7/signal-1.4.7.tar.gz
         sha256: 6a8b4b8cf0b3019d984fde75af947ae73e9a1c509890552cd5e113f7ba89038c
       - type: file
-        url: https://packages.octave.org/download/datatypes-1.1.7.tar.gz
-        sha256: 2320c964c6f640bc07f553ba12acab602fd20c3ab805b746c419be80eeb53e0b
+        url: https://github.com/pr0m1th3as/datatypes/releases/download/release-1.1.8/datatypes-1.1.8.tar.gz
+        sha256: 83258f0a587f014f2fb7ddb477cdb4fcc25cb92bf6ebdf8c046f64178a0ed4d4
       - type: file
-        url: https://packages.octave.org/download/statistics-1.8.0.tar.gz
-        sha256: 38f45268a509e1a2ce1103b0d192709a4887920776567f761054519873e06b27
+        url: https://github.com/gnu-octave/statistics/releases/download/release-1.8.1/statistics-1.8.1.tar.gz
+        sha256: 5174f80ddf182674ca06d871d9fbed439f3eaed3e3970892a0716ed480f5545d
       - type: file
-        url: https://packages.octave.org/download/image-2.18.1.tar.gz
+        url: https://downloads.sourceforge.net/project/octave/Octave%20Forge%20Packages/Individual%20Package%20Releases/image-2.18.1.tar.gz
         sha256: d4eed0579782c2efaa0818de2f20f13b276eb3d4b4b3d63347c7317d84e29531
     build-commands:
       # Install all packages globally into /app in dependency order
@@ -63,8 +63,8 @@ modules:
         octave --eval "
           pkg install -global control-4.2.1.tar.gz;
           pkg install -global signal-1.4.7.tar.gz;
-          pkg install -global datatypes-1.1.7.tar.gz;
-          pkg install -global statistics-1.8.0.tar.gz;
+          pkg install -global datatypes-1.1.8.tar.gz;
+          pkg install -global statistics-1.8.1.tar.gz;
           pkg install -global image-2.18.1.tar.gz;
           pkg list;
         "

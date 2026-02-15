@@ -6,3 +6,4 @@ blackbox_decode_INAV
 *.swp
 *.swo
 *~
+dist/
