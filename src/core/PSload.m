@@ -100,6 +100,7 @@ try
                 copyfile(source, workdir);
             catch e
                 warning('PSload: cannot copy %s to workdir: %s', source, e.message);
+                continue;
             end
 
             clear subFiles;

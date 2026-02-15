@@ -31,10 +31,12 @@ cp -r "${SRC_DIR}/src" "${APPDIR}/usr/share/pidscope/"
 for decoder in blackbox_decode blackbox_decode_INAV; do
     if [ -f "${SRC_DIR}/${decoder}" ]; then
         cp "${SRC_DIR}/${decoder}" "${APPDIR}/usr/share/pidscope/"
-        chmod +x "${APPDIR}/usr/share/pidscope/${decoder}"
+    elif [ -f "/cache/${decoder}" ]; then
+        cp "/cache/${decoder}" "${APPDIR}/usr/share/pidscope/"
     else
-        echo "WARNING: ${decoder} not found in ${SRC_DIR}"
+        echo "WARNING: ${decoder} not found in ${SRC_DIR} or /cache"
     fi
+    [ -f "${APPDIR}/usr/share/pidscope/${decoder}" ] && chmod +x "${APPDIR}/usr/share/pidscope/${decoder}"
 done
 
 # Desktop integration

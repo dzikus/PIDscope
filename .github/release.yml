@@ -1,0 +1,10 @@
+changelog:
+  categories:
+    - title: New Features
+      labels: [feat, enhancement]
+    - title: Bug Fixes
+      labels: [fix, bugfix]
+    - title: Build & Packaging
+      labels: [build, ci, chore]
+    - title: Other Changes
+      labels: ["*"]
