@@ -12,7 +12,8 @@ env:
 permissions: {}
 
 jobs:
-  build-appimage:
+  # Stage 1: Build Docker builder images (3 parallel)
+  build-appimage-builder:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,14 +27,69 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build builder image
+      - name: Build and push builder image
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest ./packaging/appimage
           docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
 
+  build-windows-builder:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772  # v3.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push builder image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest ./packaging/windows
+          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
+
+  build-macos-builder:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772  # v3.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push builder image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest ./packaging/macos
+          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
+
+  # Stage 2: Build packages (each depends only on its own builder)
+  build-appimage:
+    needs: build-appimage-builder
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772  # v3.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build AppImage
         run: |
           mkdir -p dist
+          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
@@ -45,10 +101,11 @@ jobs:
           path: dist/PIDscope-*-x86_64.AppImage
 
   build-windows:
+    needs: build-windows-builder
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      packages: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
@@ -58,14 +115,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build builder image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest ./packaging/windows
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
-
       - name: Build Windows ZIP
         run: |
           mkdir -p dist
+          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
@@ -77,10 +130,11 @@ jobs:
           path: dist/PIDscope-*-windows-x86_64.zip
 
   build-macos:
+    needs: build-macos-builder
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      packages: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
@@ -90,14 +144,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build builder image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest ./packaging/macos
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
-
       - name: Build macOS ZIP
         run: |
           mkdir -p dist
+          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
@@ -108,6 +158,7 @@ jobs:
           name: macos-zip
           path: dist/PIDscope-*-macos-universal.zip
 
+  # Stage 3: Create GitHub Release
   release:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [build-appimage, build-windows, build-macos]
