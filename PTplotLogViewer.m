@@ -227,10 +227,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 
                             %  Percent variables
                 LVpanel5 = subplot('position',posInfo.linepos4);
-                if get(guiHandles.checkbox10, 'Value'), hch11=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_0_, sFactor, 'loess'));hold on;set(hch11,'color', [linec.col10],'LineWidth',lwVal), end
-                if get(guiHandles.checkbox11, 'Value'), hch12=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_1_, sFactor, 'loess'));hold on;set(hch12,'color', [linec.col11],'LineWidth',lwVal), end
-                if get(guiHandles.checkbox12, 'Value'), hch13=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_2_, sFactor, 'loess'));hold on;set(hch13,'color', [linec.col12],'LineWidth',lwVal), end
-                if get(guiHandles.checkbox13, 'Value'), hch14=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_3_, sFactor, 'loess'));hold on;set(hch14,'color', [linec.col13],'LineWidth',lwVal), end
+                if get(guiHandles.checkbox10, 'Value'), try hch11=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_0_, sFactor, 'loess'));hold on;set(hch11,'color', [linec.col10],'LineWidth',lwVal), catch, end, end
+                if get(guiHandles.checkbox11, 'Value'), try hch12=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_1_, sFactor, 'loess'));hold on;set(hch12,'color', [linec.col11],'LineWidth',lwVal), catch, end, end
+                if get(guiHandles.checkbox12, 'Value'), try hch13=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_2_, sFactor, 'loess'));hold on;set(hch13,'color', [linec.col12],'LineWidth',lwVal), catch, end, end
+                if get(guiHandles.checkbox13, 'Value'), try hch14=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_3_, sFactor, 'loess'));hold on;set(hch14,'color', [linec.col13],'LineWidth',lwVal), catch, end, end
                 % motor sigs 4-7 for x8 configuration
                 if get(guiHandles.checkbox10, 'Value'), try hch15=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_4_, sFactor, 'loess'));hold on;set(hch15,'color', [linec.col10],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
                 if get(guiHandles.checkbox11, 'Value'), try hch16=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_5_, sFactor, 'loess'));hold on;set(hch16,'color', [linec.col11],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end

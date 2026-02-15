@@ -63,11 +63,11 @@ h=subplot('position',[posInfo.RPstick]);
 plot(T{get(guiHandles.FileNum, 'Value')}.rcCommand_0_(x2) , T{get(guiHandles.FileNum, 'Value')}.rcCommand_1_(x2),'ko');
 set(h, 'xlim', [-500 500], 'ylim', [-500 500], 'xticklabel',['R'], 'yticklabel',['P'],'xtick',[0], 'ytick',[0], 'xgrid', 'on', 'ygrid', 'on', 'fontweight','bold','FontSize', fontsz);
 subplot('position',[posInfo.YTstick]); h=text(0,110, ['time: ' num2str(tta{(get(guiHandles.FileNum, 'Value'))}(x2) / us2sec) ' sec']); set(h,'FontSize', fontsz);
-h=text(-450,-60, ['M3:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_2_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(13,:)]);
-h=text(-450,-40, ['M4:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_3_(x2))  '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(14,:)]);
+try h=text(-450,-60, ['M3:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_2_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(13,:)]); catch, end
+try h=text(-450,-40, ['M4:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_3_(x2))  '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(14,:)]); catch, end
 subplot('position',[posInfo.RPstick]);
-h=text(-450,-1100, ['M1:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_0_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(11,:)]);
-h=text(-450,-900, ['M2:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_1_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(12,:)]);
+try h=text(-450,-1100, ['M1:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_0_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(11,:)]); catch, end
+try h=text(-450,-900, ['M2:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_1_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(12,:)]); catch, end
 subplot('position',[posInfo.YTstick]);
 h=text(-450,-80, ['gyro R:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.gyroADC_0_(x2)) ' deg/s']); set(h,'FontSize', fontsz, 'color', [ColorSet(2,:)]);
 h=text(-450,-100, ['gyro P:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.gyroADC_1_(x2)) ' deg/s']); set(h,'FontSize', fontsz, 'color', [ColorSet(2,:)]);
