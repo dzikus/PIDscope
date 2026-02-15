@@ -45,13 +45,15 @@ blackbox_decode_INAV:
 install: fetch-blackbox
 	install -d $(INSTALL_DIR)
 	install -d $(BIN_DIR)
-	cp -r *.m compat/ blackbox_decode blackbox_decode_INAV $(INSTALL_DIR)/
+	cp PIDscope.m VERSION $(INSTALL_DIR)/
+	cp -r src/ $(INSTALL_DIR)/
+	cp blackbox_decode blackbox_decode_INAV $(INSTALL_DIR)/
 	@printf '#!/bin/sh\nexec $(OCTAVE) --gui --eval "cd(\\\"$(INSTALL_DIR)\\\"); PIDscope"\n' > $(BIN_DIR)/pidscope
 	chmod +x $(BIN_DIR)/pidscope
 	@echo "Installed. Run with: pidscope"
 
 test:
-	$(OCTAVE) --no-gui --eval "addpath('compat'); addpath('tests'); run_tests"
+	$(OCTAVE) --no-gui --eval "addpath(genpath('src')); addpath('tests'); run_tests"
 
 clean:
 	rm -f blackbox_decode blackbox_decode_INAV

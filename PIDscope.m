@@ -12,10 +12,10 @@
 % Read version from VERSION file (generated from git tag)
 try
   vfid = fopen(fullfile(fileparts(mfilename('fullpath')), 'VERSION'), 'r');
-  PtbVersion = ['v' strtrim(fgets(vfid))];
+  PsVersion = ['v' strtrim(fgets(vfid))];
   fclose(vfid);
 catch
-  PtbVersion = 'v0.0-dev';
+  PsVersion = 'v0.0-dev';
 end
 
 %% Octave compatibility setup
@@ -26,20 +26,20 @@ if isOctave
   try pkg load statistics; end
   try pkg load control; end
   try pkg load image; end
-  % Add compat/ shims for MATLAB functions not available in Octave
-  % (smooth, finddelay, nanmean, nanmedian)
-  compat_dir = fullfile(fileparts(mfilename('fullpath')), 'compat');
-  if exist(compat_dir, 'dir')
-    addpath(compat_dir);
-  end
 end
 
 executableDir = fileparts(mfilename('fullpath'));
 if isempty(executableDir), executableDir = pwd; end
 addpath(executableDir);
 
-setupStr = {'SET UP WORKING DIRECTORY!', ' ', 'Before running PIDscope, we have to determine the location of your ''main'' directory. After you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDscope_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
-resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDscope_' PtbVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
+% Add src/ and all subdirectories (core, ui, plot, util, compat) to path
+src_dir = fullfile(executableDir, 'src');
+if exist(src_dir, 'dir')
+  addpath(genpath(src_dir));
+end
+
+setupStr = {'SET UP WORKING DIRECTORY!', ' ', 'Before running PIDscope, we have to determine the location of your ''main'' directory. After you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDscope_' PsVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
+resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigator window will pop up.' , ['Simply Navigate to the location of your downloaded ''PIDscope_' PsVersion '\main\'' folder'], 'NOTE: Ideally, that folder and all of its contents should be placed on your desktop to avoid any issues!'};
 
 % Platform-specific config directory
 if exist('/Users/Shared', 'dir')
@@ -49,7 +49,7 @@ else
     if ~exist(configDir, 'dir'), mkdir(configDir); end
 end
 cd(configDir)
-if isempty(dir(['mainDir-PTB' PtbVersion '.txt']))
+if isempty(dir(['mainDir-PS' PsVersion '.txt']))
     % Auto-detect if blackbox_decode is in executableDir (e.g. AppImage)
     if exist(fullfile(executableDir, 'blackbox_decode'), 'file')
         main_directory = executableDir;
@@ -57,7 +57,7 @@ if isempty(dir(['mainDir-PTB' PtbVersion '.txt']))
         uiwait(helpdlg(setupStr));
         main_directory = uigetdir('Navigate to Main folder');
     end
-    fid = fopen(['mainDir-PTB' PtbVersion '.txt'],'w');
+    fid = fopen(['mainDir-PS' PsVersion '.txt'],'w');
     fprintf(fid,'%s\n',main_directory);
     fclose(fid);
 end
@@ -82,10 +82,10 @@ set(0,'defaultUicontrolFontName', 'Helvetica')
 % defaultUicontrolFontSize is set after fontsz is calculated (below)
 
 %%%% assign main figure handle and define some UI variables 
-PTfig = figure(1);
-set(PTfig, 'InvertHardcopy', 'off');
+PSfig = figure(1);
+set(PSfig, 'InvertHardcopy', 'off');
 bgcolor=[.95 .95 .95];
-set(PTfig,'color',bgcolor);
+set(PSfig,'color',bgcolor);
 
 wikipage = 'https://buymeacoffee.com/dzikus';
 
@@ -99,7 +99,7 @@ epoch1_A=[];
 epoch2_A=[];
 tIND = [];
 maxY =  500;
-nLineCols = 8; multiLineCols=PTlinecmap(nLineCols);
+nLineCols = 8; multiLineCols=PSlinecmap(nLineCols);
 updateSpec=0;
 debugmode=0;%default to none
 Nfiles=0;
@@ -134,9 +134,9 @@ screensz(3) = round(1.78 * screensz(4)); % force 16:9
 % Octave Qt bug: setting figure units to 'normalized' permanently breaks uipanel
 % Calculate pixel position manually instead
 figPos = round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]);
-set(PTfig, 'Position', figPos);
-set(PTfig, 'NumberTitle', 'off');
-set(PTfig, 'Name', ['PIDscope (' PtbVersion ') - Log Viewer']);
+set(PSfig, 'Position', figPos);
+set(PSfig, 'NumberTitle', 'off');
+set(PSfig, 'Name', ['PIDscope (' PsVersion ') - Log Viewer']);
 
 pause(.1)% need to wait for figure to open before extracting screen values
 
@@ -235,81 +235,81 @@ TooltipString_selectButton = ['With box checked, position mouse over desired sta
 
 %%%
 
-guiHandles.Firmware = uicontrol(PTfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'; 'FETTEC logfiles'; 'QuickSilver logfiles'; 'Rotorflight logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
+guiHandles.Firmware = uicontrol(PSfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'; 'FETTEC logfiles'; 'QuickSilver logfiles'; 'Rotorflight logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
 
-guiHandles.fileA = uicontrol(PTfig,'string','Select ','fontsize',fontsz,'TooltipString', [TooltipString_loadRun], 'units','normalized','Position',[posInfo.fileA],...
-     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); fwv=get(guiHandles.Firmware,''Value''); if fwv==5, filt={''*.json;*.btfl;*.BTFL;*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''QuickSilver Log Files''}; else filt={''*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''Blackbox Log Files''}; end; [filenameA, filepathA] = uigetfile(filt, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PTload; PTviewerUIcontrol; PTplotLogViewer; end');
+guiHandles.fileA = uicontrol(PSfig,'string','Select ','fontsize',fontsz,'TooltipString', [TooltipString_loadRun], 'units','normalized','Position',[posInfo.fileA],...
+     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); fwv=get(guiHandles.Firmware,''Value''); if fwv==5, filt={''*.json;*.btfl;*.BTFL;*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''QuickSilver Log Files''}; else filt={''*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''Blackbox Log Files''}; end; [filenameA, filepathA] = uigetfile(filt, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PSload; PSviewerUIcontrol; PSplotLogViewer; end');
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
-guiHandles.clr = uicontrol(PTfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
-     'callback','clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster; fcnt = 0; filenameA={};fnameMaster = {}; try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;');
+guiHandles.clr = uicontrol(PSfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
+     'callback','clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData; fcnt = 0; filenameA={};fnameMaster = {}; try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;');
 set(guiHandles.clr, 'ForegroundColor', cautionCol);
 
-guiHandles.startEndButton = uicontrol(PTfig,'style','checkbox', 'string','Trim ','fontsize',fontsz,'TooltipString', [TooltipString_selectButton], 'units','normalized','Position',[posInfo.startEndButton],...
-    'callback','if ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PTplotLogViewer, end'); 
+guiHandles.startEndButton = uicontrol(PSfig,'style','checkbox', 'string','Trim ','fontsize',fontsz,'TooltipString', [TooltipString_selectButton], 'units','normalized','Position',[posInfo.startEndButton],...
+    'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), try, [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; catch, end, end');
 
-guiHandles.plotR =uicontrol(PTfig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotR_LV], 'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+guiHandles.plotR =uicontrol(PSfig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotR_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
-guiHandles.plotP =uicontrol(PTfig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotP_LV], 'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+guiHandles.plotP =uicontrol(PSfig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotP_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
-guiHandles.plotY =uicontrol(PTfig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotY_LV], 'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+guiHandles.plotY =uicontrol(PSfig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotY_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
-guiHandles.RPYcomboLV=uicontrol(PTfig,'Style','checkbox','String','Single Panel','fontsize',fontsz,'BackgroundColor',bgcolor,...
-    'units','normalized','Position',[posInfo.RPYcomboLV],'callback','if ~isempty(fnameMaster), PTplotLogViewer; end');
+guiHandles.RPYcomboLV=uicontrol(PSfig,'Style','checkbox','String','Single Panel','fontsize',fontsz,'BackgroundColor',bgcolor,...
+    'units','normalized','Position',[posInfo.RPYcomboLV],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
-guiHandles.FileNum = uicontrol(PTfig,'Style','popupmenu','string',[fnameMaster], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText]);
+guiHandles.FileNum = uicontrol(PSfig,'Style','popupmenu','string',[fnameMaster], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText]);
 set(guiHandles.FileNum, 'String', ' ');
 
-guiHandles.lineSmooth = uicontrol(PTfig,'Style','popupmenu','string',{'line smooth off','line smooth low','line smooth med','line smooth med-high','line smooth high'},...
-    'fontsize',fontsz,'TooltipString', ['zero-phase filter lines'], 'units','normalized','Position', [posInfo.lineSmooth],'callback','if ~isempty(filenameA), expandON=0; PTplotLogViewer; end');
+guiHandles.lineSmooth = uicontrol(PSfig,'Style','popupmenu','string',{'line smooth off','line smooth low','line smooth med','line smooth med-high','line smooth high'},...
+    'fontsize',fontsz,'TooltipString', ['zero-phase filter lines'], 'units','normalized','Position', [posInfo.lineSmooth],'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA), expandON=0; PSplotLogViewer; end');
 
-guiHandles.linewidth = uicontrol(PTfig,'Style','popupmenu','string',{'line width 1','line width 2','line width 3','line width 4','line width 5'},...
-    'fontsize',fontsz, 'TooltipString', ['line thickness'], 'units','normalized','Position', [posInfo.linewidth],'callback','if ~isempty(filenameA), expandON=0; PTplotLogViewer; end');
+guiHandles.linewidth = uicontrol(PSfig,'Style','popupmenu','string',{'line width 1','line width 2','line width 3','line width 4','line width 5'},...
+    'fontsize',fontsz, 'TooltipString', ['line thickness'], 'units','normalized','Position', [posInfo.linewidth],'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA), expandON=0; PSplotLogViewer; end');
 
-guiHandles.spectrogramButton = uicontrol(PTfig,'Style', 'pushbutton','string','Spectral Analyzer','fontsize',fontsz,'TooltipString', [TooltipString_spec],'units','normalized','Position',[posInfo.spectrogramButton],...
-    'callback','PTspec2DUIcontrol;');
+guiHandles.spectrogramButton = uicontrol(PSfig,'Style', 'pushbutton','string','Spectral Analyzer','fontsize',fontsz,'TooltipString', [TooltipString_spec],'units','normalized','Position',[posInfo.spectrogramButton],...
+    'callback','PSspec2DUIcontrol;');
 set(guiHandles.spectrogramButton, 'ForegroundColor', colorA);
 
-guiHandles.TuningButton = uicontrol(PTfig,'string','Step Resp Tool','fontsize',fontsz,'TooltipString', [TooltipString_step],'units','normalized','Position',[posInfo.TuningButton],...
-    'callback','PTtuneUIcontrol');
+guiHandles.TuningButton = uicontrol(PSfig,'string','Step Resp Tool','fontsize',fontsz,'TooltipString', [TooltipString_step],'units','normalized','Position',[posInfo.TuningButton],...
+    'callback','PStuneUIcontrol');
 set(guiHandles.TuningButton, 'ForegroundColor', colorB);
 
-guiHandles.period2Hz = uicontrol(PTfig,'string','Period','fontsize',fontsz,'TooltipString', ['Calculates peak to peak in Hz similar to the BBE ''Mark'' tool' , newline, 'press button, position mouse over 1st peak, mouse click,' , newline, 'then position over 2nd peak, then mouse click again'], 'units','normalized','Position',[posInfo.period2Hz],...
-     'callback','if ~isempty(filenameA) && get(guiHandles.period2Hz, ''Value''), [x1 y1] = ginput(1); figure(PTfig); h=plot([x1 x1],[-(maxY*2) maxY],''-r'');set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2);  [x2 y2] = ginput(1); h=plot([x2 x2],[-(maxY*2) maxY],''-r''); set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2); plot([x1 x2],[y1 y2],'':k''); x3=[round(x1*1000) round(x2*1000)]; f = 1000/(x3(2)-x3(1)); text(x2, y2, [num2str(x3(2)-x3(1)) ''ms, '' num2str(f) ''Hz''],''FontSize'',fontsz, ''FontWeight'', ''Bold''), end');      
+guiHandles.period2Hz = uicontrol(PSfig,'string','Period','fontsize',fontsz,'TooltipString', ['Calculates peak to peak in Hz similar to the BBE ''Mark'' tool' , newline, 'press button, position mouse over 1st peak, mouse click,' , newline, 'then position over 2nd peak, then mouse click again'], 'units','normalized','Position',[posInfo.period2Hz],...
+     'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.period2Hz, ''Value''), try, [x1 y1] = ginput(1); figure(PSfig); h=plot([x1 x1],[-(maxY*2) maxY],''-r'');set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2);  [x2 y2] = ginput(1); h=plot([x2 x2],[-(maxY*2) maxY],''-r''); set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2); plot([x1 x2],[y1 y2],'':k''); x3=[round(x1*1000) round(x2*1000)]; f = 1000/(x3(2)-x3(1)); text(x2, y2, [num2str(x3(2)-x3(1)) ''ms, '' num2str(f) ''Hz''],''FontSize'',fontsz, ''FontWeight'', ''Bold''); catch, end, end');      
 
-guiHandles.DispInfoButton = uicontrol(PTfig,'string','Setup Info','fontsize',fontsz,'TooltipString', [TooltipString_setup],'units','normalized','Position',[posInfo.DispInfoButton],...
-    'callback','PTdispSetupInfoUIcontrol;PTdispSetupInfo;');
+guiHandles.DispInfoButton = uicontrol(PSfig,'string','Setup Info','fontsize',fontsz,'TooltipString', [TooltipString_setup],'units','normalized','Position',[posInfo.DispInfoButton],...
+    'callback','PSdispSetupInfoUIcontrol;PSdispSetupInfo;');
 set(guiHandles.DispInfoButton, 'ForegroundColor', setUpCol);
 
-guiHandles.saveFig = uicontrol(PTfig,'string','Save Fig','fontsize',fontsz, 'TooltipString',[TooltipString_saveFig], 'units','normalized','Position',[posInfo.saveFig],...
-    'callback','set(guiHandles.saveFig, ''FontWeight'', ''bold'');PTsaveFig; set(guiHandles.saveFig, ''FontWeight'', ''normal'');'); 
+guiHandles.saveFig = uicontrol(PSfig,'string','Save Fig','fontsize',fontsz, 'TooltipString',[TooltipString_saveFig], 'units','normalized','Position',[posInfo.saveFig],...
+    'callback','set(guiHandles.saveFig, ''FontWeight'', ''bold'');PSsaveFig; set(guiHandles.saveFig, ''FontWeight'', ''normal'');'); 
 set(guiHandles.saveFig, 'ForegroundColor', saveCol);
 
-guiHandles.saveSettings = uicontrol(PTfig,'string','Save Settings','fontsize',fontsz, 'TooltipString',['Save current settings to PTB defaults' ], 'units','normalized','Position',[posInfo.saveSettings],...
-    'callback','set(guiHandles.saveSettings, ''FontWeight'', ''bold'');PTsaveSettings; set(guiHandles.saveSettings, ''FontWeight'', ''normal'');'); 
+guiHandles.saveSettings = uicontrol(PSfig,'string','Save Settings','fontsize',fontsz, 'TooltipString',['Save current settings to PIDscope defaults' ], 'units','normalized','Position',[posInfo.saveSettings],...
+    'callback','set(guiHandles.saveSettings, ''FontWeight'', ''bold'');PSsaveSettings; set(guiHandles.saveSettings, ''FontWeight'', ''normal'');'); 
 set(guiHandles.saveSettings, 'ForegroundColor', saveCol);
 
-% guiHandles.wiki = uicontrol(PTfig,'string','User Guide','fontsize',fontsz,'FontName','arial','FontAngle','normal','TooltipString', [TooltipString_wiki],'units','normalized','Position',[posInfo.wiki],...
+% guiHandles.wiki = uicontrol(PSfig,'string','User Guide','fontsize',fontsz,'FontName','arial','FontAngle','normal','TooltipString', [TooltipString_wiki],'units','normalized','Position',[posInfo.wiki],...
 %     'callback','web(wikipage);'); 
 % guiHandles.wiki.ForegroundColor=[cautionCol];
 
-guiHandles.PIDtuningService = uicontrol(PTfig,'string','Support PIDscope','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['https://buymeacoffee.com/dzikus'],'units','normalized','Position',[posInfo.PIDtuningService],...
+guiHandles.PIDtuningService = uicontrol(PSfig,'string','Support PIDscope','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['https://buymeacoffee.com/dzikus'],'units','normalized','Position',[posInfo.PIDtuningService],...
     'callback','web(''https://buymeacoffee.com/dzikus'');');
 set(guiHandles.PIDtuningService, 'ForegroundColor', cautionCol);
 
 
-guiHandles.resetMain = uicontrol(PTfig,'string','Reset main directory','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['Donate to the PIDscope project'],'units','normalized','Position',[posInfo.resetMain],...
-    'callback','uiwait(helpdlg(resetupStr)), cd(configDir),  main_directory = uigetdir(''Navigate to Main folder''); fid = fopen([''mainDir-PTB'' PtbVersion ''.txt''],''w''); fprintf(fid,''%s\n'',main_directory); fclose(fid);  PIDscope');
+guiHandles.resetMain = uicontrol(PSfig,'string','Reset main directory','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['Donate to the PIDscope project'],'units','normalized','Position',[posInfo.resetMain],...
+    'callback','uiwait(helpdlg(resetupStr)), cd(configDir),  main_directory = uigetdir(''Navigate to Main folder''); fid = fopen([''mainDir-PS'' PsVersion ''.txt''],''w''); fprintf(fid,''%s\n'',main_directory); fclose(fid);  PIDscope');
 set(guiHandles.resetMain, 'ForegroundColor', cautionCol);
  
  
 
 rdr = ['rootDirectory: ' executableDir];
 try
-    fid = fopen(['mainDir-PTB' PtbVersion '.txt'],'r');
+    fid = fopen(['mainDir-PS' PsVersion '.txt'],'r');
     main_directory = fscanf(fid, '%s');
     fclose(fid);
 catch
@@ -335,14 +335,14 @@ ldr = ['logfileDirectory: ' logfile_directory ];
 
 drawnow; pause(0.2);
 try
-    defaults = readtable('PTBdefaults.txt');
+    defaults = readtable('PSdefaults.txt');
     a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
-    t = uitable(PTfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
+    t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
     set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
 catch
     defaults = ' '; 
     a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
-    t = uitable(PTfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
+    t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
     set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
 end
 
@@ -358,9 +358,9 @@ try set(guiHandles.linewidth, 'Value', defaults.Values(find(strcmp(defaults.Para
 % Force Octave Qt to do a full layout pass so widgets render at correct size
 if isOctave
     drawnow;
-    tmpPos = get(PTfig, 'Position');
-    set(PTfig, 'Position', tmpPos + [0 0 1 0]);
+    tmpPos = get(PSfig, 'Position');
+    set(PSfig, 'Position', tmpPos + [0 0 1 0]);
     drawnow;
-    set(PTfig, 'Position', tmpPos);
+    set(PSfig, 'Position', tmpPos);
     drawnow;
 end

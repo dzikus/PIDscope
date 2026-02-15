@@ -75,9 +75,8 @@ modules:
     build-commands:
       # Install .m source files
       - install -d /app/share/pidscope
-      - install -m644 *.m /app/share/pidscope/
-      - install -d /app/share/pidscope/compat
-      - install -m644 compat/*.m /app/share/pidscope/compat/
+      - install -m644 PIDscope.m VERSION /app/share/pidscope/
+      - cp -r src /app/share/pidscope/
       # Install blackbox_decode binaries
       - install -m755 blackbox_decode /app/share/pidscope/
       - install -m755 blackbox_decode_INAV /app/share/pidscope/

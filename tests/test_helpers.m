@@ -10,7 +10,7 @@ function y = mock_sine(freq_hz, duration_s, sample_rate_khz)
   % Generate pure sine wave
   % freq_hz - frequency in Hz
   % duration_s - duration in seconds
-  % sample_rate_khz - sample rate in kHz (matching PTtoolbox convention)
+  % sample_rate_khz - sample rate in kHz (matching PIDscope convention)
   Fs = sample_rate_khz * 1000;
   t = (0 : 1/Fs : duration_s - 1/Fs)';
   y = sin(2 * pi * freq_hz * t);

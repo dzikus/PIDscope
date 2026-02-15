@@ -13,11 +13,11 @@ export QT_PLUGIN_PATH="${APPDIR}/usr/lib/qt5/plugins"
 export QT_QPA_PLATFORM_PLUGIN_PATH="${APPDIR}/usr/lib/qt5/plugins/platforms"
 export XDG_DATA_DIRS="${APPDIR}/usr/share:${XDG_DATA_DIRS:-/usr/share}"
 
-PTB_DIR="${APPDIR}/usr/share/pidscope"
-export PTB_CONFIG_DIR="${HOME}/.config/PIDscope"
-mkdir -p "${PTB_CONFIG_DIR}"
+PS_DIR="${APPDIR}/usr/share/pidscope"
+export PS_CONFIG_DIR="${HOME}/.config/PIDscope"
+mkdir -p "${PS_CONFIG_DIR}"
 
 exec "${APPDIR}/usr/bin/octave" \
     --gui \
     --persist \
-    --eval "cd('${PTB_DIR}'); addpath('${PTB_DIR}'); addpath('${PTB_DIR}/compat'); PIDscope"
+    --eval "cd('${PS_DIR}'); PIDscope"

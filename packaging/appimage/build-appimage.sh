@@ -24,8 +24,9 @@ mkdir -p "${APPDIR}"/usr/{bin,lib} \
          "${APPDIR}"/usr/share/{pidscope,applications,metainfo,mime/packages,icons/hicolor/256x256/apps}
 
 # Source files
-cp "${SRC_DIR}"/*.m "${APPDIR}/usr/share/pidscope/"
-cp -r "${SRC_DIR}/compat" "${APPDIR}/usr/share/pidscope/"
+cp "${SRC_DIR}"/PIDscope.m "${APPDIR}/usr/share/pidscope/"
+cp "${SRC_DIR}"/VERSION "${APPDIR}/usr/share/pidscope/"
+cp -r "${SRC_DIR}/src" "${APPDIR}/usr/share/pidscope/"
 
 for decoder in blackbox_decode blackbox_decode_INAV; do
     if [ -f "${SRC_DIR}/${decoder}" ]; then

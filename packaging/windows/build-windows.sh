@@ -68,8 +68,9 @@ du -sh "${STAGING}/octave"
 
 # 3. Copy PIDscope source files
 echo "Copying PIDscope files..."
-cp "${SRC_DIR}"/*.m "${STAGING}/app/"
-cp -r "${SRC_DIR}/compat" "${STAGING}/app/"
+cp "${SRC_DIR}"/PIDscope.m "${STAGING}/app/"
+cp "${SRC_DIR}"/VERSION "${STAGING}/app/"
+cp -r "${SRC_DIR}/src" "${STAGING}/app/"
 
 # 4. Copy blackbox_decode binaries (cross-compiled)
 cp /cache/blackbox_decode.exe "${STAGING}/app/"

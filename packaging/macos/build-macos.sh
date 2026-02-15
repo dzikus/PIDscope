@@ -24,8 +24,8 @@ mkdir -p "${STAGING}"
 
 # 1. Copy PIDscope source files
 echo "Copying PIDscope files..."
-cp "${SRC_DIR}"/*.m "${STAGING}/"
-cp -r "${SRC_DIR}/compat" "${STAGING}/"
+cp "${SRC_DIR}"/PIDscope.m "${STAGING}/"
+cp -r "${SRC_DIR}/src" "${STAGING}/"
 
 # 2. Copy blackbox_decode universal binaries
 echo "Copying blackbox_decode binaries..."

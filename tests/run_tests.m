@@ -6,7 +6,7 @@ fprintf('\n=== PIDscope Test Suite ===\n\n');
 % Setup paths
 project_root = fileparts(fileparts(mfilename('fullpath')));
 addpath(project_root);
-addpath(fullfile(project_root, 'compat'));
+addpath(genpath(fullfile(project_root, 'src')));
 addpath(fullfile(project_root, 'tests'));
 
 % Load required packages
