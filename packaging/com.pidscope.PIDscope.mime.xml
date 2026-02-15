@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+
+  <mime-type type="application/x-betaflight-blackbox-log">
+    <comment>Betaflight Blackbox Log</comment>
+    <comment xml:lang="pl">Log Blackbox Betaflight</comment>
+    <glob pattern="*.BBL"/>
+    <glob pattern="*.bbl"/>
+    <magic priority="50">
+      <match type="string" offset="0" value="H Product:Blackbox flight data recorder"/>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/x-betaflight-blackbox-flash">
+    <comment>Betaflight Blackbox Flash Log</comment>
+    <comment xml:lang="pl">Log Flash Blackbox Betaflight</comment>
+    <glob pattern="*.BFL"/>
+    <glob pattern="*.bfl"/>
+  </mime-type>
+
+</mime-info>

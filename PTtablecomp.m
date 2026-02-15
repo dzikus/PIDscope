@@ -1,1 +1,0 @@
-cellfun(@(x,y) strcmp(x,y) , dataA.SetupInfo(1:20,1), dataB.SetupInfo(1:20,1) )
