@@ -28,12 +28,13 @@ RUN octave --eval "\
 # Compile blackbox_decode from source (not in git)
 RUN mkdir -p /cache && \
     git clone --depth=1 https://github.com/betaflight/blackbox-tools.git /tmp/bb-bf && \
-    cd /tmp/bb-bf && make -j$(nproc) && cp obj/blackbox_decode /cache/ && \
-    rm -rf /tmp/bb-bf && \
+    cd /tmp/bb-bf && make -j$(nproc) obj/blackbox_decode && \
+    gcc -o /cache/blackbox_decode obj/*.o -lm && \
+    cd / && rm -rf /tmp/bb-bf && \
     git clone --depth=1 https://github.com/iNavFlight/blackbox-tools.git /tmp/bb-inav && \
     cd /tmp/bb-inav && make -j$(nproc) obj/blackbox_decode && \
     cp obj/blackbox_decode /cache/blackbox_decode_INAV && \
-    rm -rf /tmp/bb-inav
+    cd / && rm -rf /tmp/bb-inav
 
 RUN wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" \
         -O /usr/local/bin/linuxdeploy && \
