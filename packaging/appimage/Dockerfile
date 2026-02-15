@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 
 RUN apt-get install -y \
     octave liboctave-dev \
-    build-essential \
+    build-essential git \
     wget file desktop-file-utils appstream \
     libfftw3-3 libopenblas0 libsuitesparse-dev \
     libgl1-mesa-glx libfontconfig1 libfreetype6 \
@@ -24,6 +24,16 @@ RUN octave --eval "\
     pkg install -forge datatypes; \
     pkg install -forge statistics; \
     pkg install -forge image;"
+
+# Compile blackbox_decode from source (not in git)
+RUN mkdir -p /cache && \
+    git clone --depth=1 https://github.com/betaflight/blackbox-tools.git /tmp/bb-bf && \
+    cd /tmp/bb-bf && make -j$(nproc) && cp obj/blackbox_decode /cache/ && \
+    rm -rf /tmp/bb-bf && \
+    git clone --depth=1 https://github.com/iNavFlight/blackbox-tools.git /tmp/bb-inav && \
+    cd /tmp/bb-inav && make -j$(nproc) obj/blackbox_decode && \
+    cp obj/blackbox_decode /cache/blackbox_decode_INAV && \
+    rm -rf /tmp/bb-inav
 
 RUN wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" \
         -O /usr/local/bin/linuxdeploy && \
