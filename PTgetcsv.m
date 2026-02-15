@@ -82,15 +82,11 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
     if size(files,1) > 1
         x=size(files,1);
         clear f2; m=1;
-        for k=1:x 
-            emptysubfiles = 0;
-            try
-                emptysubfiles = isempty(readtable(files(k).name,'Format','%s%s')); %faster loading strings but sometimes crashes 
-            catch
-                emptysubfiles = isempty(readtable(files(k).name,'HeaderLines', 2));
-            end
-                                
-            if emptysubfiles  %((files(k).bytes)) < 1000  
+        for k=1:x
+            % Check file size instead of parsing entire CSV (much faster for large files)
+            emptysubfiles = (files(k).bytes < 1000);
+
+            if emptysubfiles
                 delete(files(k).name)
                 files(k).name;
             else
@@ -110,8 +106,8 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
             if x>1 % if multiple logs exist in BB file 
                 [fnums , tf] = listdlg('ListString',logDurStr, 'ListSize',[250,round(size(logDurStr,2) * 20)], 'Name','Select file(s): ' );   
                 %%%% delete all unused BB decoded csv files
-                for k=1:x                    
-                    if k~=fnums, delete(files(k).name); end
+                for k=1:x
+                    if ~ismember(k, fnums), delete(files(k).name); end
                 end
             end
         else

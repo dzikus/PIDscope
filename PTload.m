@@ -170,14 +170,18 @@ try
                     end 
                     
                     if get(guiHandles.Firmware, 'Value') == 3 % INAV
-                        eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_ - 1000)) / 10;'])% scale motor sigs to %
-                        try 
+                        try
+                            eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_ - 1000)) / 10;'])% scale motor sigs to %
+                        catch, end
+                        try
                             eval(['T{fcnt}.motor_' int2str(k+4) '_ = ((T{fcnt}.motor_' int2str(k+4) '_ - 1000)) / 10;'])% scale motor sigs 4-7 for x8 configuration
                         catch
-                        end  
+                        end
                     else
-                        eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_) / 2000) * 100;'])% scale motor sigs to %
-                        try 
+                        try
+                            eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_) / 2000) * 100;'])% scale motor sigs to %
+                        catch, end
+                        try
                             eval(['T{fcnt}.motor_' int2str(k+4) '_ = ((T{fcnt}.motor_' int2str(k+4) '_) / 2000) * 100;'])% scale motor sigs 4-7 for x8 configuration
                         catch
                         end
