@@ -6,6 +6,7 @@ on:
       - 'packaging/appimage/Dockerfile'
       - 'packaging/windows/Dockerfile'
       - 'packaging/macos/Dockerfile'
+  workflow_call:
   workflow_dispatch:
 
 env:
