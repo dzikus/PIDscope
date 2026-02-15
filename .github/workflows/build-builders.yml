@@ -1,12 +1,6 @@
 name: Build builder images
 
 on:
-  push:
-    paths:
-      - 'packaging/appimage/Dockerfile'
-      - 'packaging/windows/Dockerfile'
-      - 'packaging/macos/Dockerfile'
-  workflow_call:
   workflow_dispatch:
 
 env:
