@@ -12,18 +12,11 @@ env:
 permissions: {}
 
 jobs:
-  build-builders:
-    uses: ./.github/workflows/build-builders.yml
-    permissions:
-      contents: read
-      packages: write
-
   build-appimage:
-    needs: build-builders
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
+      packages: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
@@ -33,10 +26,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build builder image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest ./packaging/appimage
+          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
+
       - name: Build AppImage
         run: |
           mkdir -p dist
-          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
@@ -48,11 +45,10 @@ jobs:
           path: dist/PIDscope-*-x86_64.AppImage
 
   build-windows:
-    needs: build-builders
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
+      packages: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
@@ -62,10 +58,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build builder image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest ./packaging/windows
+          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
+
       - name: Build Windows ZIP
         run: |
           mkdir -p dist
-          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
@@ -77,11 +77,10 @@ jobs:
           path: dist/PIDscope-*-windows-x86_64.zip
 
   build-macos:
-    needs: build-builders
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
+      packages: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
@@ -91,10 +90,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build builder image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest ./packaging/macos
+          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
+
       - name: Build macOS ZIP
         run: |
           mkdir -p dist
-          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
