@@ -193,8 +193,8 @@ FilterDelayDterm={};
 SPGyroDelay=[];
 Debug01={};
 Debug02={};
-gyro_phase_shift_deg=[];
-dterm_phase_shift_deg=[];
+gyro_phase_shift_deg=zeros(Nfiles,1);
+dterm_phase_shift_deg=zeros(Nfiles,1);
 for k = 1 : Nfiles
     Fs=1000/A_lograte(k);% yields more consistent results (mode(diff(tta)));
     maxlag=round(30000/Fs); %~30ms delay
@@ -242,19 +242,25 @@ for k = 1 : Nfiles
     if d<.1, SPGyroDelay(k,3) = 0, else, SPGyroDelay(k,3) = d; end 
  
     clear d d1 d2
-    d1 = smooth(T{k}.axisDpf_0_(tIND{k}),50);
-    d2 = smooth(T{k}.axisD_0_(tIND{k}),50);
-    [c,lags] = xcorr(d2,d1,maxlag);
-    d = lags(find(c==max(c)));
-    d=d * (Fs / 1000);
-    if d<.1, FilterDelayDterm{k} = ' '; else FilterDelayDterm{k} = num2str(d); end
-    
-    if ~isempty(str2num(Debug01{k})) && ~isempty(SPGyroDelay(k,1))
-        [gyro_phase_shift_deg(k,1)] = round(PTphaseShiftDeg(str2num(Debug01{k}), 1000/(SPGyroDelay(k,1)) ));
+    try
+        d1 = smooth(T{k}.axisDpf_0_(tIND{k}),50);
+        d2 = smooth(T{k}.axisD_0_(tIND{k}),50);
+        [c,lags] = xcorr(d2,d1,maxlag);
+        d = lags(find(c==max(c)));
+        d=d * (Fs / 1000);
+        if d<.1, FilterDelayDterm{k} = ' '; else FilterDelayDterm{k} = num2str(d); end
+    catch
+        FilterDelayDterm{k} = ' ';
     end
-    if ~isempty(str2num(FilterDelayDterm{k})) && ~isempty(SPGyroDelay(k,1))
-        [dterm_phase_shift_deg(k,1)] = round(PTphaseShiftDeg(str2num(FilterDelayDterm{k}), 1000/(SPGyroDelay(k,1)) ));
-    end
+
+    try
+        if ~isempty(str2num(Debug01{k})) && SPGyroDelay(k,1) > 0
+            [gyro_phase_shift_deg(k,1)] = round(PTphaseShiftDeg(str2num(Debug01{k}), 1000/(SPGyroDelay(k,1)) ));
+        end
+        if ~isempty(str2num(FilterDelayDterm{k})) && SPGyroDelay(k,1) > 0
+            [dterm_phase_shift_deg(k,1)] = round(PTphaseShiftDeg(str2num(FilterDelayDterm{k}), 1000/(SPGyroDelay(k,1)) ));
+        end
+    catch, end
 
     %%%%%%%%%% extract dynamic notch data for FFT_FREQ overlay %%%%%%%%%%
     tmpFFTidx = FFT_FREQ; % global default
