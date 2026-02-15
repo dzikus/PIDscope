@@ -12,7 +12,14 @@ env:
 permissions: {}
 
 jobs:
+  build-builders:
+    uses: ./.github/workflows/build-builders.yml
+    permissions:
+      contents: read
+      packages: write
+
   build-appimage:
+    needs: build-builders
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,6 +48,7 @@ jobs:
           path: dist/PIDscope-*-x86_64.AppImage
 
   build-windows:
+    needs: build-builders
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,6 +77,7 @@ jobs:
           path: dist/PIDscope-*-windows-x86_64.zip
 
   build-macos:
+    needs: build-builders
     runs-on: ubuntu-latest
     permissions:
       contents: read
