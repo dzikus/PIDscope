@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     apt-get update
 
 RUN apt-get install -y \
-    octave=10.* liboctave-dev=10.* \
+    octave liboctave-dev \
     build-essential git \
     wget file desktop-file-utils appstream \
     libfftw3-3 libopenblas0 libsuitesparse-dev \
