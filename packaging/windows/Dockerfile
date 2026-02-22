@@ -4,6 +4,7 @@
 
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
+ARG OCTAVE_VERSION=11.1.0
 
 RUN apt-get update && apt-get install -y \
     p7zip-full zip wget git curl make \
@@ -11,10 +12,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Pre-download Octave portable (cached in Docker image layer)
-# Use ftpmirror (ftp.gnu.org is unreliable/blocked from some networks)
 RUN mkdir -p /cache && \
-    wget -q --show-progress "https://ftpmirror.gnu.org/gnu/octave/windows/octave-10.3.0-w64.7z" \
-        -O /cache/octave-10.3.0-w64.7z
+    wget -q --show-progress "https://ftpmirror.gnu.org/gnu/octave/windows/octave-${OCTAVE_VERSION}-w64.7z" \
+        -O /cache/octave-${OCTAVE_VERSION}-w64.7z
 
 # Cross-compile blackbox_decode.exe from betaflight and iNav
 # BIN_DIR = obj/, so output is obj/blackbox_decode
