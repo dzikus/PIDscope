@@ -7,6 +7,7 @@ set -euo pipefail
 
 SRC_DIR="${1:-/src}"
 DIST_DIR="${2:-/dist}"
+OCTAVE_VERSION="${OCTAVE_VERSION:-11.1.0}"
 # Version: env > VERSION file > git tag > fallback
 if [ -n "${PIDSCOPE_VERSION:-}" ]; then
     VERSION="${PIDSCOPE_VERSION}"
@@ -25,8 +26,8 @@ mkdir -p "${STAGING}/app"
 # 1. Extract Octave portable
 echo "Extracting Octave portable (this takes a while)..."
 cd /tmp
-7z x -y /cache/octave-10.3.0-w64.7z -o/tmp/octave-extract > /dev/null
-mv /tmp/octave-extract/octave-10.3.0-w64 "${STAGING}/octave"
+7z x -y /cache/octave-${OCTAVE_VERSION}-w64.7z -o/tmp/octave-extract > /dev/null
+mv /tmp/octave-extract/octave-${OCTAVE_VERSION}-w64 "${STAGING}/octave"
 
 # 2. Strip unnecessary files to reduce package size
 echo "Stripping unnecessary files..."
@@ -36,8 +37,8 @@ rm -rf "${STAGING}/octave/ucrt64"
 rm -rf "${STAGING}/octave/notepad++"
 rm -rf "${STAGING}/octave/mingw64/include"
 # Remove bulky doc files but keep .qhc/.qch (prevents Qt Help startup errors)
-find "${STAGING}/octave/mingw64/share/octave/10.3.0/doc" -name '*.html' -delete 2>/dev/null || true
-find "${STAGING}/octave/mingw64/share/octave/10.3.0/doc" -name '*.pdf' -delete 2>/dev/null || true
+find "${STAGING}/octave/mingw64/share/octave/${OCTAVE_VERSION}/doc" -name '*.html' -delete 2>/dev/null || true
+find "${STAGING}/octave/mingw64/share/octave/${OCTAVE_VERSION}/doc" -name '*.pdf' -delete 2>/dev/null || true
 rm -rf "${STAGING}/octave/mingw64/share/doc"
 rm -rf "${STAGING}/octave/mingw64/share/info"
 rm -rf "${STAGING}/octave/mingw64/share/man"
