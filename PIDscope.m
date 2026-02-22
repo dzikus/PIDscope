@@ -51,7 +51,7 @@ end
 cd(configDir)
 if isempty(dir(['mainDir-PS' PsVersion '.txt']))
     % Auto-detect if blackbox_decode is in executableDir (e.g. AppImage)
-    if exist(fullfile(executableDir, 'blackbox_decode'), 'file')
+    if exist(fullfile(executableDir, 'blackbox_decode'), 'file') || exist(fullfile(executableDir, 'blackbox_decode.exe'), 'file')
         main_directory = executableDir;
     else
         uiwait(helpdlg(setupStr));
@@ -315,7 +315,7 @@ try
 catch
 end
 if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_directory,'dir') ...
-        || ~exist(fullfile(main_directory, 'blackbox_decode'), 'file')
+        || (~exist(fullfile(main_directory, 'blackbox_decode'), 'file') && ~exist(fullfile(main_directory, 'blackbox_decode.exe'), 'file'))
     main_directory = executableDir;
 end
 cd(configDir)

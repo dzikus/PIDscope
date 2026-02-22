@@ -35,7 +35,9 @@ rm -rf "${STAGING}/octave/clang64"
 rm -rf "${STAGING}/octave/ucrt64"
 rm -rf "${STAGING}/octave/notepad++"
 rm -rf "${STAGING}/octave/mingw64/include"
-rm -rf "${STAGING}/octave/mingw64/share/octave/10.3.0/doc"
+# Remove bulky doc files but keep .qhc/.qch (prevents Qt Help startup errors)
+find "${STAGING}/octave/mingw64/share/octave/10.3.0/doc" -name '*.html' -delete 2>/dev/null || true
+find "${STAGING}/octave/mingw64/share/octave/10.3.0/doc" -name '*.pdf' -delete 2>/dev/null || true
 rm -rf "${STAGING}/octave/mingw64/share/doc"
 rm -rf "${STAGING}/octave/mingw64/share/info"
 rm -rf "${STAGING}/octave/mingw64/share/man"
@@ -76,7 +78,13 @@ cp -r "${SRC_DIR}/src" "${STAGING}/app/"
 cp /cache/blackbox_decode.exe "${STAGING}/app/"
 cp /cache/blackbox_decode_INAV.exe "${STAGING}/app/"
 
-# 5. Copy launcher and icon
+# 5. Suppress Windows Terminal false-positive warning (only affects CLI, not GUI)
+OCTAVERC="${STAGING}/octave/mingw64/share/octave/site/m/startup/octaverc"
+if [ -f "${OCTAVERC}" ]; then
+    echo "% PIDscope: site octaverc cleared (Windows Terminal warning is false positive in GUI mode)" > "${OCTAVERC}"
+fi
+
+# 6. Copy launcher and icon
 cp "${SRC_DIR}/packaging/windows/PIDscope.bat" "${STAGING}/"
 if [ -f "${SRC_DIR}/packaging/com.pidscope.PIDscope.png" ]; then
     cp "${SRC_DIR}/packaging/com.pidscope.PIDscope.png" "${STAGING}/PIDscope.png"
