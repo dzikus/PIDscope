@@ -39,10 +39,17 @@ if strcmpi(fext, '.json')
     fnums = 1;
 elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
 
-    if firmware_flag == 3
-        [status,result]=system(['./blackbox_decode_INAV ' filename ' 2>&1']);
+    if ispc()
+        bb_decode = 'blackbox_decode.exe';
+        bb_decode_inav = 'blackbox_decode_INAV.exe';
     else
-        [status,result]=system(['./blackbox_decode ' filename ' 2>&1']);
+        bb_decode = './blackbox_decode';
+        bb_decode_inav = './blackbox_decode_INAV';
+    end
+    if firmware_flag == 3
+        [status,result]=system([bb_decode_inav ' ' filename ' 2>&1']);
+    else
+        [status,result]=system([bb_decode ' ' filename ' 2>&1']);
     end
     files=dir([fbase '*.csv']);
     

@@ -44,14 +44,22 @@ resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigat
 % Platform-specific config directory
 if exist('/Users/Shared', 'dir')
     configDir = '/Users/Shared';
+elseif ispc()
+    appdata = getenv('APPDATA');
+    if isempty(appdata), appdata = getenv('USERPROFILE'); end
+    if isempty(appdata), appdata = executableDir; end
+    configDir = fullfile(appdata, 'PIDscope');
+    if ~exist(configDir, 'dir'), mkdir(configDir); end
 else
-    configDir = fullfile(getenv('HOME'), '.config', 'PIDscope');
+    homeDir = getenv('HOME');
+    if isempty(homeDir), homeDir = executableDir; end
+    configDir = fullfile(homeDir, '.config', 'PIDscope');
     if ~exist(configDir, 'dir'), mkdir(configDir); end
 end
 cd(configDir)
 if isempty(dir(['mainDir-PS' PsVersion '.txt']))
     % Auto-detect if blackbox_decode is in executableDir (e.g. AppImage)
-    if exist(fullfile(executableDir, 'blackbox_decode'), 'file')
+    if exist(fullfile(executableDir, 'blackbox_decode'), 'file') || exist(fullfile(executableDir, 'blackbox_decode.exe'), 'file')
         main_directory = executableDir;
     else
         uiwait(helpdlg(setupStr));
@@ -315,7 +323,7 @@ try
 catch
 end
 if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_directory,'dir') ...
-        || ~exist(fullfile(main_directory, 'blackbox_decode'), 'file')
+        || (~exist(fullfile(main_directory, 'blackbox_decode'), 'file') && ~exist(fullfile(main_directory, 'blackbox_decode.exe'), 'file'))
     main_directory = executableDir;
 end
 cd(configDir)

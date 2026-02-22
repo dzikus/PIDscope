@@ -85,7 +85,12 @@ try
         prev_dir = pwd();
 
         % Copy blackbox_decode into workdir so ./blackbox_decode works
-        for dec = {'blackbox_decode', 'blackbox_decode_INAV'}
+        if ispc()
+            decoders = {'blackbox_decode.exe', 'blackbox_decode_INAV.exe'};
+        else
+            decoders = {'blackbox_decode', 'blackbox_decode_INAV'};
+        end
+        for dec = decoders
             src = fullfile(main_directory, dec{1});
             if exist(src, 'file')
                 copyfile(src, workdir);
@@ -235,13 +240,13 @@ try
         end
         % Clean up workdir
         cd(prev_dir);
-        try system(['rm -rf ' workdir]); catch, end
+        try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     end
 
     try close(waitbarFid), catch, end
 catch  ME
     try cd(prev_dir); catch, end
-    try system(['rm -rf ' workdir]); catch, end
+    try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     try close(waitbarFid); catch, end
     warning('PSload error: %s', ME.message);
     for k = 1:numel(ME.stack)

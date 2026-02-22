@@ -11,4 +11,4 @@ if not exist ".pidscope-initialized" (
 )
 
 rem Launch PIDscope in Octave GUI
-start "" "octave\mingw64\bin\octave-gui.exe" --gui --eval "cd('%~dp0app'); PIDscope"
+start "" "octave\mingw64\bin\octave-gui.exe" --gui --persist --eval "cd('%~dp0app'); PIDscope"
