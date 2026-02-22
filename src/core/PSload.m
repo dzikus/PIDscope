@@ -85,7 +85,12 @@ try
         prev_dir = pwd();
 
         % Copy blackbox_decode into workdir so ./blackbox_decode works
-        for dec = {'blackbox_decode', 'blackbox_decode_INAV'}
+        if ispc()
+            decoders = {'blackbox_decode.exe', 'blackbox_decode_INAV.exe'};
+        else
+            decoders = {'blackbox_decode', 'blackbox_decode_INAV'};
+        end
+        for dec = decoders
             src = fullfile(main_directory, dec{1});
             if exist(src, 'file')
                 copyfile(src, workdir);
