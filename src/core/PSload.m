@@ -235,13 +235,13 @@ try
         end
         % Clean up workdir
         cd(prev_dir);
-        try system(['rm -rf ' workdir]); catch, end
+        try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     end
 
     try close(waitbarFid), catch, end
 catch  ME
     try cd(prev_dir); catch, end
-    try system(['rm -rf ' workdir]); catch, end
+    try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     try close(waitbarFid); catch, end
     warning('PSload error: %s', ME.message);
     for k = 1:numel(ME.stack)
