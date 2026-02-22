@@ -11,19 +11,22 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     apt-get update
 
 RUN apt-get install -y \
-    octave liboctave-dev \
+    octave=10.* liboctave-dev=10.* \
     build-essential git \
     wget file desktop-file-utils appstream \
     libfftw3-3 libopenblas0 libsuitesparse-dev \
     libgl1-mesa-glx libfontconfig1 libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN octave --eval "\
-    pkg install -forge control; \
-    pkg install -forge signal; \
-    pkg install -forge datatypes; \
-    pkg install -forge statistics; \
-    pkg install -forge image;"
+RUN wget --tries=5 --timeout=30 -q \
+    "https://sourceforge.net/projects/octave/files/Octave%20Forge%20Packages/Individual%20Package%20Releases/image-2.18.1.tar.gz/download" \
+    -O /tmp/image-2.18.1.tar.gz && \
+    octave --eval "\
+    pkg install 'https://github.com/gnu-octave/pkg-control/releases/download/control-4.2.1/control-4.2.1.tar.gz'; \
+    pkg install 'https://github.com/gnu-octave/octave-signal/releases/download/1.4.7/signal-1.4.7.tar.gz'; \
+    pkg install 'https://github.com/pr0m1th3as/datatypes/releases/download/release-1.1.8/datatypes-1.1.8.tar.gz'; \
+    pkg install 'https://github.com/gnu-octave/statistics/releases/download/release-1.8.1/statistics-1.8.1.tar.gz'; \
+    pkg install '/tmp/image-2.18.1.tar.gz';"
 
 # Compile blackbox_decode from source (not in git)
 RUN mkdir -p /cache && \
