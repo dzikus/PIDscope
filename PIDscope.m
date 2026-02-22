@@ -44,8 +44,16 @@ resetupStr = {'RE-SET WORKING DIRECTORY!', ' ','Once you click ''OK'', a navigat
 % Platform-specific config directory
 if exist('/Users/Shared', 'dir')
     configDir = '/Users/Shared';
+elseif ispc()
+    appdata = getenv('APPDATA');
+    if isempty(appdata), appdata = getenv('USERPROFILE'); end
+    if isempty(appdata), appdata = executableDir; end
+    configDir = fullfile(appdata, 'PIDscope');
+    if ~exist(configDir, 'dir'), mkdir(configDir); end
 else
-    configDir = fullfile(getenv('HOME'), '.config', 'PIDscope');
+    homeDir = getenv('HOME');
+    if isempty(homeDir), homeDir = executableDir; end
+    configDir = fullfile(homeDir, '.config', 'PIDscope');
     if ~exist(configDir, 'dir'), mkdir(configDir); end
 end
 cd(configDir)
