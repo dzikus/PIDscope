@@ -4,8 +4,10 @@ function PSfilterSim(gyroRaw, Fs, setupInfo)
 %  Fs        - sample rate (Hz)
 %  setupInfo - cell array {param, value} from header
 
+screensz = get(0, 'ScreenSize');
 fig = figure('Name', 'Filter Simulation', 'NumberTitle', 'off', ...
-    'Color', [.15 .15 .15], 'Position', [80 60 1100 700]);
+    'Color', [.15 .15 .15], ...
+    'Position', round([.1*screensz(3) .08*screensz(4) .75*screensz(3) .8*screensz(4)]));
 
 fp = parseFilterParams(setupInfo);
 

@@ -23,16 +23,21 @@ function PSdatatip_click(ax)
     tag = get(ax, 'Tag');
     if strcmp(tag, 'PSexpanded')
       delete(ax);
+      % show uicontrols again
+      uic = findobj(fig, 'Type', 'uicontrol');
+      for kk = 1:length(uic), set(uic(kk), 'Visible', 'on'); end
     else
       htmp = copyobj(ax, fig);
       set(htmp, 'Units', 'normalized', 'fontweight', 'bold', ...
           'Position', [0.05 0.06 0.815 0.835], 'Tag', 'PSexpanded');
-      % Re-setup datatip on the expanded copy so clicks still work
       set(htmp, 'ButtonDownFcn', @(src, ~) PSdatatip_click(src));
       ch = get(htmp, 'Children');
       for kk = 1:length(ch)
         try set(ch(kk), 'HitTest', 'off'); catch, end
       end
+      % hide uicontrols so they don't overlap expanded plot
+      uic = findobj(fig, 'Type', 'uicontrol');
+      for kk = 1:length(uic), set(uic(kk), 'Visible', 'off'); end
     end
     return
   end
