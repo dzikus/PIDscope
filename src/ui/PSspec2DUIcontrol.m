@@ -54,44 +54,47 @@ posInfo.computeSpec=         [cpL+.006 .52+vPosSpec2d cpW/2-.006 sp2_rh];
 posInfo.resetSpec=           [cpL+cpW/2 .52+vPosSpec2d cpW/2-.006 sp2_rh];
 posInfo.spectrogramButton2=  [cpL+.003 .49+vPosSpec2d cpW-.006 sp2_rh];
 posInfo.spectrogramButton3=  [cpL+.003 .46+vPosSpec2d cpW-.006 sp2_rh];
-posInfo.saveFig2=            [cpL+.006 .43+vPosSpec2d cpW/2-.006 sp2_rh];
-posInfo.saveSettings2=       [cpL+cpW/2 .43+vPosSpec2d cpW/2-.006 sp2_rh];
+posInfo.filterSimButton=     [cpL+.003 .43+vPosSpec2d cpW-.006 sp2_rh];
+posInfo.saveFig2=            [cpL+.006 .40+vPosSpec2d cpW/2-.006 sp2_rh];
+posInfo.saveSettings2=       [cpL+cpW/2 .40+vPosSpec2d cpW/2-.006 sp2_rh];
 
-posInfo.smooth_select =      [cpL+.003 .395+vPosSpec2d cpW-.006 sp2_ddh];
-posInfo.Delay =              [cpL+.003 .36+vPosSpec2d cpW-.006 sp2_ddh];
+posInfo.smooth_select =      [cpL+.003 .365+vPosSpec2d cpW-.006 sp2_ddh];
+posInfo.Delay =              [cpL+.003 .33+vPosSpec2d cpW-.006 sp2_ddh];
 
-posInfo.plotRspec =          [cpL+.005 .335+vPosSpec2d .035 .025];
-posInfo.plotPspec =          [cpL+.04 .335+vPosSpec2d .035 .025];
-posInfo.plotYspec =          [cpL+.075 .335+vPosSpec2d .035 .025];
+posInfo.plotRspec =          [cpL+.005 .305+vPosSpec2d .035 .025];
+posInfo.plotPspec =          [cpL+.04 .305+vPosSpec2d .035 .025];
+posInfo.plotYspec =          [cpL+.075 .305+vPosSpec2d .035 .025];
 
-posInfo.checkboxPSD =        [cpL+.005 .315+vPosSpec2d .04 .02];
-posInfo.RPYcomboSpec =       [cpL+cpW/2-.01 .315+vPosSpec2d cpW/2+.004 .02];
+posInfo.checkboxPSD =        [cpL+.005 .285+vPosSpec2d .04 .02];
+posInfo.RPYcomboSpec =       [cpL+cpW/2-.01 .285+vPosSpec2d cpW/2+.004 .02];
 
-posInfo.climMax1_text =      [cpL+.003 .292+vPosSpec2d cpW/4 .022];
-posInfo.climMax1_input =     [cpL+cpW/4 .270+vPosSpec2d cpW/4 .022];
-posInfo.climMax2_text =      [cpL+cpW/2 .292+vPosSpec2d cpW/4 .022];
-posInfo.climMax2_input =     [cpL+3*cpW/4 .270+vPosSpec2d cpW/4 .022];
+posInfo.climMax1_text =      [cpL+.003 .262+vPosSpec2d cpW/4 .022];
+posInfo.climMax1_input =     [cpL+cpW/4 .240+vPosSpec2d cpW/4 .022];
+posInfo.climMax2_text =      [cpL+cpW/2 .262+vPosSpec2d cpW/4 .022];
+posInfo.climMax2_input =     [cpL+3*cpW/4 .240+vPosSpec2d cpW/4 .022];
 
 if exist('isOctave','var') && isOctave
     % Octave Qt widgets need more vertical space
     vPosSpec2d = .037;
-    posInfo.computeSpec=         [cpL+.006 .52+vPosSpec2d cpW/2-.006 .030];
-    posInfo.resetSpec=           [cpL+cpW/2 .52+vPosSpec2d cpW/2-.006 .030];
-    posInfo.spectrogramButton2=  [cpL+.003 .485+vPosSpec2d cpW-.006 .030];
-    posInfo.spectrogramButton3=  [cpL+.003 .450+vPosSpec2d cpW-.006 .030];
-    posInfo.saveFig2=            [cpL+.006 .415+vPosSpec2d cpW/2-.006 .030];
-    posInfo.saveSettings2=       [cpL+cpW/2 .415+vPosSpec2d cpW/2-.006 .030];
-    posInfo.smooth_select=       [cpL+.003 .375+vPosSpec2d cpW-.006 .035];
-    posInfo.Delay=               [cpL+.003 .338+vPosSpec2d cpW-.006 .035];
-    posInfo.plotRspec=           [cpL+.005 .313+vPosSpec2d .035 .025];
-    posInfo.plotPspec=           [cpL+.04 .313+vPosSpec2d .035 .025];
-    posInfo.plotYspec=           [cpL+.075 .313+vPosSpec2d .035 .025];
-    posInfo.checkboxPSD=         [cpL+.005 .290+vPosSpec2d .04 .025];
-    posInfo.RPYcomboSpec=        [cpL+cpW/2-.01 .290+vPosSpec2d cpW/2+.004 .025];
-    posInfo.climMax1_text=       [cpL+.003 .267+vPosSpec2d cpW/4 .024];
-    posInfo.climMax1_input=      [cpL+cpW/4 .245+vPosSpec2d cpW/4 .024];
-    posInfo.climMax2_text=       [cpL+cpW/2 .267+vPosSpec2d cpW/4 .024];
-    posInfo.climMax2_input=      [cpL+3*cpW/4 .245+vPosSpec2d cpW/4 .024];
+    rr = .030; dd = .035;
+    posInfo.computeSpec=         [cpL+.006 .52+vPosSpec2d cpW/2-.006 rr];
+    posInfo.resetSpec=           [cpL+cpW/2 .52+vPosSpec2d cpW/2-.006 rr];
+    posInfo.spectrogramButton2=  [cpL+.003 .485+vPosSpec2d cpW-.006 rr];
+    posInfo.spectrogramButton3=  [cpL+.003 .450+vPosSpec2d cpW-.006 rr];
+    posInfo.filterSimButton=     [cpL+.003 .415+vPosSpec2d cpW-.006 rr];
+    posInfo.saveFig2=            [cpL+.006 .380+vPosSpec2d cpW/2-.006 rr];
+    posInfo.saveSettings2=       [cpL+cpW/2 .380+vPosSpec2d cpW/2-.006 rr];
+    posInfo.smooth_select=       [cpL+.003 .340+vPosSpec2d cpW-.006 dd];
+    posInfo.Delay=               [cpL+.003 .303+vPosSpec2d cpW-.006 dd];
+    posInfo.plotRspec=           [cpL+.005 .278+vPosSpec2d .035 .025];
+    posInfo.plotPspec=           [cpL+.04 .278+vPosSpec2d .035 .025];
+    posInfo.plotYspec=           [cpL+.075 .278+vPosSpec2d .035 .025];
+    posInfo.checkboxPSD=         [cpL+.005 .255+vPosSpec2d .04 .025];
+    posInfo.RPYcomboSpec=        [cpL+cpW/2-.01 .255+vPosSpec2d cpW/2+.004 .025];
+    posInfo.climMax1_text=       [cpL+.003 .232+vPosSpec2d cpW/4 .024];
+    posInfo.climMax1_input=      [cpL+cpW/4 .210+vPosSpec2d cpW/4 .024];
+    posInfo.climMax2_text=       [cpL+cpW/2 .232+vPosSpec2d cpW/4 .024];
+    posInfo.climMax2_input=      [cpL+3*cpW/4 .210+vPosSpec2d cpW/4 .024];
 end
 
 climScale1=[0 ; -50 ];
@@ -110,9 +113,9 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PSdatatip);
 end
 
-spec2CrtlpanelPos = [cpL .27+vPosSpec2d cpW .65];
+spec2CrtlpanelPos = [cpL .24+vPosSpec2d cpW .68];
 if exist('isOctave','var') && isOctave
-    spec2CrtlpanelPos = [cpL .24+vPosSpec2d cpW .68];
+    spec2CrtlpanelPos = [cpL .20+vPosSpec2d cpW .72];
 end
 spec2Crtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
@@ -151,7 +154,20 @@ set(guiHandlesSpec2.spectrogramButton2, 'ForegroundColor', colorA);
  guiHandlesSpec2.spectrogramButton3 = uicontrol(PSspecfig2,'string','Freq x Time','fontsize',fontsz,'TooltipString', ['Opens Freq x Time Spectrogram in New Window'], 'units','normalized','Position',[posInfo.spectrogramButton3],...
      'callback','PSfreqTimeUIcontrol;');
  set(guiHandlesSpec2.spectrogramButton3, 'ForegroundColor', colorB);
- 
+
+guiHandlesSpec2.filterSimButton = uicontrol(PSspecfig2,'string','Filter Sim','fontsize',fontsz,...
+    'TooltipString','Simulate BF filter chain on gyro data','units','normalized',...
+    'Position',[posInfo.filterSimButton],...
+    'callback',['try,' ...
+        'tmpFcnt=get(guiHandlesSpec2.FileSelect,''Value'');tmpFcnt=tmpFcnt(1);' ...
+        'tmpGyro.r=T{tmpFcnt}.gyroADC_0_(tIND{tmpFcnt});' ...
+        'tmpGyro.p=T{tmpFcnt}.gyroADC_1_(tIND{tmpFcnt});' ...
+        'tmpGyro.y=T{tmpFcnt}.gyroADC_2_(tIND{tmpFcnt});' ...
+        'PSfilterSim(tmpGyro,1000*A_lograte(tmpFcnt),SetupInfo{tmpFcnt});' ...
+        'clear tmpGyro tmpFcnt;' ...
+    'catch e,warndlg([''Filter Sim: '' e.message]),end']);
+set(guiHandlesSpec2.filterSimButton, 'ForegroundColor', [.8 .5 0]);
+
  guiHandlesSpec2.Delay = uicontrol(PSspecfig2,'style','popupmenu','string',{'filter delay', 'SP-gyro delay', 'SP smoothing delay', 'phase shift'},'fontsize',fontsz,'TooltipString', ['Select which Delay Display'], 'units','normalized','Position',[posInfo.Delay],...
      'callback','PSplotSpec2D;');
 
