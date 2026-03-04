@@ -308,7 +308,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
         end
     end
 end
-% Set up click-to-show-value datatips on all axes
+% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig);
 
 set(PSspecfig, 'pointer', 'arrow')

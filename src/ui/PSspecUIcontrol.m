@@ -175,7 +175,7 @@ guiHandlesSpec.computeSpec = uicontrol(PSspecfig,'string','Run','fontsize',fonts
 set(guiHandlesSpec.computeSpec, 'ForegroundColor', colRun);
 
 guiHandlesSpec.resetSpec = uicontrol(PSspecfig,'string','Reset','fontsize',fontsz,'TooltipString', ['Reset Spectral Tool'],'units','normalized','Position',[posInfo.resetSpec],...
-    'callback',' for k = 1 :12, delete(subplot(''position'',posInfo.SpecPos(k,:))), end; set(guiHandlesSpec.specPresets, ''Value'', 1); PSspecUIcontrol; set(PSspecfig, ''pointer'', ''arrow'');');
+    'callback','delete(findobj(PSspecfig,''Type'',''axes'')); set(guiHandlesSpec.specPresets, ''Value'', 1); PSspecUIcontrol; set(PSspecfig, ''pointer'', ''arrow'');');
 set(guiHandlesSpec.resetSpec, 'ForegroundColor', cautionCol);
 
 guiHandlesSpec.checkbox2d =uicontrol(PSspecfig,'Style','checkbox','String','2D','fontsize',fontsz,'TooltipString', [TooltipString_2d],...

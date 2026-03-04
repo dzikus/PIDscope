@@ -123,7 +123,7 @@ guiHandlesSpec2.computeSpec = uicontrol(PSspecfig2,'string','Run','fontsize',fon
 set(guiHandlesSpec2.computeSpec, 'ForegroundColor', colRun);
 
 guiHandlesSpec2.resetSpec = uicontrol(PSspecfig2,'string','Reset','fontsize',fontsz,'TooltipString', ['Reset Spectral Tool'],'units','normalized','Position',[posInfo.resetSpec],...
-    'callback',' for k = 1 : 6, delete(subplot(''position'',posInfo.Spec2Pos(k,:))), end; set(PSspecfig2, ''pointer'', ''arrow'');');
+    'callback',' delete(findobj(PSspecfig2,''Type'',''axes'')); set(PSspecfig2, ''pointer'', ''arrow'');');
 set(guiHandlesSpec2.resetSpec, 'ForegroundColor', cautionCol);
 
 guiHandlesSpec2.saveFig2 = uicontrol(PSspecfig2,'string','Save Fig','fontsize',fontsz,'TooltipString',[TooltipString_saveFig],'units','normalized','ForegroundColor',[saveCol],'Position',[posInfo.saveFig2],...
@@ -156,13 +156,13 @@ set(guiHandlesSpec2.spectrogramButton2, 'ForegroundColor', colorA);
      'callback','PSplotSpec2D;');
 
 guiHandlesSpec2.plotR =uicontrol(PSspecfig2,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotRspec], 'callback', 'for k = 1 : 6, delete(subplot(''position'',posInfo.Spec2Pos(k,:))), end; set(PSspecfig2, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotRspec], 'callback', 'delete(findobj(PSspecfig2,''Type'',''axes'')); set(PSspecfig2, ''pointer'', ''arrow'');');
 
 guiHandlesSpec2.plotP =uicontrol(PSspecfig2,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotPspec], 'callback', 'for k = 1 : 6, delete(subplot(''position'',posInfo.Spec2Pos(k,:))), end; set(PSspecfig2, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotPspec], 'callback', 'delete(findobj(PSspecfig2,''Type'',''axes'')); set(PSspecfig2, ''pointer'', ''arrow'');');
 
 guiHandlesSpec2.plotY =uicontrol(PSspecfig2,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotYspec], 'callback', 'for k = 1 : 6, delete(subplot(''position'',posInfo.Spec2Pos(k,:))), end; set(PSspecfig2, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotYspec], 'callback', 'delete(findobj(PSspecfig2,''Type'',''axes'')); set(PSspecfig2, ''pointer'', ''arrow'');');
 
 guiHandlesSpec2.checkboxPSD =uicontrol(PSspecfig2,'Style','checkbox','String','PSD','fontsize',fontsz,'TooltipString', ['Power Spectral Density'],...
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxPSD],'callback', 'PSplotSpec2D;');

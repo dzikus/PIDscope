@@ -269,7 +269,7 @@ if ~isempty(freq2d2) && ~isempty(amp2d2)
 end
 
 
-% Set up click-to-show-value datatips on all axes
+% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig2);
 
 set(PSspecfig2, 'pointer', 'arrow')

@@ -83,7 +83,7 @@ guiHandlesSpec3.computeSpec = uicontrol(PSspecfig3,'string','Run','fontsize',fon
 set(guiHandlesSpec3.computeSpec, 'ForegroundColor', colRun);
 
 guiHandlesSpec3.resetSpec = uicontrol(PSspecfig3,'string','Reset','fontsize',fontsz,'TooltipString', ['Reset Spectral Tool'],'units','normalized','Position',[posInfo.resetSpec3],...
-    'callback','updateSpec = 0; clear specMat; for k = 1 : 3, delete(subplot(''position'',posInfo.Spec3Pos(k,:))), end; set(PSspecfig3, ''pointer'', ''arrow'');');
+    'callback','updateSpec = 0; clear specMat; delete(findobj(PSspecfig3,''Type'',''axes'')); set(PSspecfig3, ''pointer'', ''arrow'');');
 set(guiHandlesSpec3.resetSpec, 'ForegroundColor', cautionCol);
 
 guiHandlesSpec3.saveFig3 = uicontrol(PSspecfig3,'string','Save Fig','fontsize',fontsz,'TooltipString',[TooltipString_saveFig],'units','normalized','ForegroundColor',[saveCol],'Position',[posInfo.saveFig3],...

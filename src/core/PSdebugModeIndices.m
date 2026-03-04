@@ -3,7 +3,7 @@ function idx = PSdebugModeIndices(fwType, fwMajor, fwMinor)
 %  idx = PSdebugModeIndices(fwType, fwMajor, fwMinor)
 %  Returns struct with fields: GYRO_SCALED, GYRO_FILTERED, RC_INTERPOLATION, FFT_FREQ, FEEDFORWARD
 
-% Default: BF 4.x / Emuflight / INAV / FETTEC / QuickSilver / Rotorflight
+% Default: BF 4.x / Emuflight / INAV / FETTEC / QuickSilver / Rotorflight / KISS
 idx.GYRO_SCALED = 6;
 idx.GYRO_FILTERED = 3;
 idx.RC_INTERPOLATION = 7;

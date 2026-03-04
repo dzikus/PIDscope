@@ -106,7 +106,7 @@ for i = 1 : 3
 end
 updateSpec = 0;
 
-% Set up click-to-show-value datatips on all axes
+% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig3);
 
 set(PSspecfig3, 'pointer', 'arrow')
