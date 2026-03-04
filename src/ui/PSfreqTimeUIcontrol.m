@@ -60,6 +60,7 @@ posInfo.clim3Max2_input =    [cpL+3*cpW/4 .598 cpW/4 .024];
 ClimScale3 = [-30 10];
 
 posInfo.sub100HzfreqTime  =  [cpL+.003 .564 cpW-.006 .025];
+posInfo.playerBtn3        =  [cpL+.003 .530 cpW-.006 rh];
 
 PSspecfig3=figure(31);
 set(PSspecfig3, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
@@ -76,7 +77,7 @@ end
 
 Spec3Crtlpanel = uipanel('Title','select file ','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
-              'Position',[cpL .55 cpW .37]);
+              'Position',[cpL .515 cpW .405]);
  
 guiHandlesSpec3.computeSpec = uicontrol(PSspecfig3,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec3],...
     'callback','updateSpec = 0; clear specMat; PSfreqTime;');
@@ -122,7 +123,15 @@ guiHandlesSpec3.climMax2_input = uicontrol(PSspecfig3,'style','edit','string',[n
 
  guiHandlesSpec3.sub100HzfreqTime = uicontrol(PSspecfig3,'Style','checkbox','String','sub 100Hz','fontsize',fontsz,'ForegroundColor',[.2 .2 .2],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.sub100HzfreqTime],'callback','@selection2;updateSpec=1; PSfreqTime;');
- 
+
+guiHandlesSpec3.playerBtn = uicontrol(PSspecfig3,'string','Player','fontsize',fontsz,...
+    'TooltipString','Animated spectrum playback over time','units','normalized',...
+    'Position',[posInfo.playerBtn3],...
+    'callback',['if exist(''specMat'',''var'') && ~isempty(specMat),' ...
+        'tmpSA3={''Gyro'',''Gyro prefilt'',''Dterm'',''Dterm prefilt'',''Pterm'',''PID error'',''Set point'',''PIDsum''};' ...
+        'PSdynSpecPlayer(specMat,Tm,F,{''Roll'',''Pitch'',''Yaw''},tmpSA3{get(guiHandlesSpec3.SpecList,''Value'')});' ...
+    'else,warndlg(''Run spectrogram first''),end']);
+set(guiHandlesSpec3.playerBtn, 'ForegroundColor', [0 .4 .8]);
 
 try set(guiHandlesSpec3.SpecList, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-Preset')))), catch, set(guiHandlesSpec3.SpecList, 'Value', 1), end
 try set(guiHandlesSpec3.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-FreqSmoothing')))), catch, set(guiHandlesSpec3.smoothFactor_select, 'Value', 2), end
