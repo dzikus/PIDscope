@@ -204,6 +204,19 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 end
             end
 
+            %% RPM filter overlay (motor frequencies + harmonics)
+            if exist('rpmFilterData','var') && exist('debugmode','var') && exist('debugIdx','var')
+                tmpFileK2 = get(guiHandlesSpec.FileSelect{c1(p)}, 'Value');
+                tmpRPMk = 46;
+                if numel(debugIdx) >= tmpFileK2
+                    tmpRPMk = debugIdx{tmpFileK2}.RPM_FILTER;
+                end
+                if debugmode(tmpFileK2) == tmpRPMk && numel(rpmFilterData) >= tmpFileK2 && ~isempty(rpmFilterData{tmpFileK2})
+                    maxHzOverlay2 = (A_lograte(tmpFileK2) / 2) * 1000;
+                    PSplotRPMOverlay(gca, rpmFilterData{tmpFileK2}, T{tmpFileK2}.setpoint_3_(tIND{tmpFileK2}) / 10, size(img, 1), maxHzOverlay2, 'throttle');
+                end
+            end
+
         catch ME
             warning('PSplotSpec render p=%d: %s', p, ME.message);
         end

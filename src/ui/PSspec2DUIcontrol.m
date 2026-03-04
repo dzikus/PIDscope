@@ -279,6 +279,19 @@ for k = 1 : Nfiles
     else
         notchData{k} = [];
     end
+
+    %%%%%%%%%% extract RPM filter data for motor noise overlay %%%%%%%%%%
+    tmpRPMidx = 46; % default BF 4.x
+    if exist('debugIdx','var') && numel(debugIdx) >= k
+        tmpRPMidx = debugIdx{k}.RPM_FILTER;
+    end
+    if exist('debugmode','var') && numel(debugmode) >= k && debugmode(k) == tmpRPMidx
+        % RPM_FILTER: debug[0-3] = motor 1-4 fundamental frequency in Hz
+        rpmFilterData{k} = [T{k}.debug_0_(tIND{k}), T{k}.debug_1_(tIND{k}), ...
+                            T{k}.debug_2_(tIND{k}), T{k}.debug_3_(tIND{k})];
+    else
+        rpmFilterData{k} = [];
+    end
 end
 
 
