@@ -74,6 +74,10 @@ posInfo.controlFreq1Cutoff =    [cpL+.005 .700 cpW/2-.005 .025];
 posInfo.controlFreq2Cutoff =    [cpL+cpW/2 .700 cpW/2-.005 .025];
 posInfo.checkbox2d=             [cpL+.005 .675 cpW/2-.005 .025];
 posInfo.checkboxPSD=            [cpL+cpW/2 .675 cpW/2-.005 .025];
+posInfo.checkboxEstRPM=         [cpL+.005 .650 cpW-.005 .025];
+posInfo.rpmLegend1=             [cpL+.005 .632 cpW-.005 .018];
+posInfo.rpmLegend2=             [cpL+.005 .616 cpW-.005 .018];
+posInfo.rpmLegend3=             [cpL+.005 .600 cpW-.005 .018];
 
 if exist('isOctave','var') && isOctave
     % Octave Qt widgets need more vertical space
@@ -89,6 +93,10 @@ if exist('isOctave','var') && isOctave
     posInfo.controlFreq2Cutoff=     [cpL+cpW/2 .675 cpW/2-.005 .024];
     posInfo.checkbox2d=             [cpL+.005 .650 cpW/2-.005 .025];
     posInfo.checkboxPSD=            [cpL+cpW/2 .650 cpW/2-.005 .025];
+    posInfo.checkboxEstRPM=         [cpL+.005 .625 cpW-.005 .025];
+    posInfo.rpmLegend1=             [cpL+.005 .605 cpW-.005 .020];
+    posInfo.rpmLegend2=             [cpL+.005 .585 cpW-.005 .020];
+    posInfo.rpmLegend3=             [cpL+.005 .565 cpW-.005 .020];
 end
 
 posInfo.AphasedelayText1=[.06 .984 .14 .02];
@@ -143,9 +151,9 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PSdatatip);
 end
 
-specCrtlpanelPos = [cpL .66 cpW .26];
+specCrtlpanelPos = [cpL .59 cpW .33];
 if exist('isOctave','var') && isOctave
-    specCrtlpanelPos = [cpL .64 cpW .28];
+    specCrtlpanelPos = [cpL .55 cpW .37];
 end
 specCrtlpanel = uipanel('Title','Params','FontSize',fontsz,...
               'BackgroundColor',[.95 .95 .95],...
@@ -184,6 +192,14 @@ guiHandlesSpec.checkbox2d =uicontrol(PSspecfig,'Style','checkbox','String','2D',
 guiHandlesSpec.checkboxPSD =uicontrol(PSspecfig,'Style','checkbox','String','PSD','fontsize',fontsz,'TooltipString', ['Power Spectral Density'],...
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxPSD],'callback', 'PSplotSpec;');
 set(guiHandlesSpec.checkboxPSD, 'Value', 0);
+
+guiHandlesSpec.checkboxEstRPM =uicontrol(PSspecfig,'Style','checkbox','String','Est. RPM','fontsize',fontsz,'TooltipString', ['Estimate motor RPM from spectrum (2D heatmap only)'],...
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxEstRPM],'callback','updateSpec=1;PSplotSpec;');
+set(guiHandlesSpec.checkboxEstRPM, 'Value', 0);
+
+uicontrol(PSspecfig,'style','text','string','--- 1st (fund)','fontsize',fontsz-1,'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',[0 .7 .15],'FontWeight','bold','Position',[posInfo.rpmLegend1]);
+uicontrol(PSspecfig,'style','text','string','-- 2nd harm','fontsize',fontsz-1,'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',[.9 .7 0],'FontWeight','bold','Position',[posInfo.rpmLegend2]);
+uicontrol(PSspecfig,'style','text','string','... 3rd harm','fontsize',fontsz-1,'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',[.9 .2 0],'FontWeight','bold','Position',[posInfo.rpmLegend3]);
 
 guiHandlesSpec.controlFreqCutoff_text = uicontrol(PSspecfig,'style','text','string','freq lims Hz','fontsize',fontsz,'TooltipString',[TooltipString_controlFreqCutoff],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.controlFreqCutoff_text]);
 guiHandlesSpec.controlFreq1Cutoff = uicontrol(PSspecfig,'style','edit','string',[num2str(round(Flim1))],'fontsize',fontsz,'TooltipString',[TooltipString_controlFreqCutoff],'units','normalized','Position',[posInfo.controlFreq1Cutoff],...
