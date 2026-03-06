@@ -31,7 +31,11 @@ end
 mainFname=filename;
 [fdir, fname, fext] = fileparts(filename);
 fbase = fullfile(fdir, fname);
-if strcmpi(fext, '.json')
+if strcmpi(fext, '.bin')
+    % ArduPilot DataFlash binary log - handled directly in PSload
+    csvFnames = {filename};
+    return;
+elseif strcmpi(fext, '.json')
     % QuickSilver JSON blackbox export - parse directly
     [headerFile, csvFile] = PSquicJson2csv(filename);
     filename = headerFile;
