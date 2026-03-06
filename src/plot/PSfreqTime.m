@@ -100,13 +100,24 @@ for i = 1 : 3
         end
     end
 
+    %% RPM filter overlay (motor frequencies + harmonics)
+    if exist('rpmFilterData','var') && exist('debugmode','var') && exist('debugIdx','var')
+        tmpRPMft = 46;
+        if numel(debugIdx) >= tmpFileVal3
+            tmpRPMft = debugIdx{tmpFileVal3}.RPM_FILTER;
+        end
+        if debugmode(tmpFileVal3) == tmpRPMft && numel(rpmFilterData) >= tmpFileVal3 && ~isempty(rpmFilterData{tmpFileVal3})
+            PSplotRPMOverlay(gca, rpmFilterData{tmpFileVal3}, size(specMat{i}, 2), size(specMat{i}, 1), F(end), 'time');
+        end
+    end
+
     catch
-        delete(subplot('position',posInfo.Spec3Pos(i,:))); 
+        delete(subplot('position',posInfo.Spec3Pos(i,:)));
     end
 end
 updateSpec = 0;
 
-% Set up click-to-show-value datatips on all axes
+% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig3);
 
 set(PSspecfig3, 'pointer', 'arrow')

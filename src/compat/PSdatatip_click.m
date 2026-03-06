@@ -10,15 +10,40 @@ function PSdatatip_click(ax)
   global logviewerYscale
 
   fig = ancestor(ax, 'figure');
+  selType = get(fig, 'SelectionType');
 
-  % Right-click = remove annotation
-  if strcmp(get(fig, 'SelectionType'), 'alt')
+  % Right-click = remove annotation or close expanded subplot
+  if strcmp(selType, 'alt')
     delete(findobj(ax, 'Tag', 'PSdatatip'));
     return
   end
 
+  % Double-click = expand subplot to full size (or collapse if already expanded)
+  if strcmp(selType, 'open')
+    tag = get(ax, 'Tag');
+    if strcmp(tag, 'PSexpanded')
+      delete(ax);
+      % show uicontrols again
+      uic = findobj(fig, 'Type', 'uicontrol');
+      for kk = 1:length(uic), set(uic(kk), 'Visible', 'on'); end
+    else
+      htmp = copyobj(ax, fig);
+      set(htmp, 'Units', 'normalized', 'fontweight', 'bold', ...
+          'Position', [0.05 0.06 0.815 0.835], 'Tag', 'PSexpanded');
+      set(htmp, 'ButtonDownFcn', @(src, ~) PSdatatip_click(src));
+      ch = get(htmp, 'Children');
+      for kk = 1:length(ch)
+        try set(ch(kk), 'HitTest', 'off'); catch, end
+      end
+      % hide uicontrols so they don't overlap expanded plot
+      uic = findobj(fig, 'Type', 'uicontrol');
+      for kk = 1:length(uic), set(uic(kk), 'Visible', 'off'); end
+    end
+    return
+  end
+
   % Only handle normal left-click
-  if ~strcmp(get(fig, 'SelectionType'), 'normal')
+  if ~strcmp(selType, 'normal')
     return
   end
 

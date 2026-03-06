@@ -7,6 +7,7 @@
 %! assert(idx.GYRO_FILTERED, 3);
 %! assert(idx.RC_INTERPOLATION, 7);
 %! assert(idx.FFT_FREQ, 17);
+%! assert(idx.RPM_FILTER, 46);
 %! assert(idx.FEEDFORWARD, 59);
 
 %!test
@@ -16,6 +17,7 @@
 %! assert(idx.GYRO_FILTERED, 3);
 %! assert(idx.RC_INTERPOLATION, 6);
 %! assert(idx.FFT_FREQ, 16);
+%! assert(idx.RPM_FILTER, 45);
 %! assert(idx.FEEDFORWARD, 58);
 
 %!test

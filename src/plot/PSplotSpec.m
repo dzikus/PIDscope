@@ -204,6 +204,53 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                 end
             end
 
+            %% RPM filter overlay (motor frequencies + harmonics)
+            if exist('rpmFilterData','var') && exist('debugmode','var') && exist('debugIdx','var')
+                tmpFileK2 = get(guiHandlesSpec.FileSelect{c1(p)}, 'Value');
+                tmpRPMk = 46;
+                if numel(debugIdx) >= tmpFileK2
+                    tmpRPMk = debugIdx{tmpFileK2}.RPM_FILTER;
+                end
+                if debugmode(tmpFileK2) == tmpRPMk && numel(rpmFilterData) >= tmpFileK2 && ~isempty(rpmFilterData{tmpFileK2})
+                    maxHzOverlay2 = (A_lograte(tmpFileK2) / 2) * 1000;
+                    PSplotRPMOverlay(gca, rpmFilterData{tmpFileK2}, T{tmpFileK2}.setpoint_3_(tIND{tmpFileK2}) / 10, size(img, 1), maxHzOverlay2, 'throttle');
+                end
+            end
+
+            %% Estimated RPM overlay from spectrum peak detection
+            if get(guiHandlesSpec.checkboxEstRPM, 'Value') && ~isempty(ampmat{p}) && ~isempty(freq{p})
+                % find a throttle row that has freq data (not all zeros)
+                freqAx = [];
+                for rr = 1:size(freq{p}, 1)
+                    if any(freq{p}(rr,:) > 0), freqAx = freq{p}(rr,:); break; end
+                end
+                if ~isempty(freqAx)
+                [estFund, estHarm] = PSestimateRPM(freqAx, ampmat{p}, 3);
+                % convert Hz to image pixel coords (img is flipped: row 1 = max Hz)
+                maxHzEst = (A_lograte(get(guiHandlesSpec.FileSelect{c1(p)}, 'Value')) / 2) * 1000;
+                hz_per_px = maxHzEst / size(img, 1);
+                hold on;
+                estCol = [0 .9 .2; .9 .7 0; .9 .2 0]; % green, orange, red for 1st/2nd/3rd
+                estStyle = {'-'; '--'; ':'};
+                for nh = 1:3
+                    xPts = []; yPts = [];
+                    for tb = 1:100
+                        if ~isnan(estHarm(tb, nh)) && estHarm(tb, nh) > 0 && estHarm(tb, nh) < maxHzEst
+                            y_px = size(img, 1) - round(estHarm(tb, nh) / hz_per_px);
+                            if y_px >= 1 && y_px <= size(img, 1)
+                                xPts(end+1) = tb;
+                                yPts(end+1) = y_px;
+                            end
+                        end
+                    end
+                    if ~isempty(xPts)
+                        h = plot(xPts, yPts, estStyle{nh}, 'LineWidth', 1.5);
+                        set(h, 'Color', estCol(nh,:), 'HitTest', 'off');
+                    end
+                end
+                end % ~isempty(freqAx)
+            end
+
         catch ME
             warning('PSplotSpec render p=%d: %s', p, ME.message);
         end
@@ -308,7 +355,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
         end
     end
 end
-% Set up click-to-show-value datatips on all axes
+% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig);
 
 set(PSspecfig, 'pointer', 'arrow')

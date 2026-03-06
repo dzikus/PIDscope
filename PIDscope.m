@@ -243,14 +243,18 @@ TooltipString_selectButton = ['With box checked, position mouse over desired sta
 
 %%%
 
-guiHandles.Firmware = uicontrol(PSfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'; 'FETTEC logfiles'; 'QuickSilver logfiles'; 'Rotorflight logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
+guiHandles.Firmware = uicontrol(PSfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'; 'FETTEC logfiles'; 'QuickSilver logfiles'; 'Rotorflight logfiles'; 'KISS Ultra logfiles'; 'ArduPilot logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
 
 guiHandles.fileA = uicontrol(PSfig,'string','Select ','fontsize',fontsz,'TooltipString', [TooltipString_loadRun], 'units','normalized','Position',[posInfo.fileA],...
-     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); fwv=get(guiHandles.Firmware,''Value''); if fwv==5, filt={''*.json;*.btfl;*.BTFL;*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''QuickSilver Log Files''}; else filt={''*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''Blackbox Log Files''}; end; [filenameA, filepathA] = PSuigetfile(filt, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PSload; PSviewerUIcontrol; PSplotLogViewer; end');
+     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); fwv=get(guiHandles.Firmware,''Value''); if fwv==5, filt={''*.json;*.btfl;*.BTFL;*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''QuickSilver Log Files''}; elseif fwv==8, filt={''*.bin;*.BIN;*.log;*.LOG'',''ArduPilot Log Files''}; else filt={''*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''Blackbox Log Files''}; end; [filenameA, filepathA] = PSuigetfile(filt, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PSload; PSviewerUIcontrol; PSplotLogViewer; end');
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PSfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
-     'callback','clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData; fcnt = 0; filenameA={};fnameMaster = {}; try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;');
+     'callback',['clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData ampmat freq2d2 amp2d2 specMat; ' ...
+     'fcnt=0; filenameA={}; fnameMaster={}; Nfiles=0; expandON=0; ' ...
+     'try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; ' ...
+     'figs=findobj(''Type'',''figure''); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end; ' ...
+     'set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;']);
 set(guiHandles.clr, 'ForegroundColor', cautionCol);
 
 guiHandles.startEndButton = uicontrol(PSfig,'style','checkbox', 'string','Trim ','fontsize',fontsz,'TooltipString', [TooltipString_selectButton], 'units','normalized','Position',[posInfo.startEndButton],...
@@ -305,7 +309,7 @@ set(guiHandles.saveSettings, 'ForegroundColor', saveCol);
 % guiHandles.wiki.ForegroundColor=[cautionCol];
 
 guiHandles.PIDtuningService = uicontrol(PSfig,'string','Support PIDscope','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['https://buymeacoffee.com/dzikus'],'units','normalized','Position',[posInfo.PIDtuningService],...
-    'callback','web(''https://buymeacoffee.com/dzikus'');');
+    'callback','if ispc(), system(''start https://buymeacoffee.com/dzikus''); elseif ismac(), system(''open https://buymeacoffee.com/dzikus''); else, system(''env -u LD_LIBRARY_PATH -u LD_PRELOAD xdg-open https://buymeacoffee.com/dzikus &''); end');
 set(guiHandles.PIDtuningService, 'ForegroundColor', cautionCol);
 
 

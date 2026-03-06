@@ -117,19 +117,27 @@ try
 
                 fcnt = fcnt + 1;
                 Nfiles= fcnt;
-                
-                [dataA(fcnt) fnameMaster{fcnt}] = PSimport(subFiles{jj}, char(filenameA{ii}));
-            
-                T{fcnt}=dataA(fcnt).T;
+
+                [~, ~, sfext] = fileparts(subFiles{jj});
+                if strcmpi(sfext, '.bin')
+                    % ArduPilot DataFlash binary — direct parse
+                    binpath = fullfile(logfile_directory, subFiles{jj});
+                    [ardu_data, ardu_parms] = PSarduRead(binpath);
+                    [T{fcnt}, SetupInfo{fcnt}, A_lograte(fcnt)] = PSarduConvert(ardu_data, ardu_parms);
+                    fnameMaster{fcnt} = subFiles{jj};
+                else
+                    [dataA(fcnt) fnameMaster{fcnt}] = PSimport(subFiles{jj}, char(filenameA{ii}));
+                    T{fcnt}=dataA(fcnt).T;
+                    A_lograte(fcnt)=round((1000/median(diff(T{fcnt}.time_us_-T{fcnt}.time_us_(1)))) * 10) / 10;
+                    SetupInfo{fcnt}=dataA(fcnt).SetupInfo;
+                end
 
                 tta{fcnt}=T{fcnt}.time_us_-T{fcnt}.time_us_(1);
-                A_lograte(fcnt)=round((1000/median(diff(tta{fcnt}))) * 10) / 10;
-               
+
                 epoch1_A(fcnt)=round(((tta{fcnt}(1)/us2sec)+LogStDefault)*10) / 10;
                 epoch2_A(fcnt)=round(((tta{fcnt}(end)/us2sec)-LogNdDefault)*10) / 10;
 
                 clear a b r p y dm ff
-                SetupInfo{fcnt}=dataA(fcnt).SetupInfo;
                 r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));
                 p = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'pitchPID')),2));
                 y = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'yawPID')),2));
@@ -186,20 +194,23 @@ try
                     T{fcnt}.setpoint_1_ = T{fcnt}.axisRate_1_;
                     T{fcnt}.setpoint_2_ = T{fcnt}.axisRate_2_;
                     T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
-                end              
+                end
+
+                isArduPilot = strcmpi(sfext, '.bin');
 
                 for k = 0 : 3
+                  if ~isArduPilot
                     try
                         eval(['T{fcnt}.debug_' int2str(k) '_(1);'])
                     catch
                         eval(['T{fcnt}.(''debug_' int2str(k) '_'')' '= zeros(length(T{fcnt}.loopIteration),1);']) ;
-                    end 
+                    end
                     try
                         eval(['T{fcnt}.axisF_' int2str(k) '_(1);'])
                     catch
                         eval(['T{fcnt}.(''axisF_' int2str(k) '_'')' '= zeros(length(T{fcnt}.loopIteration),1);']);
-                    end 
-                    
+                    end
+
                     if get(guiHandles.Firmware, 'Value') == 3 % INAV
                         try
                             eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_ - 1000)) / 10;'])% scale motor sigs to %
@@ -217,8 +228,10 @@ try
                         catch
                         end
                     end
-                    if k < 3 
+                  end % ~isArduPilot
+                    if k < 3
                         if k < 2 % compute prefiltered dterm and scale
+                          try
                             eval(['T{fcnt}.axisDpf_' int2str(k) '_ = -[0; diff(T{fcnt}.gyroADC_' int2str(k) '_)];'])
                             clear d1 d2 d3 sclr
                             eval(['d1 = smooth(T{fcnt}.axisDpf_' int2str(k) '_, 100);'])
@@ -226,6 +239,7 @@ try
                             d3 = (d2 ./ d1);
                             sclr = nanmedian(d3(~isinf(d3) & d3 > 0));
                             eval(['T{fcnt}.axisDpf_' int2str(k) '_ = T{fcnt}.axisDpf_' int2str(k) '_ * sclr;'])
+                          catch, end
                         end
 
                         eval(['T{fcnt}.(''piderr_' int2str(k) '_'') = T{fcnt}.gyroADC_' int2str(k) '_ - T{fcnt}.setpoint_' int2str(k) '_;'])
