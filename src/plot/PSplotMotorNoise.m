@@ -77,16 +77,12 @@ spread = rmsAll(worst) - rmsAll(best);
 infoStr = sprintf('Noisiest: %s (%.0f dB)   Quietest: %s (%.0f dB)   Spread: %.1f dB', ...
     motorLbl{worst}, rmsAll(worst), motorLbl{best}, rmsAll(best), spread);
 uicontrol(fig, 'Style', 'text', 'String', infoStr, 'Units', 'normalized', ...
-    'Position', [.06 .96 .88 .03], 'FontSize', 13, 'FontWeight', 'bold', ...
+    'Position', [.06 .965 .88 .03], 'FontSize', 13, 'FontWeight', 'bold', ...
     'ForegroundColor', [.9 .9 .3], 'BackgroundColor', [.2 .2 .2], ...
     'HorizontalAlignment', 'center');
 
-%  Row 1: y=.70-.93 (h=.23)
-%  Row 2: y=.38-.63 (h=.25)
-%  Row 3: y=.05-.31 (h=.26)
-
 % --- TOP LEFT: All motors overlay PSD ---
-axOvl = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .71 .42 .23]);
+axOvl = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .70 .42 .22]);
 for m = 1:nMotors
     plot(axOvl, motorFreq{m}, motorSpec{m}, 'Color', mCol{m}, 'LineWidth', 1.2);
     hold(axOvl, 'on');
@@ -100,7 +96,7 @@ legend(axOvl, motorLbl(1:nMotors), 'TextColor', [.8 .8 .8], 'Color', [.2 .2 .2],
     'EdgeColor', [.4 .4 .4], 'FontSize', 11, 'Location', 'northeast');
 
 % --- TOP RIGHT: Gyro PSD ---
-axGyro = axes('Parent', fig, 'Units', 'normalized', 'Position', [.56 .71 .38 .23]);
+axGyro = axes('Parent', fig, 'Units', 'normalized', 'Position', [.56 .70 .38 .22]);
 gCols = {[1 .4 .4], [.4 1 .4], [.4 .6 1]};
 for g = 1:3
     plot(axGyro, gyroFreqV{g}, gyroSpec{g}, 'Color', gCols{g}, 'LineWidth', 1.1);

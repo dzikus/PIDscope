@@ -243,10 +243,10 @@ TooltipString_selectButton = ['With box checked, position mouse over desired sta
 
 %%%
 
-guiHandles.Firmware = uicontrol(PSfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'; 'FETTEC logfiles'; 'QuickSilver logfiles'; 'Rotorflight logfiles'; 'KISS Ultra logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
+guiHandles.Firmware = uicontrol(PSfig,'Style','popupmenu','string',[{'Betaflight logfiles'; 'Emuflight logfiles'; 'INAV logfiles'; 'FETTEC logfiles'; 'QuickSilver logfiles'; 'Rotorflight logfiles'; 'KISS Ultra logfiles'; 'ArduPilot logfiles'}], 'fontsize',fontsz, 'units','normalized','Position', [posInfo.firmware]);
 
 guiHandles.fileA = uicontrol(PSfig,'string','Select ','fontsize',fontsz,'TooltipString', [TooltipString_loadRun], 'units','normalized','Position',[posInfo.fileA],...
-     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); fwv=get(guiHandles.Firmware,''Value''); if fwv==5, filt={''*.json;*.btfl;*.BTFL;*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''QuickSilver Log Files''}; else filt={''*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''Blackbox Log Files''}; end; [filenameA, filepathA] = PSuigetfile(filt, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PSload; PSviewerUIcontrol; PSplotLogViewer; end');
+     'callback','set(guiHandles.fileA, ''FontWeight'', ''Bold''); fwv=get(guiHandles.Firmware,''Value''); if fwv==5, filt={''*.json;*.btfl;*.BTFL;*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''QuickSilver Log Files''}; elseif fwv==8, filt={''*.bin;*.BIN;*.log;*.LOG'',''ArduPilot Log Files''}; else filt={''*.bbl;*.BBL;*.bfl;*.BFL;*.txt;*.TXT'',''Blackbox Log Files''}; end; [filenameA, filepathA] = PSuigetfile(filt, ''Select log file'', logfile_directory, ''MultiSelect'',''on''); if ischar(filenameA), filenameA={filenameA}; end; if iscell(filenameA), PSload; PSviewerUIcontrol; PSplotLogViewer; end');
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PSfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
@@ -309,7 +309,7 @@ set(guiHandles.saveSettings, 'ForegroundColor', saveCol);
 % guiHandles.wiki.ForegroundColor=[cautionCol];
 
 guiHandles.PIDtuningService = uicontrol(PSfig,'string','Support PIDscope','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['https://buymeacoffee.com/dzikus'],'units','normalized','Position',[posInfo.PIDtuningService],...
-    'callback','web(''https://buymeacoffee.com/dzikus'');');
+    'callback','if ispc(), system(''start https://buymeacoffee.com/dzikus''); elseif ismac(), system(''open https://buymeacoffee.com/dzikus''); else, system(''env -u LD_LIBRARY_PATH -u LD_PRELOAD xdg-open https://buymeacoffee.com/dzikus &''); end');
 set(guiHandles.PIDtuningService, 'ForegroundColor', cautionCol);
 
 

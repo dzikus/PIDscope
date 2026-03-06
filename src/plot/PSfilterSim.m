@@ -20,7 +20,7 @@ axTime = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .10 .62 .36
 cpL = .72; cpW = .27;
 uipanel('Parent', fig, 'Title', 'Filter Settings', 'FontSize', 9, 'FontWeight', 'bold', ...
     'BackgroundColor', [.25 .25 .25], 'ForegroundColor', [.9 .9 .9], ...
-    'Position', [cpL .02 cpW .96]);
+    'FontSize', 12, 'Position', [cpL .02 cpW .96]);
 
 row = .92; rh = .032; gap = .005;
 bgc = [.25 .25 .25]; fgc = [.9 .9 .9];
@@ -29,7 +29,7 @@ cb = @(~,~) doUpdate();
 % axis selector
 mkLabel(fig, 'Axis:', cpL, row, rh, bgc, fgc);
 h.axis = uicontrol(fig, 'Style', 'popupmenu', 'String', axNames, 'Value', 1, ...
-    'Units', 'normalized', 'Position', [cpL+.06 row .08 rh], 'FontSize', 8, 'Callback', cb);
+    'Units', 'normalized', 'Position', [cpL+.06 row .08 rh], 'FontSize', 11, 'Callback', cb);
 row = row - rh - gap*3;
 
 % Gyro LPF1
@@ -138,15 +138,15 @@ doUpdate();
         plot(axSpec, fO, sD, 'Color', [.4 .9 .4], 'LineWidth', 0.8);
         hold(axSpec, 'off');
         set(axSpec, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-            'FontSize', 8, 'FontWeight', 'bold', 'XLim', [0 Fs/2]);
+            'FontSize', 13, 'FontWeight', 'bold', 'XLim', [0 Fs/2]);
         set(get(axSpec, 'XLabel'), 'String', 'Frequency (Hz)', 'Color', [.8 .8 .8]);
         set(get(axSpec, 'YLabel'), 'String', 'PSD (dB)', 'Color', [.8 .8 .8]);
-        th = title(axSpec, [axNames{ai} ' \x{2014} Spectrum']);
+        th = title(axSpec, [axNames{ai} ' - Spectrum']);
         set(th, 'Color', [.9 .9 .9]);
         grid(axSpec, 'on'); set(axSpec, 'GridColor', [.3 .3 .3]);
         legend(axSpec, {'Raw gyro', 'Filtered gyro', 'D-term (filtered)'}, ...
             'TextColor', [.8 .8 .8], 'Color', [.2 .2 .2], 'EdgeColor', [.4 .4 .4], ...
-            'Location', 'northeast', 'FontSize', 7);
+            'Location', 'northeast', 'FontSize', 11);
 
         N = min(2000, length(dat));
         t = (0:N-1) / Fs * 1000;
@@ -156,14 +156,14 @@ doUpdate();
         plot(axTime, t, filt(1:N), 'c', 'LineWidth', 1.2);
         hold(axTime, 'off');
         set(axTime, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-            'FontSize', 8, 'FontWeight', 'bold');
+            'FontSize', 13, 'FontWeight', 'bold');
         set(get(axTime, 'XLabel'), 'String', 'Time (ms)', 'Color', [.8 .8 .8]);
         set(get(axTime, 'YLabel'), 'String', 'deg/s', 'Color', [.8 .8 .8]);
-        th2 = title(axTime, [axNames{ai} ' \x{2014} Time Domain']);
+        th2 = title(axTime, [axNames{ai} ' - Time Domain']);
         set(th2, 'Color', [.9 .9 .9]);
         grid(axTime, 'on'); set(axTime, 'GridColor', [.3 .3 .3]);
         legend(axTime, {'Raw', 'Filtered'}, 'TextColor', [.8 .8 .8], ...
-            'Color', [.2 .2 .2], 'EdgeColor', [.4 .4 .4], 'Location', 'northeast', 'FontSize', 7);
+            'Color', [.2 .2 .2], 'EdgeColor', [.4 .4 .4], 'Location', 'northeast', 'FontSize', 11);
     end
 
 end
@@ -230,22 +230,22 @@ end
 function mkLabel(fig, txt, cpL, row, rh, bgc, fgc)
     uicontrol(fig, 'Style', 'text', 'String', txt, ...
         'Units', 'normalized', 'Position', [cpL+.01 row .05 rh], ...
-        'FontSize', 8, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
+        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
 end
 
 function mkSection(fig, txt, cpL, row, cpW, rh, bgc, col)
     uicontrol(fig, 'Style', 'text', 'String', txt, ...
         'Units', 'normalized', 'Position', [cpL+.01 row cpW-.02 rh], ...
-        'FontSize', 8, 'FontWeight', 'bold', 'BackgroundColor', bgc, 'ForegroundColor', col);
+        'FontSize', 11, 'FontWeight', 'bold', 'BackgroundColor', bgc, 'ForegroundColor', col);
 end
 
 function [hType, rowOut] = mkType(fig, cpL, row, rh, gap, bgc, fgc, initVal, cb)
     uicontrol(fig, 'Style', 'text', 'String', 'Type:', ...
         'Units', 'normalized', 'Position', [cpL+.01 row .05 rh], ...
-        'FontSize', 8, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
+        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
     hType = uicontrol(fig, 'Style', 'popupmenu', ...
         'String', {'OFF', 'PT1', 'Biquad', 'PT2', 'PT3'}, 'Value', initVal + 1, ...
-        'Units', 'normalized', 'Position', [cpL+.06 row .10 rh], 'FontSize', 8, 'Callback', cb);
+        'Units', 'normalized', 'Position', [cpL+.06 row .10 rh], 'FontSize', 11, 'Callback', cb);
     rowOut = row - rh - gap;
 end
 
@@ -253,13 +253,13 @@ function [hSlider, hLbl, rowOut] = mkSlider(fig, label, cpL, row, rh, gap, bgc, 
     initVal = max(mn, min(mx, initVal));
     uicontrol(fig, 'Style', 'text', 'String', label, ...
         'Units', 'normalized', 'Position', [cpL+.01 row .05 rh], ...
-        'FontSize', 8, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
+        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
     step1 = 1/max(mx-mn, 1); step10 = 10/max(mx-mn, 1);
     hSlider = uicontrol(fig, 'Style', 'slider', 'Min', mn, 'Max', mx, 'Value', initVal, ...
         'Units', 'normalized', 'Position', [cpL+.06 row .13 rh], ...
         'SliderStep', [step1 step10], 'Callback', cb);
     hLbl = uicontrol(fig, 'Style', 'text', 'String', num2str(round(initVal)), ...
         'Units', 'normalized', 'Position', [cpL+.20 row .05 rh], ...
-        'FontSize', 8, 'BackgroundColor', bgc, 'ForegroundColor', [1 1 .6], 'HorizontalAlignment', 'left');
+        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', [1 1 .6], 'HorizontalAlignment', 'left');
     rowOut = row - rh - gap;
 end
