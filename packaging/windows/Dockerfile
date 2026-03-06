@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
 
 # Pre-download Octave portable (cached in Docker image layer)
 RUN mkdir -p /cache && \
-    wget -q --show-progress "https://ftpmirror.gnu.org/gnu/octave/windows/octave-${OCTAVE_VERSION}-w64.7z" \
+    wget --tries=3 --retry-connrefused --timeout=60 \
+        "https://ftpmirror.gnu.org/gnu/octave/windows/octave-${OCTAVE_VERSION}-w64.7z" \
         -O /cache/octave-${OCTAVE_VERSION}-w64.7z
 
 # Cross-compile blackbox_decode.exe from betaflight and iNav
