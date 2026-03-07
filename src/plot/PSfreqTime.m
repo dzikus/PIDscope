@@ -8,7 +8,8 @@
 % ----------------------------------------------------------------------------------
     
 
-%% update fonts 
+th = PStheme();
+%% update fonts
 set(PSspecfig3, 'pointer', 'watch')
 
 figure(PSspecfig3)
@@ -52,8 +53,8 @@ for i = 1 : 3
 
     set(gca,'Clim',[ClimScale3], 'fontsize',fontsz,'fontweight','bold')
     title('');
-    set(get(gca,'Ylabel'), 'String', ['Frequency (Hz) ' axisLabel{i}]);
-    set(get(gca,'Xlabel'), 'String', 'Time (sec)');
+    set(get(gca,'Ylabel'), 'String', ['Frequency (Hz) ' axisLabel{i}], 'Color', th.textPrimary);
+    set(get(gca,'Xlabel'), 'String', 'Time (sec)', 'Color', th.textPrimary);
     F2 = F(F<=fLim_freqTime);
     freqStr = flipud(int2str((0: F2(end) / 5: F2(end))'));
     timeStr = int2str((0: round(Tm(end)) / 10: round(Tm(end)))');
@@ -77,6 +78,7 @@ for i = 1 : 3
     catch, end
     cbar = colorbar('EastOutside');
     set(get(cbar, 'Label'), 'String', 'Power Spectral density (dB)');
+    try set(cbar, 'Color', th.axesFg); catch, end
   
     if i == 3 && (strcmp(char(datSelectionString(get(guiHandlesSpec3.SpecList, 'Value'))), 'axisD') || strcmp(char(datSelectionString(get(guiHandlesSpec3.SpecList, 'Value'))), 'axisDpf'))
         delete(subplot('position',posInfo.Spec3Pos(i,:))); 
@@ -118,6 +120,9 @@ for i = 1 : 3
 end
 updateSpec = 0;
 
+% Apply dark theme to all axes
+allax = findobj(PSspecfig3, 'Type', 'axes');
+for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
 % Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig3);
 

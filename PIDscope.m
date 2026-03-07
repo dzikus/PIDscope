@@ -89,10 +89,14 @@ currentDate = currentDate(1:strfind(currentDate,' ')-1);
 set(0,'defaultUicontrolFontName', 'Helvetica')
 % defaultUicontrolFontSize is set after fontsz is calculated (below)
 
-%%%% assign main figure handle and define some UI variables 
+%%%% assign main figure handle and define some UI variables
 PSfig = figure(1);
 set(PSfig, 'InvertHardcopy', 'off');
-bgcolor=[.95 .95 .95];
+th = PStheme();
+bgcolor = th.figBg;
+panelBg = th.panelBg;
+panelFg = th.panelFg;
+panelBorder = th.panelBorder;
 set(PSfig,'color',bgcolor);
 
 wikipage = 'https://buymeacoffee.com/dzikus';
@@ -123,16 +127,16 @@ errmsg=[];
 
 plotall_flag=-1;
 
-colorA=[.8 .1 .2];
+colorA = th.btnDash1;
 colorA2=[.4 .0 .6];
-colorB=[.1 .4 .8];
+colorB = th.btnDash2;
 colorC=[1 .2 .2];
 colorD=[.1 .7 .2];
 
-colRun = [0 .5 0];
-saveCol = [.1 .1 .1];
-setUpCol = [.1 .1 .1];
-cautionCol = [0.6    0.3    0];
+colRun = th.btnRun;
+saveCol = th.btnSave;
+setUpCol = th.textSecondary;
+cautionCol = th.btnReset;
 %use_phsCorrErr=0;
 flightSpec=0;
 screensz = get(0,'ScreenSize');
@@ -163,6 +167,8 @@ if isOctave
     rs = 0.034; rh = 0.030;
 end
 set(0,'defaultUicontrolFontSize', fontsz)
+set(0,'defaultUicontrolForegroundColor', th.textPrimary)
+set(0,'defaultUicontrolBackgroundColor', th.panelBg)
 
 row = 1;
 posInfo.firmware =[cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
@@ -188,7 +194,8 @@ posInfo.saveSettings = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
 posInfo.PIDtuningService = [cpL+.003 vPos-rs*row cpW-.006 rh];
 cpH = rs*row + 0.04; % control panel height = rows + title margin
 controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
-             'BackgroundColor',[.95 .95 .95],...
+             'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+             'HighlightColor',panelBorder,...
              'Position',[cpL vPos-cpH+0.02 cpW cpH]);
 
 % Position info table just below control panel
@@ -202,30 +209,24 @@ posInfo.resetMain = [cpL+.003 infoTableY - rh - 0.005 cpW-.006 rh];
 fnameMaster = {}; 
 fcnt = 0;
 
-% ColorSet=colormap(jet);%hsv jet gray lines colorcube
-% j=[1     8    17    20    23    27   45    50    58    64];
-ColorSet=[.6 .6 .6;..., % gray - Gyro raw
-  0   0  0;..., % black - Gyro filt
-  0  .7  0;..., % green - Pterm
- .8  .65 .1;..., % yellow - I term
- .3  .7  .9;..., % light blue - Dterm raw
- .1  .2  .8;..., % dark blue -Dterm Filt
- .6  .3  .3;..., % brown - Fterm 
- .8  0  .2;..., % dark red
- 1  .2  .9;..., % light purple
- .4 0 .9;...,    % dark purple
- .9 0 0;..., %M1 
- 1  .6 0;..., %M2
-0  0 .9;..., %M3
-.1  1  .8;..., %M4
- 0 0 0;..., % throttle
- 0 0 0]; % all
-j=[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16];
-
-k=1;
-for i=1:length(j)
-    eval(['linec.col' int2str(k-1) '=ColorSet(j(i),:);']);
-    k=k+1;
+ColorSet=[th.sigDebug;...     % Debug
+  th.sigGyro;...              % Gyro
+  th.sigPterm;...             % Pterm
+  th.sigIterm;...             % Iterm
+  th.sigDprefilt;...          % Dterm prefilt
+  th.sigDterm;...             % Dterm
+  th.sigFterm;...             % Fterm
+  th.sigSetpoint;...          % Setpoint
+  th.sigPIDsum;...            % PIDsum
+  th.sigPIDerr;...            % PIDerr
+  th.sigMotor{1};...          % M1
+  th.sigMotor{2};...          % M2
+  th.sigMotor{3};...          % M3
+  th.sigMotor{4};...          % M4
+  th.sigThrottle;...          % Throttle
+  th.textPrimary];            % All
+for k=0:15
+    linec.(['col' int2str(k)]) = ColorSet(k+1,:);
 end
 
 %%% tooltips
@@ -350,12 +351,14 @@ try
     defaults = readtable('PSdefaults.txt');
     a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
     t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', ['']);
+    try set(t, 'BackgroundColor', th.panelBg, 'ForegroundColor', th.textSecondary); catch, end
 catch
-    defaults = ' '; 
+    defaults = ' ';
     a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
     t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
+    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', ['']);
+    try set(t, 'BackgroundColor', th.panelBg, 'ForegroundColor', th.textSecondary); catch, end
 end
 
 
@@ -376,3 +379,4 @@ if isOctave
     set(PSfig, 'Position', tmpPos);
     drawnow;
 end
+PSstyleControls(PSfig, th);

@@ -33,8 +33,9 @@ yPad = (yHi - yLo) * 0.05;
 screensz = get(0, 'ScreenSize');
 figW = round(.6 * screensz(3));
 figH = round(.85 * screensz(4));
+thm = PStheme();
 fig = figure('Name', ['Spectrum Player - ' signalName], 'NumberTitle', 'off', ...
-    'Color', [.15 .15 .15], 'Position', [round(.2*screensz(3)) round(.07*screensz(4)) figW figH]);
+    'Color', thm.figBg, 'Position', [round(.2*screensz(3)) round(.07*screensz(4)) figW figH]);
 
 axColors = {[0 .85 .85], [.85 .85 0], [.85 .3 .85]};
 
@@ -52,19 +53,16 @@ for vi = 1:nValid
     ax = axes('Parent', fig, 'Units', 'normalized', ...
         'Position', [.07 yPos .86 specH - specGap]);
     specLines{vi} = plot(ax, F, specData{k}(:, 1), 'Color', axColors{k}, 'LineWidth', 1.2);
-    set(ax, 'XLim', [F(1) F(end)], 'YLim', [yLo-yPad yHi+yPad], ...
-        'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-        'FontSize', 13, 'FontWeight', 'bold');
-    set(get(ax, 'YLabel'), 'String', 'dB', 'Color', [.8 .8 .8]);
+    set(ax, 'XLim', [F(1) F(end)], 'YLim', [yLo-yPad yHi+yPad]);
+    PSstyleAxes(ax, thm);
+    set(get(ax, 'YLabel'), 'String', 'dB');
     if vi == nValid
-        set(get(ax, 'XLabel'), 'String', 'Frequency (Hz)', 'Color', [.8 .8 .8]);
+        set(get(ax, 'XLabel'), 'String', 'Frequency (Hz)');
     else
         set(ax, 'XTickLabel', []);
     end
     titleHandles{vi} = title(ax, axisLabels{k});
     set(titleHandles{vi}, 'Color', axColors{k});
-    grid(ax, 'on');
-    set(ax, 'GridColor', [.3 .3 .3]);
     axSpec{vi} = ax;
 end
 
@@ -72,8 +70,7 @@ end
 sgIdx = chIdx(1);
 axSg = axes('Parent', fig, 'Units', 'normalized', 'Position', [.07 .10 .86 .16]);
 imagesc(axSg, specMatCell{sgIdx});
-set(axSg, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-    'FontSize', 11, 'FontWeight', 'bold');
+PSstyleAxes(axSg, thm);
 
 nYt = 4;
 yTk = linspace(1, nFreq, nYt+1);
@@ -84,7 +81,7 @@ nXt = 8;
 xTk = linspace(1, nFrames, nXt+1);
 xLb = arrayfun(@(x) sprintf('%.1f', interp1(1:nFrames, Tm, x)), xTk, 'UniformOutput', false);
 set(axSg, 'XTick', xTk, 'XTickLabel', xLb);
-set(get(axSg, 'XLabel'), 'String', 'Time (s)', 'Color', [.8 .8 .8]);
+set(get(axSg, 'XLabel'), 'String', 'Time (s)');
 try colormap(axSg, hot); catch, end
 
 hold(axSg, 'on');
@@ -96,7 +93,7 @@ timeLbl = uicontrol(fig, 'Style', 'text', ...
     'String', sprintf('%s  t = %.2fs', signalName, Tm(1)), ...
     'Units', 'normalized', 'Position', [.07 .27 .40 .025], ...
     'FontSize', 12, 'FontWeight', 'bold', ...
-    'BackgroundColor', [.15 .15 .15], 'ForegroundColor', [.9 .9 .9], ...
+    'BackgroundColor', thm.figBg, 'ForegroundColor', thm.textPrimary, ...
     'HorizontalAlignment', 'left');
 
 % transport controls
@@ -118,7 +115,7 @@ uicontrol(fig, 'Style', 'pushbutton', 'String', 'Stop', ...
 
 uicontrol(fig, 'Style', 'text', 'String', 'Speed:', ...
     'Units', 'normalized', 'Position', [.30 btnY+.005 .045 .030], ...
-    'FontSize', 11, 'BackgroundColor', [.15 .15 .15], 'ForegroundColor', [.8 .8 .8]);
+    'FontSize', 11, 'BackgroundColor', thm.figBg, 'ForegroundColor', thm.textPrimary);
 speedMenu = uicontrol(fig, 'Style', 'popupmenu', ...
     'String', {'0.25x', '0.5x', '1x', '2x', '4x'}, 'Value', 3, ...
     'Units', 'normalized', 'Position', [.35 btnY .06 btnH], 'FontSize', 11);
@@ -126,7 +123,7 @@ speedMenu = uicontrol(fig, 'Style', 'popupmenu', ...
 frameLbl = uicontrol(fig, 'Style', 'text', ...
     'String', sprintf('1 / %d', nFrames), ...
     'Units', 'normalized', 'Position', [.42 btnY+.005 .08 .030], ...
-    'FontSize', 10, 'BackgroundColor', [.15 .15 .15], 'ForegroundColor', [.6 .6 .6], ...
+    'FontSize', 10, 'BackgroundColor', thm.figBg, 'ForegroundColor', thm.textSecondary, ...
     'HorizontalAlignment', 'center');
 
 timeSlider = uicontrol(fig, 'Style', 'slider', 'Min', 1, 'Max', nFrames, 'Value', 1, ...

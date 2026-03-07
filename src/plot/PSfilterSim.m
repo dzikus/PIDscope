@@ -4,9 +4,10 @@ function PSfilterSim(gyroRaw, Fs, setupInfo)
 %  Fs        - sample rate (Hz)
 %  setupInfo - cell array {param, value} from header
 
+thm = PStheme();
 screensz = get(0, 'ScreenSize');
 fig = figure('Name', 'Filter Simulation', 'NumberTitle', 'off', ...
-    'Color', [.15 .15 .15], ...
+    'Color', thm.figBg, ...
     'Position', round([.1*screensz(3) .08*screensz(4) .75*screensz(3) .8*screensz(4)]));
 
 fp = parseFilterParams(setupInfo);
@@ -18,12 +19,13 @@ axSpec = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .54 .62 .40
 axTime = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .10 .62 .36]);
 
 cpL = .72; cpW = .27;
-uipanel('Parent', fig, 'Title', 'Filter Settings', 'FontSize', 9, 'FontWeight', 'bold', ...
-    'BackgroundColor', [.25 .25 .25], 'ForegroundColor', [.9 .9 .9], ...
+uipanel('Parent', fig, 'Title', 'Filter Settings', 'FontWeight', 'bold', ...
+    'BackgroundColor', thm.panelBg, 'ForegroundColor', thm.panelFg, ...
+    'HighlightColor', thm.panelBorder, ...
     'FontSize', 12, 'Position', [cpL .02 cpW .96]);
 
 row = .92; rh = .032; gap = .005;
-bgc = [.25 .25 .25]; fgc = [.9 .9 .9];
+bgc = thm.panelBg; fgc = thm.panelFg;
 cb = @(~,~) doUpdate();
 
 % axis selector
@@ -137,16 +139,13 @@ doUpdate();
         plot(axSpec, fF, sF, 'c', 'LineWidth', 1.3);
         plot(axSpec, fO, sD, 'Color', [.4 .9 .4], 'LineWidth', 0.8);
         hold(axSpec, 'off');
-        set(axSpec, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-            'FontSize', 13, 'FontWeight', 'bold', 'XLim', [0 Fs/2]);
-        set(get(axSpec, 'XLabel'), 'String', 'Frequency (Hz)', 'Color', [.8 .8 .8]);
-        set(get(axSpec, 'YLabel'), 'String', 'PSD (dB)', 'Color', [.8 .8 .8]);
-        th = title(axSpec, [axNames{ai} ' - Spectrum']);
-        set(th, 'Color', [.9 .9 .9]);
-        grid(axSpec, 'on'); set(axSpec, 'GridColor', [.3 .3 .3]);
-        legend(axSpec, {'Raw gyro', 'Filtered gyro', 'D-term (filtered)'}, ...
-            'TextColor', [.8 .8 .8], 'Color', [.2 .2 .2], 'EdgeColor', [.4 .4 .4], ...
-            'Location', 'northeast', 'FontSize', 11);
+        PSstyleAxes(axSpec, thm); set(axSpec, 'XLim', [0 Fs/2]);
+        set(get(axSpec, 'XLabel'), 'String', 'Frequency (Hz)');
+        set(get(axSpec, 'YLabel'), 'String', 'PSD (dB)');
+        title(axSpec, [axNames{ai} ' - Spectrum']);
+        h_leg = legend(axSpec, {'Raw gyro', 'Filtered gyro', 'D-term (filtered)'}, ...
+            'Location', 'northeast');
+        try PSstyleLegend(h_leg, thm); catch, end
 
         N = min(2000, length(dat));
         t = (0:N-1) / Fs * 1000;
@@ -155,15 +154,12 @@ doUpdate();
         hold(axTime, 'on');
         plot(axTime, t, filt(1:N), 'c', 'LineWidth', 1.2);
         hold(axTime, 'off');
-        set(axTime, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-            'FontSize', 13, 'FontWeight', 'bold');
-        set(get(axTime, 'XLabel'), 'String', 'Time (ms)', 'Color', [.8 .8 .8]);
-        set(get(axTime, 'YLabel'), 'String', 'deg/s', 'Color', [.8 .8 .8]);
-        th2 = title(axTime, [axNames{ai} ' - Time Domain']);
-        set(th2, 'Color', [.9 .9 .9]);
-        grid(axTime, 'on'); set(axTime, 'GridColor', [.3 .3 .3]);
-        legend(axTime, {'Raw', 'Filtered'}, 'TextColor', [.8 .8 .8], ...
-            'Color', [.2 .2 .2], 'EdgeColor', [.4 .4 .4], 'Location', 'northeast', 'FontSize', 11);
+        PSstyleAxes(axTime, thm);
+        set(get(axTime, 'XLabel'), 'String', 'Time (ms)');
+        set(get(axTime, 'YLabel'), 'String', 'deg/s');
+        title(axTime, [axNames{ai} ' - Time Domain']);
+        h_leg = legend(axTime, {'Raw', 'Filtered'}, 'Location', 'northeast');
+        try PSstyleLegend(h_leg, thm); catch, end
     end
 
 end

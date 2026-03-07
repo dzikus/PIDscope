@@ -76,7 +76,8 @@ posInfo.crossAxesStats_text2 = [.42 .965 .03 .03];
 posInfo.crossAxesStats_input2 = [.42 .945 .03 .03];
 
 statsCrtlpanel = uipanel('Title','','FontSize',fontsz5,...
-              'BackgroundColor',[.95 .95 .95],...
+              'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+              'HighlightColor',panelBorder,...
               'Position',[.06 .935 .40 .06]);
 
 guiHandlesStats.saveFig5 = uicontrol(PSstatsfig,'string','Save Fig','fontsize',fontsz5,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig5],...
@@ -105,7 +106,7 @@ else
     errordlg('Please select file(s) then click ''load+run''', 'Error, no data');
     pause(2);
 end
-
+PSstyleControls(PSstatsfig);
 
 function textinput_call4(src,eventdata)
 str=get(src,'String');

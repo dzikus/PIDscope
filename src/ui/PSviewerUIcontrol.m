@@ -45,7 +45,8 @@ fullszPlot = [0.095 0.255 0.77 0.63];
 
 
 checkpanel = uipanel('Title','','FontSize',fontsz,...
-             'BackgroundColor',[.95 .95 .95],...
+             'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+             'HighlightColor',panelBorder,...
              'Position',[.096 .932 .68 .065]);        
 
 guiHandles.checkbox0=uicontrol(PSfig,'Style','checkbox','String','Debug','fontsize',fontsz,'ForegroundColor',[linec.col0],'BackgroundColor',bgcolor,...
@@ -126,5 +127,6 @@ box on
 
 try set(guiHandles.maxY_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ymax'))))), catch, end
 try set(guiHandles.nCols_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ncolors'))))), catch, end
+PSstyleControls(PSfig);
 
 

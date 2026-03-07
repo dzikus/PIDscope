@@ -67,7 +67,8 @@ posInfo.maxYStepInput=       [cpL+.005 .421 cpW/3 .025];
 posInfo.maxYStepTxt=         [cpL+cpW/3+.005 .421 cpW/2 .025];
 
 guiHandlesTune.tuneCrtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
-              'BackgroundColor',[.95 .95 .95],...
+              'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+              'HighlightColor',panelBorder,...
               'Position',[cpL .41 cpW .51]);
        
 guiHandlesTune.run4 = uicontrol(PStunefig,'string','Run','fontsize',fontsz,'TooltipString',[TooltipString_steprun],'units','normalized','Position',[posInfo.run4],...
@@ -126,6 +127,7 @@ try set(guiHandlesTune.maxYStepInput, 'String', num2str(defaults.Values(find(str
 else
     warndlg('Please select file(s)');
 end
+PSstyleControls(PStunefig);
 
 % functions
 function textinput_call3(src,eventdata)

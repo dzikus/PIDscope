@@ -9,7 +9,8 @@
 % ----------------------------------------------------------------------------------
 
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
-   
+
+th = PStheme();
 PSspecfig_pos = get(PSspecfig, 'Position');
 screensz_tmp = get(0,'ScreenSize'); if PSspecfig_pos(3) > 10, PSspecfig_pos(3:4) = PSspecfig_pos(3:4) ./ screensz_tmp(3:4); end
 prop_max_screen=(max([PSspecfig_pos(3) PSspecfig_pos(4)]));
@@ -177,13 +178,14 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                         
             grid on
             ax = gca;
+            PSstyleAxes(ax, th);
             set(ax, 'GridColor', [1 1 1]);
             if get(guiHandlesSpec.ColormapSelect, 'Value')==8 || get(guiHandlesSpec.ColormapSelect, 'Value')==9
-                set(ax, 'GridColor', [0 0 0]); % black on white background
-                set(h,'Color',[0 0 0],'fontsize',fontsz,'fontweight','bold')             
+                set(ax, 'GridColor', [0 0 0]);
+                set(h,'Color',[0 0 0],'fontsize',fontsz,'fontweight','bold')
             end
-             ylabel('Frequency (Hz)','fontweight','bold')
-             xlabel('% Throttle','fontweight','bold')
+             ylabel('Frequency (Hz)','fontweight','bold','Color',th.textPrimary)
+             xlabel('% Throttle','fontweight','bold','Color',th.textPrimary)
 
             %% Dynamic notch overlay for FFT_FREQ mode
             if exist('notchData','var') && exist('debugmode','var') && exist('debugIdx','var')
@@ -332,27 +334,28 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
             if get(guiHandlesSpec.Sub100HzCheck{c1(p)}, 'Value')==1
                 set(h2,'xtick',[0 20 40 60 80 100], 'yminortick','on')
                 axis([0 100 baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))])
-                h=plot([round(Flim1) round(Flim1)],[baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'k--');
+                h=plot([round(Flim1) round(Flim1)],[baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'--','Color',th.axesFg);
                 set(h,'linewidth',1)
-                h=plot([round(Flim2) round(Flim2)],[baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'k--');
+                h=plot([round(Flim2) round(Flim2)],[baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))],'--','Color',th.axesFg);
                 set(h,'linewidth',1)
             else    
                 set(h2,'xtick',[0 : ((A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value')) / 2) * 1000 / 5) : (A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value')) / 2) * 1000],'yminortick','on')
                 axis([0 (A_lograte(get(guiHandlesSpec.FileSelect{k}, 'Value')) / 2) * 1000 baselineYlines(get(guiHandlesSpec.checkboxPSD, 'Value')+1) climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))])
             end
 
-            xlabel('Frequency (Hz)')
+            xlabel('Frequency (Hz)','Color',th.textPrimary)
             if get(guiHandlesSpec.checkboxPSD, 'Value')
-                ylabel(['PSD (dB)'])
+                ylabel(['PSD (dB)'],'Color',th.textPrimary)
             else
-                ylabel(['Amplitude'])
+                ylabel(['Amplitude'],'Color',th.textPrimary)
             end
                 
 
             h=text(2,climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, c1(p))*.95,axLabel{c2(p)});
-            set(h,'Color',[.2 .2 .2],'fontsize',fontsz,'fontweight','bold')
+            set(h,'Color',th.textPrimary,'fontsize',fontsz,'fontweight','bold')
 
             grid on
+            PSstyleAxes(gca, th);
         end
     end
 end

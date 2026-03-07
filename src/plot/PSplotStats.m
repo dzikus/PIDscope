@@ -8,8 +8,8 @@
 % ----------------------------------------------------------------------------------
     
 if ~isempty(filenameA) || ~isempty(filenameB)
+    th = PStheme();
     set(PSstatsfig, 'pointer', 'watch')
-    pause(.05)
     %% update fonts
 
 PSstatsfig_pos = get(PSstatsfig, 'Position');
@@ -63,7 +63,7 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         cla   
         h=histogram(Rpercent_A,'Normalization','probability','BinWidth',1);      
         y=xlabel('% roll','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);                 
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);                 
         ylabel('% of flight','fontweight','bold')    
         set(h,'FaceColor',[colorA],'FaceAlpha',.9, 'edgecolor',[colorA],'EdgeAlpha',.7)  
 
@@ -71,14 +71,14 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
 
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveRoll_A)-1],RateCurveRoll_A(1,2:end));
         set(ax(1),'Ycolor',[colorA])
-        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
+        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor',th.axesFg,'fontsize',fontsz5)
         set(get(ax(2), 'YLabel'), 'String', 'deg/s');
         if get(guiHandlesStats.degsecStick, 'Value')==1, 
             set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveRoll_A(20) RateCurveRoll_A(40) RateCurveRoll_A(60) RateCurveRoll_A(80)],'ko','Parent', ax(2)); 
-        set(h,'markerfacecolor','k') 
+        set(h,'markerfacecolor',th.axesFg) 
 
         set(hhist,'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(1,:)]);
         axis([1 100 0 .1])
@@ -98,19 +98,19 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         h=histogram(Ppercent_A,'Normalization','probability','BinWidth',1);
         set(h,'FaceColor',[colorA],'FaceAlpha',.9, 'edgecolor',[colorA],'EdgeAlpha',.7)    
         y=xlabel('% pitch','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);
         ylabel('% of flight','fontweight','bold')  
          hold on    
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurvePitch_A)-1],RateCurvePitch_A(1,2:end));
         set(ax(1),'Ycolor',[colorA])
-        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
+        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor',th.axesFg,'fontsize',fontsz5)
         set(get(ax(2), 'YLabel'), 'String', 'deg/s');
         if get(guiHandlesStats.degsecStick, 'Value')==1, 
             set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurvePitch_A(20) RateCurvePitch_A(40) RateCurvePitch_A(60) RateCurvePitch_A(80)],'ko','Parent', ax(2));     
-        set(h,'markerfacecolor','k')  
+        set(h,'markerfacecolor',th.axesFg)  
 
         set(hhist,'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(2,:)]);
         axis([1 100 0 .1])
@@ -130,20 +130,20 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         h=histogram(Ypercent_A,'Normalization','probability','BinWidth',1);
         set(h,'FaceColor',[colorA],'FaceAlpha',.9, 'edgecolor',[colorA],'EdgeAlpha',.7)    
         y=xlabel('% yaw','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);
         ylabel('% of flight','fontweight','bold')
 
          hold on
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveYaw_A)-1],RateCurveYaw_A(1,2:end));
         set(ax(1),'Ycolor',[colorA])
-        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
+        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor',th.axesFg,'fontsize',fontsz5)
         set(get(ax(2), 'YLabel'), 'String', 'deg/s');
         if get(guiHandlesStats.degsecStick, 'Value')==1, 
             set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveYaw_A(20) RateCurveYaw_A(40) RateCurveYaw_A(60) RateCurveYaw_A(80)],'ko','Parent', ax(2)); 
-        set(h,'markerfacecolor','k')  
+        set(h,'markerfacecolor',th.axesFg)  
 
         set(hhist,'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(3,:)]);  
         axis([1 100 0 .1])
@@ -164,7 +164,7 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         set(h,'FaceColor',[colorA],'FaceAlpha',.9, 'edgecolor',[colorA],'EdgeAlpha',.7);
         grid on
         y=xlabel('% throttle','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);
         ylabel('% of flight', 'color',[colorA],'fontweight','bold')
         set(hhist,'ycolor',[colorA],'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(4,:)]);  
         axis([1 100 0 .1])
@@ -202,7 +202,7 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         cla   
         h=histogram(Rpercent_B,'Normalization','probability','BinWidth',1);      
         y=xlabel('% roll','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);                 
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);                 
         ylabel('% of flight','fontweight','bold')    
         set(h,'FaceColor',[colorB],'FaceAlpha',.9, 'edgecolor',[colorB],'EdgeAlpha',.7)  
 
@@ -210,14 +210,14 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
 
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveRoll_B)-1],RateCurveRoll_B(1,2:end));
         set(ax(1),'Ycolor',[colorB])
-        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
+        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor',th.axesFg,'fontsize',fontsz5)
         set(get(ax(2), 'YLabel'), 'String', 'deg/s');
         if get(guiHandlesStats.degsecStick, 'Value')==1, 
             set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveRoll_B(20) RateCurveRoll_B(40) RateCurveRoll_B(60) RateCurveRoll_B(80)],'ko','Parent', ax(2)); 
-        set(h,'markerfacecolor','k')  
+        set(h,'markerfacecolor',th.axesFg)  
 
         set(hhist,'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(5,:)]);
         axis([1 100 0 .1])
@@ -238,20 +238,20 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         h=histogram(Ppercent_B,'Normalization','probability','BinWidth',1);
         set(h,'FaceColor',[colorB],'FaceAlpha',.9, 'edgecolor',[colorB],'EdgeAlpha',.7)    
         y=xlabel('% pitch','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);
         ylabel('% of flight','fontweight','bold');
 
          hold on    
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurvePitch_B)-1],RateCurvePitch_B(1,2:end));
         set(ax(1),'Ycolor',[colorB])
-        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
+        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor',th.axesFg,'fontsize',fontsz5)
         set(get(ax(2), 'YLabel'), 'String', 'deg/s');
         if get(guiHandlesStats.degsecStick, 'Value')==1, 
             set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurvePitch_B(20) RateCurvePitch_B(40) RateCurvePitch_B(60) RateCurvePitch_B(80)],'ko','Parent', ax(2)); 
-        set(h,'markerfacecolor','k')  
+        set(h,'markerfacecolor',th.axesFg)  
 
         set(hhist,'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(6,:)]);
         axis([1 100 0 .1])
@@ -272,20 +272,20 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         h=histogram(Ypercent_B,'Normalization','probability','BinWidth',1);
         set(h,'FaceColor',[colorB],'FaceAlpha',.9, 'edgecolor',[colorB],'EdgeAlpha',.7)    
         y=xlabel('% yaw','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);
         ylabel('% of flight','fontweight','bold')    
 
          hold on
         [ax,h1,h2]=plotyy(0,0,[1:length(RateCurveYaw_B)-1],RateCurveYaw_B(1,2:end));
         set(ax(1),'Ycolor',[colorB])
-        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor','k','fontsize',fontsz5)
+        set(ax(2),'Xlim',[1 100],'YLim',[0 Yscale] ,'ytick',[0 round(Yscale/2) Yscale], 'Ycolor',th.axesFg,'fontsize',fontsz5)
         set(get(ax(2), 'YLabel'), 'String', 'deg/s');
         if get(guiHandlesStats.degsecStick, 'Value')==1, 
             set(get(ax(2), 'YLabel'), 'String', 'deg/s/stick travel units');
         end
         set(h2,'color',[.5 .5 .5],'LineWidth',1.5)
         hold(ax(2),'on'); h=plot([20 40 60 80],[RateCurveYaw_B(20) RateCurveYaw_B(40) RateCurveYaw_B(60) RateCurveYaw_B(80)],'ko','Parent', ax(2)); 
-        set(h,'markerfacecolor','k')  
+        set(h,'markerfacecolor',th.axesFg)  
 
         set(hhist,'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(7,:)]);  
         axis([1 100 0 .1])
@@ -306,7 +306,7 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==1
         set(h,'FaceColor',[colorB],'FaceAlpha',.9, 'edgecolor',[colorB],'EdgeAlpha',.7)
         grid on
         y=xlabel('% throttle','fontweight','bold');
-        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',[.2 .2 .2]);
+        set(y,'Units','normalized', 'position', [.5 -.1 1],'color',th.textPrimary);
         ylabel('% of flight', 'color',[colorB],'fontweight','bold')
         set(hhist,'ycolor',[colorB],'tickdir','in','xlim',[1 100],'xtick',[1 20 40 60 80 100],'ylim',[0 .1],'ytick',[0 .05 .1],'xticklabels',{0 20 40 60 80 100},'yticklabels',{0 5 10},'fontsize',fontsz5, 'Position',[posInfo.statsPos(8,:)]);  
         axis([1 100 0 .1])
@@ -340,15 +340,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
           % gyro
         h1=subplot('position',posInfo.statsPos2(1,:)); cla
         s1=errorbar([1],mean(abs(DATtmpA.GyroFilt(1,:))), std(abs(DATtmpA.GyroFilt(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpA.GyroFilt(1,:))));hold on
         set(s1,'FaceColor',[colorA]);%[ColorSet(11,:)])        
         s1=errorbar([2],mean(abs(DATtmpA.GyroFilt(2,:))), std(abs(DATtmpA.GyroFilt(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpA.GyroFilt(2,:))));
         set(s2,'FaceColor',[colorA]);%,[ColorSet(12,:)])        
         s1=errorbar([3],mean(abs(DATtmpA.GyroFilt(1,:))), std(abs(DATtmpA.GyroFilt(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)   
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)   
         s3=bar([3],mean(abs(DATtmpA.GyroFilt(1,:))));
         set(s3,'FaceColor',[colorA]);%,[ColorSet(13,:)])
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -362,19 +362,19 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % RCRate
         h1=subplot('position',posInfo.statsPos2(5,:)); cla        
         s1=errorbar([1],mean(abs(Rpercent_A)), std(abs(Rpercent_A)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(Rpercent_A)));hold on
         set(s1,'FaceColor',[colorA]);%        
         s1=errorbar([2],mean(abs(Ppercent_A)), std(abs(Ppercent_A)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(Ppercent_A)));
         set(s2,'FaceColor',[colorA]);%
         s1=errorbar([3],mean(abs(Ypercent_A)), std(abs(Ypercent_A)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s3=bar([3],mean(abs(Ypercent_A)));
         set(s3,'FaceColor',[colorA]);%        
         s1=errorbar([4],mean(abs(Tpercent_A)), std(abs(Tpercent_A)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s4=bar([4],mean(Tpercent_A));
         set(s4,'FaceColor',[colorA]);%
         set(gca,'Xtick',[1 2 3 4],'xticklabel',{'R';'P';'Y';'T'},'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -387,15 +387,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % pterm
         h1=subplot('position',posInfo.statsPos2(2,:)); cla        
         s1=errorbar([1],mean(abs(DATtmpA.Pterm(1,:))), std(abs(DATtmpA.Pterm(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpA.Pterm(1,:))));hold on
         set(s1,'FaceColor',[colorA]);%        
         s1=errorbar([2],mean(abs(DATtmpA.Pterm(2,:))), std(abs(DATtmpA.Pterm(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpA.Pterm(2,:))));
         set(s2,'FaceColor',[colorA]);%        
         s1=errorbar([3],mean(abs(DATtmpA.Pterm(3,:))), std(abs(DATtmpA.Pterm(3,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)    
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)    
         s3=bar([3],mean(abs(DATtmpA.Pterm(3,:))));
         set(s3,'FaceColor',[colorA]);%
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -409,15 +409,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % fterm
         h1=subplot('position',posInfo.statsPos2(6,:)); cla        
         s1=errorbar([1],mean(abs(DATtmpA.Fterm(1,:))), std(abs(DATtmpA.Fterm(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)   
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)   
         s1=bar([1],mean(abs(DATtmpA.Fterm(1,:))));hold on
         set(s1,'FaceColor',[colorA]);%
         s1=errorbar([2],mean(abs(DATtmpA.Fterm(2,:))), std(abs(DATtmpA.Fterm(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpA.Fterm(2,:))));
         set(s2,'FaceColor',[colorA]);%        %
         s1=errorbar([3],mean(abs(DATtmpA.Fterm(3,:))), std(abs(DATtmpA.Fterm(3,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)  
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)  
         s3=bar([3],mean(abs(DATtmpA.Fterm(3,:))));
         set(s3,'FaceColor',[colorA]);
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -432,15 +432,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % Iterm
         h1=subplot('position',posInfo.statsPos2(3,:)); cla        
         s1=errorbar([1],mean(abs(DATtmpA.Iterm(1,:))), std(abs(DATtmpA.Iterm(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpA.Iterm(1,:))));hold on
         set(s1,'FaceColor',[colorA]);%        
         s1=errorbar([2],mean(abs(DATtmpA.Iterm(2,:))), std(abs(DATtmpA.Iterm(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpA.Iterm(2,:))));
         set(s2,'FaceColor',[colorA]);%        
         s1=errorbar([3],mean(abs(DATtmpA.Iterm(3,:))), std(abs(DATtmpA.Iterm(3,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)  
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)  
         s3=bar([3],mean(abs(DATtmpA.Iterm(3,:))));
         set(s3,'FaceColor',[colorA]);%
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -454,11 +454,11 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % dterm
         h1=subplot('position',posInfo.statsPos2(7,:)); cla
         s1=errorbar([1],mean(abs(DATtmpA.DtermFilt(1,:))), std(abs(DATtmpA.DtermFilt(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpA.DtermFilt(1,:))));hold on
         set(s1,'FaceColor',[colorA]);% 
         s1=errorbar([2],mean(abs(DATtmpA.DtermFilt(2,:))), std(abs(DATtmpA.DtermFilt(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness) 
+        set(s1,'color',th.axesFg,'linewidth',lineThickness) 
         s2=bar([2],mean(abs(DATtmpA.DtermFilt(2,:))));
         set(s2,'FaceColor',[colorA]);%
         set(gca,'Xtick',[1 2],'xticklabel',{'R';'P'},'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -471,19 +471,19 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         
         h1=subplot('position',posInfo.statsPos2(4,:)); cla 
         s1=errorbar([1],mean(DATtmpA.Motor12(1,:)), std(DATtmpA.Motor12(1,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(DATtmpA.Motor12(1,:)));hold on
         set(s1,'FaceColor',[colorA]);
         s1=errorbar([2],mean(DATtmpA.Motor12(2,:)), std(DATtmpA.Motor12(2,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(DATtmpA.Motor12(2,:)));
         set(s2,'FaceColor',[colorA]);%  
         s1=errorbar([3],mean(DATtmpA.Motor34(1,:)), std(DATtmpA.Motor34(1,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s3=bar([3],mean(DATtmpA.Motor34(1,:)));
         set(s3,'FaceColor',[colorA]);%
         s1=errorbar([4],mean(DATtmpA.Motor34(2,:)), std(DATtmpA.Motor34(2,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s4=bar([4],mean(DATtmpA.Motor34(2,:)));
         set(s4,'FaceColor',[colorA]);%
         set(gca,'Xtick',[1 2 3 4],'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -496,19 +496,19 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         
          h1=subplot('position',posInfo.statsPos2(8,:)); cla  
         s1=errorbar([1],mean(abs(DATtmpA.debug12(1,:))), std(abs(DATtmpA.debug12(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpA.debug12(1,:))));hold on
         set(s1,'FaceColor',[colorA]);%
         s1=errorbar([2],mean(abs(DATtmpA.debug12(2,:))), std(abs(DATtmpA.debug12(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpA.debug12(2,:))));
         set(s2,'FaceColor',[colorA]);% 
         s1=errorbar([3],mean(abs(DATtmpA.debug34(1,:))), std(abs(DATtmpA.debug34(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s3=bar([3],mean(abs(DATtmpA.debug34(1,:))));
         set(s3,'FaceColor',[colorA]);%
         s1=errorbar([4],mean(abs(DATtmpA.debug34(2,:))), std(abs(DATtmpA.debug34(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)  
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)  
         s4=bar([4],mean(abs(DATtmpA.debug34(2,:))));
         set(s4,'FaceColor',[colorA]);%
         set(gca,'Xtick',[1 2 3 4],'xcolor',[colorA],'ycolor',[colorA],'YMinorGrid','on')
@@ -533,15 +533,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % gyro
         h1=subplot('position',posInfo.statsPos2(9,:)); cla
         s1=errorbar([1],mean(abs(DATtmpB.GyroFilt(1,:))), std(abs(DATtmpB.GyroFilt(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpB.GyroFilt(1,:))));hold on
         set(s1,'FaceColor',[colorB]);%[ColorSet(11,:)])        
         s1=errorbar([2],mean(abs(DATtmpB.GyroFilt(2,:))), std(abs(DATtmpB.GyroFilt(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpB.GyroFilt(2,:))));
         set(s2,'FaceColor',[colorB]);%,[ColorSet(12,:)])        
         s1=errorbar([3],mean(abs(DATtmpB.GyroFilt(1,:))), std(abs(DATtmpB.GyroFilt(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)   
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)   
         s3=bar([3],mean(abs(DATtmpB.GyroFilt(1,:))));
         set(s3,'FaceColor',[colorB]);%,[ColorSet(13,:)])
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -555,19 +555,19 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % RCRate
         h1=subplot('position',posInfo.statsPos2(13,:)); cla        
         s1=errorbar([1],mean(abs(Rpercent_B)), std(abs(Rpercent_B)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(Rpercent_B)));hold on
         set(s1,'FaceColor',[colorB]);%        
         s1=errorbar([2],mean(abs(Ppercent_B)), std(abs(Ppercent_B)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(Ppercent_B)));
         set(s2,'FaceColor',[colorB]);%
         s1=errorbar([3],mean(abs(Ypercent_B)), std(abs(Ypercent_B)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s3=bar([3],mean(abs(Ypercent_B)));
         set(s3,'FaceColor',[colorB]);%        
         s1=errorbar([4],mean(abs(Tpercent_B)), std(abs(Tpercent_B)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s4=bar([4],mean(Tpercent_B));
         set(s4,'FaceColor',[colorB]);%
         set(gca,'Xtick',[1 2 3 4],'xticklabel',{'R';'P';'Y';'T'},'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -580,15 +580,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % pterm
         h1=subplot('position',posInfo.statsPos2(10,:)); cla        
         s1=errorbar([1],mean(abs(DATtmpB.Pterm(1,:))), std(abs(DATtmpB.Pterm(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpB.Pterm(1,:))));hold on
         set(s1,'FaceColor',[colorB]);%        
         s1=errorbar([2],mean(abs(DATtmpB.Pterm(2,:))), std(abs(DATtmpB.Pterm(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpB.Pterm(2,:))));
         set(s2,'FaceColor',[colorB]);%        
         s1=errorbar([3],mean(abs(DATtmpB.Pterm(3,:))), std(abs(DATtmpB.Pterm(3,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)    
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)    
         s3=bar([3],mean(abs(DATtmpB.Pterm(3,:))));
         set(s3,'FaceColor',[colorB]);%
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -602,15 +602,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % fterm
         h1=subplot('position',posInfo.statsPos2(14,:)); cla        
         s1=errorbar([1],mean(abs(DATtmpB.Fterm(1,:))), std(abs(DATtmpB.Fterm(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)      
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)      
         s1=bar([1],mean(abs(DATtmpB.Fterm(1,:))));hold on
         set(s1,'FaceColor',[colorB]);%
         s1=errorbar([2],mean(abs(DATtmpB.Fterm(2,:))), std(abs(DATtmpB.Fterm(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpB.Fterm(2,:))));
         set(s2,'FaceColor',[colorB]);%        %
         s1=errorbar([3],mean(abs(DATtmpB.Fterm(3,:))), std(abs(DATtmpB.Fterm(3,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)  
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)  
         s3=bar([3],mean(abs(DATtmpB.Fterm(3,:))));
         set(s3,'FaceColor',[colorB]);
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -625,15 +625,15 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % Iterm
         h1=subplot('position',posInfo.statsPos2(11,:)); cla        
         s1=errorbar([1],mean(abs(DATtmpB.Iterm(1,:))), std(abs(DATtmpB.Iterm(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpB.Iterm(1,:))));hold on
         set(s1,'FaceColor',[colorB]);%        
         s1=errorbar([2],mean(abs(DATtmpB.Iterm(2,:))), std(abs(DATtmpB.Iterm(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpB.Iterm(2,:))));
         set(s2,'FaceColor',[colorB]);%        
         s1=errorbar([3],mean(abs(DATtmpB.Iterm(3,:))), std(abs(DATtmpB.Iterm(3,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)  
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)  
         s3=bar([3],mean(abs(DATtmpB.Iterm(3,:))));
         set(s3,'FaceColor',[colorB]);%
         set(gca,'Xtick',[1 2 3],'xticklabel',{'R';'P';'Y'},'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -647,11 +647,11 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         % dterm
         h1=subplot('position',posInfo.statsPos2(15,:)); cla
         s1=errorbar([1],mean(abs(DATtmpB.DtermFilt(1,:))), std(abs(DATtmpB.DtermFilt(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpB.DtermFilt(1,:))));hold on
         set(s1,'FaceColor',[colorB]);% 
         s1=errorbar([2],mean(abs(DATtmpB.DtermFilt(2,:))), std(abs(DATtmpB.DtermFilt(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness) 
+        set(s1,'color',th.axesFg,'linewidth',lineThickness) 
         s2=bar([2],mean(abs(DATtmpB.DtermFilt(2,:))));
         set(s2,'FaceColor',[colorB]);%
         set(gca,'Xtick',[1 2],'xticklabel',{'R';'P'},'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -664,19 +664,19 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         
         h1=subplot('position',posInfo.statsPos2(12,:)); cla 
         s1=errorbar([1],mean(DATtmpB.Motor12(1,:)), std(DATtmpB.Motor12(1,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(DATtmpB.Motor12(1,:)));hold on
         set(s1,'FaceColor',[colorB]);
         s1=errorbar([2],mean(DATtmpB.Motor12(2,:)), std(DATtmpB.Motor12(2,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(DATtmpB.Motor12(2,:)));
         set(s2,'FaceColor',[colorB]);%  
         s1=errorbar([3],mean(DATtmpB.Motor34(1,:)), std(DATtmpB.Motor34(1,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s3=bar([3],mean(DATtmpB.Motor34(1,:)));
         set(s3,'FaceColor',[colorB]);%
         s1=errorbar([4],mean(DATtmpB.Motor34(2,:)), std(DATtmpB.Motor34(2,:)));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s4=bar([4],mean(DATtmpB.Motor34(2,:)));
         set(s4,'FaceColor',[colorB]);%
         set(gca,'Xtick',[1 2 3 4],'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -689,19 +689,19 @@ if get(guiHandlesStats.crossAxesStats, 'Value')==2
         
          h1=subplot('position',posInfo.statsPos2(16,:)); cla  
         s1=errorbar([1],mean(abs(DATtmpB.debug12(1,:))), std(abs(DATtmpB.debug12(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s1=bar([1],mean(abs(DATtmpB.debug12(1,:))));hold on
         set(s1,'FaceColor',[colorB]);%
         s1=errorbar([2],mean(abs(DATtmpB.debug12(2,:))), std(abs(DATtmpB.debug12(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s2=bar([2],mean(abs(DATtmpB.debug12(2,:))));
         set(s2,'FaceColor',[colorB]);% 
         s1=errorbar([3],mean(abs(DATtmpB.debug34(1,:))), std(abs(DATtmpB.debug34(1,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)
         s3=bar([3],mean(abs(DATtmpB.debug34(1,:))));
         set(s3,'FaceColor',[colorB]);%
         s1=errorbar([4],mean(abs(DATtmpB.debug34(2,:))), std(abs(DATtmpB.debug34(2,:))));hold on
-        set(s1,'color','k','linewidth',lineThickness)  
+        set(s1,'color',th.axesFg,'linewidth',lineThickness)  
         s4=bar([4],mean(abs(DATtmpB.debug34(2,:))));
         set(s4,'FaceColor',[colorB]);%
         set(gca,'Xtick',[1 2 3 4],'xcolor',[colorB],'ycolor',[colorB],'YMinorGrid','on')
@@ -1009,6 +1009,8 @@ end
 
 
 updateStats=0;
+allax = findobj(PSstatsfig, 'Type', 'axes');
+for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
 set(PSstatsfig, 'pointer', 'arrow')
 end
 

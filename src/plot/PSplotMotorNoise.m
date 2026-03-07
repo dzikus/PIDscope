@@ -5,9 +5,10 @@ function PSplotMotorNoise(T, f, tIND, Fs)
 %  tIND   - logical time index mask
 %  Fs     - sample rate (Hz)
 
+th = PStheme();
 screensz = get(0, 'ScreenSize');
 fig = figure('Name', 'Motor / Prop Noise Analysis', 'NumberTitle', 'off', ...
-    'Color', [.15 .15 .15], ...
+    'Color', th.figBg, ...
     'Position', round([.08*screensz(3) .06*screensz(4) .78*screensz(3) .82*screensz(4)]));
 
 F_kHz = Fs / 1000;
@@ -78,7 +79,7 @@ infoStr = sprintf('Noisiest: %s (%.0f dB)   Quietest: %s (%.0f dB)   Spread: %.1
     motorLbl{worst}, rmsAll(worst), motorLbl{best}, rmsAll(best), spread);
 uicontrol(fig, 'Style', 'text', 'String', infoStr, 'Units', 'normalized', ...
     'Position', [.06 .965 .88 .03], 'FontSize', 13, 'FontWeight', 'bold', ...
-    'ForegroundColor', [.9 .9 .3], 'BackgroundColor', [.2 .2 .2], ...
+    'ForegroundColor', th.textAccent, 'BackgroundColor', th.panelBg, ...
     'HorizontalAlignment', 'center');
 
 % --- TOP LEFT: All motors overlay PSD ---
@@ -89,11 +90,11 @@ for m = 1:nMotors
 end
 addBandShading(axOvl);
 hold(axOvl, 'off');
-styleDark(axOvl, fMax);
-set(get(axOvl, 'YLabel'), 'String', 'dB', 'Color', [.8 .8 .8]);
-th1 = title(axOvl, 'Motor PSD Comparison'); set(th1, 'Color', [.9 .9 .9]);
-legend(axOvl, motorLbl(1:nMotors), 'TextColor', [.8 .8 .8], 'Color', [.2 .2 .2], ...
-    'EdgeColor', [.4 .4 .4], 'FontSize', 11, 'Location', 'northeast');
+PSstyleAxes(axOvl, th); set(axOvl, 'XLim', [0 fMax]);
+set(get(axOvl, 'YLabel'), 'String', 'dB');
+title(axOvl, 'Motor PSD Comparison');
+h_leg = legend(axOvl, motorLbl(1:nMotors), 'Location', 'northeast');
+try PSstyleLegend(h_leg, th); catch, end
 
 % --- TOP RIGHT: Gyro PSD ---
 axGyro = axes('Parent', fig, 'Units', 'normalized', 'Position', [.56 .70 .38 .22]);
@@ -104,11 +105,11 @@ for g = 1:3
 end
 addBandShading(axGyro);
 hold(axGyro, 'off');
-styleDark(axGyro, fMax);
-set(get(axGyro, 'YLabel'), 'String', 'dB', 'Color', [.8 .8 .8]);
-th2 = title(axGyro, 'Gyro Noise'); set(th2, 'Color', [.9 .9 .9]);
-legend(axGyro, gyroAxLbl, 'TextColor', [.8 .8 .8], 'Color', [.2 .2 .2], ...
-    'EdgeColor', [.4 .4 .4], 'FontSize', 11, 'Location', 'northeast');
+PSstyleAxes(axGyro, th); set(axGyro, 'XLim', [0 fMax]);
+set(get(axGyro, 'YLabel'), 'String', 'dB');
+title(axGyro, 'Gyro Noise');
+h_leg = legend(axGyro, gyroAxLbl, 'Location', 'northeast');
+try PSstyleLegend(h_leg, th); catch, end
 
 % --- MID LEFT: Motor-Gyro coherence ---
 axCoh = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .39 .42 .25]);
@@ -139,14 +140,12 @@ bh = bar(axBar, noiseMat', 'grouped');
 for m = 1:nMotors
     set(bh(m), 'FaceColor', mCol{m});
 end
-set(axBar, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-    'FontSize', 12, 'FontWeight', 'bold', 'XTick', 1:size(bands,1), ...
-    'XTickLabel', bandLabelsClean);
-set(get(axBar, 'YLabel'), 'String', 'Mean PSD (dB)', 'Color', [.8 .8 .8]);
-th4 = title(axBar, 'Noise by Frequency Band'); set(th4, 'Color', [.9 .9 .9]);
-grid(axBar, 'on'); set(axBar, 'GridColor', [.3 .3 .3]);
-legend(axBar, motorLbl(1:nMotors), 'TextColor', [.8 .8 .8], 'Color', [.2 .2 .2], ...
-    'EdgeColor', [.4 .4 .4], 'FontSize', 11, 'Location', 'northeast');
+PSstyleAxes(axBar, th);
+set(axBar, 'XTick', 1:size(bands,1), 'XTickLabel', bandLabelsClean);
+set(get(axBar, 'YLabel'), 'String', 'Mean PSD (dB)');
+title(axBar, 'Noise by Frequency Band');
+h_leg = legend(axBar, motorLbl(1:nMotors), 'Location', 'northeast');
+try PSstyleLegend(h_leg, th); catch, end
 
 % --- BOTTOM: Motor output time domain ---
 axTime = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .06 .88 .26]);
@@ -158,13 +157,13 @@ for m = 1:nMotors
 end
 plot(axTime, t, throttle, 'Color', [.9 .9 .9], 'LineWidth', 1.5, 'LineStyle', '--');
 hold(axTime, 'off');
-styleDark(axTime, max(t));
+PSstyleAxes(axTime, th); set(axTime, 'XLim', [0 max(t)]);
 set(axTime, 'YLim', [0 100]);
-set(get(axTime, 'XLabel'), 'String', 'Time (s)', 'Color', [.8 .8 .8]);
-set(get(axTime, 'YLabel'), 'String', 'Motor %', 'Color', [.8 .8 .8]);
-th5 = title(axTime, 'Motor Output'); set(th5, 'Color', [.9 .9 .9]);
-legend(axTime, [motorLbl(1:nMotors), {'Throttle avg'}], 'TextColor', [.8 .8 .8], ...
-    'Color', [.2 .2 .2], 'EdgeColor', [.4 .4 .4], 'FontSize', 11, 'Location', 'northeast');
+set(get(axTime, 'XLabel'), 'String', 'Time (s)');
+set(get(axTime, 'YLabel'), 'String', 'Motor %');
+title(axTime, 'Motor Output');
+h_leg = legend(axTime, [motorLbl(1:nMotors), {'Throttle avg'}], 'Location', 'northeast');
+try PSstyleLegend(h_leg, th); catch, end
 
 PSdatatipSetup(fig);
 
@@ -183,6 +182,7 @@ end
 
 function plotCoherence(ax, motorData, gdat, nMotors, mCol, motorLbl, Fs, fMax, axLabel)
     cla(ax);
+    thm = PStheme();
     gdat_ac = gdat - mean(gdat);
     for m = 1:nMotors
         mdat = motorData{m} - mean(motorData{m});
@@ -191,20 +191,13 @@ function plotCoherence(ax, motorData, gdat, nMotors, mCol, motorLbl, Fs, fMax, a
         hold(ax, 'on');
     end
     hold(ax, 'off');
-    styleDark(ax, fMax);
+    PSstyleAxes(ax, thm); set(ax, 'XLim', [0 fMax]);
     set(ax, 'YLim', [0 1.05]);
-    set(get(ax, 'XLabel'), 'String', 'Hz', 'Color', [.8 .8 .8]);
-    set(get(ax, 'YLabel'), 'String', 'Coherence', 'Color', [.8 .8 .8]);
-    th = title(ax, ['Motor-Gyro Coherence (' axLabel ')']); set(th, 'Color', [.9 .9 .9]);
-    legend(ax, motorLbl(1:nMotors), 'TextColor', [.8 .8 .8], 'Color', [.2 .2 .2], ...
-        'EdgeColor', [.4 .4 .4], 'FontSize', 11, 'Location', 'northeast');
-end
-
-
-function styleDark(ax, xMax)
-    set(ax, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-        'FontSize', 14, 'FontWeight', 'bold', 'XLim', [0 xMax]);
-    grid(ax, 'on'); set(ax, 'GridColor', [.3 .3 .3]);
+    set(get(ax, 'XLabel'), 'String', 'Hz');
+    set(get(ax, 'YLabel'), 'String', 'Coherence');
+    title(ax, ['Motor-Gyro Coherence (' axLabel ')']);
+    h_leg = legend(ax, motorLbl(1:nMotors), 'Location', 'northeast');
+    try PSstyleLegend(h_leg, thm); catch, end
 end
 
 

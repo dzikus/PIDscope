@@ -7,9 +7,10 @@ function PSplotBode(freq, G_track, G_plant, C, stepData, titleStr)
 %  stepData  - struct with .t_ms and .step (or [] to skip)
 %  titleStr  - plot title suffix
 
+th = PStheme();
 screensz = get(0, 'ScreenSize');
 fig = figure('Name', ['Chirp Analysis - ' titleStr], 'NumberTitle', 'off', ...
-    'Color', [.15 .15 .15], ...
+    'Color', th.figBg, ...
     'Position', round([.08*screensz(3) .06*screensz(4) .78*screensz(3) .82*screensz(4)]));
 
 freq = freq(:);
@@ -23,14 +24,14 @@ hold(ax1, 'on');
 if ~isempty(G_plant)
     mag_P = 20*log10(abs(G_plant(freq > 0)));
     semilogx(ax1, fPlot, mag_P, 'Color', [1 .5 0], 'LineWidth', 1.2);
-    legend(ax1, {'Tracking (T)', 'Plant (P)'}, 'TextColor', [.8 .8 .8], ...
-        'Color', [.2 .2 .2], 'EdgeColor', [.4 .4 .4], 'FontSize', 11, 'Location', 'southwest');
+    h_leg = legend(ax1, {'Tracking (T)', 'Plant (P)'}, 'Location', 'southwest');
+    try PSstyleLegend(h_leg, th); catch, end
 end
 line(ax1, [fPlot(1) fPlot(end)], [0 0], 'Color', [.5 .5 .5], 'LineStyle', '--');
 hold(ax1, 'off');
-styleDark(ax1);
-set(get(ax1, 'YLabel'), 'String', 'Magnitude (dB)', 'Color', [.8 .8 .8]);
-th1 = title(ax1, ['Bode - ' titleStr]); set(th1, 'Color', [.9 .9 .9]);
+PSstyleAxes(ax1, th);
+set(get(ax1, 'YLabel'), 'String', 'Magnitude (dB)');
+th1 = title(ax1, ['Bode - ' titleStr]);
 
 % --- phase ---
 ax2 = axes('Parent', fig, 'Units', 'normalized', 'Position', [.08 .42 .55 .22]);
@@ -43,8 +44,8 @@ if ~isempty(G_plant)
 end
 line(ax2, [fPlot(1) fPlot(end)], [-180 -180], 'Color', [.8 .3 .3], 'LineStyle', '--');
 hold(ax2, 'off');
-styleDark(ax2);
-set(get(ax2, 'YLabel'), 'String', 'Phase (deg)', 'Color', [.8 .8 .8]);
+PSstyleAxes(ax2, th);
+set(get(ax2, 'YLabel'), 'String', 'Phase (deg)');
 
 % --- coherence ---
 ax3 = axes('Parent', fig, 'Units', 'normalized', 'Position', [.08 .08 .55 .26]);
@@ -52,10 +53,10 @@ semilogx(ax3, fPlot, C(freq > 0), 'Color', [.3 .9 .3], 'LineWidth', 1.2);
 hold(ax3, 'on');
 line(ax3, [fPlot(1) fPlot(end)], [.8 .8], 'Color', [.5 .5 .5], 'LineStyle', '--');
 hold(ax3, 'off');
-styleDark(ax3);
+PSstyleAxes(ax3, th);
 set(ax3, 'YLim', [0 1.05]);
-set(get(ax3, 'XLabel'), 'String', 'Frequency (Hz)', 'Color', [.8 .8 .8]);
-set(get(ax3, 'YLabel'), 'String', 'Coherence', 'Color', [.8 .8 .8]);
+set(get(ax3, 'XLabel'), 'String', 'Frequency (Hz)');
+set(get(ax3, 'YLabel'), 'String', 'Coherence');
 
 linkaxes([ax1 ax2 ax3], 'x');
 if ~isempty(fPlot)
@@ -79,12 +80,10 @@ if ~isempty(stepData) && isfield(stepData, 't_ms') && isfield(stepData, 'step')
     end
     hold(ax4, 'off');
 end
-set(ax4, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-    'FontSize', 12, 'FontWeight', 'bold');
-grid(ax4, 'on'); set(ax4, 'GridColor', [.3 .3 .3]);
-set(get(ax4, 'XLabel'), 'String', 'Time (ms)', 'Color', [.8 .8 .8]);
-set(get(ax4, 'YLabel'), 'String', 'Step Response', 'Color', [.8 .8 .8]);
-th4 = title(ax4, 'Step (from FRD)'); set(th4, 'Color', [.9 .9 .9]);
+PSstyleAxes(ax4, th);
+set(get(ax4, 'XLabel'), 'String', 'Time (ms)');
+set(get(ax4, 'YLabel'), 'String', 'Step Response');
+title(ax4, 'Step (from FRD)');
 
 % --- info panel (bottom right) ---
 ax5 = axes('Parent', fig, 'Units', 'normalized', 'Position', [.72 .08 .24 .26]);
@@ -105,7 +104,7 @@ if ~isempty(stepData) && isfield(stepData, 'step')
         infoLines{end+1} = sprintf('Settling (2%%): %.0f ms', stepData.t_ms(settled));
     end
 end
-text(0.05, 0.9, infoLines, 'Parent', ax5, 'Color', [.9 .9 .3], ...
+text(0.05, 0.9, infoLines, 'Parent', ax5, 'Color', th.textAccent, ...
     'FontSize', 12, 'FontWeight', 'bold', 'VerticalAlignment', 'top', ...
     'Units', 'normalized');
 
@@ -113,12 +112,6 @@ PSdatatipSetup(fig);
 
 end
 
-
-function styleDark(ax)
-    set(ax, 'Color', [.1 .1 .1], 'XColor', [.8 .8 .8], 'YColor', [.8 .8 .8], ...
-        'FontSize', 12, 'FontWeight', 'bold');
-    grid(ax, 'on'); set(ax, 'GridColor', [.3 .3 .3]);
-end
 
 
 function [gm_dB, pm_deg, wcg, wcp] = margins_from_G(freq, G)

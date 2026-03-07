@@ -156,7 +156,8 @@ if exist('isOctave','var') && isOctave
     specCrtlpanelPos = [cpL .55 cpW .37];
 end
 specCrtlpanel = uipanel('Title','Params','FontSize',fontsz,...
-              'BackgroundColor',[.95 .95 .95],...
+              'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+              'HighlightColor',panelBorder,...
               'Position',specCrtlpanelPos);
  
 %%% PRESET CONFIGURATIONS
@@ -267,8 +268,8 @@ try set(guiHandlesSpec.smoothFactor_select, 'Value', defaults.Values(find(strcmp
 else
      warndlg('Please select file(s)');
 end
+PSstyleControls(PSspecfig);
 
-  
 % functions
 function selection2(src,event)
     val = c.Value;

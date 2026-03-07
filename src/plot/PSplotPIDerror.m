@@ -10,6 +10,7 @@
 try
     
 set(PSerrfig, 'pointer', 'watch')
+th = PStheme();
 
 if ~isempty(filenameA) || ~isempty(filenameB)
     %% update fonts
@@ -137,7 +138,7 @@ if ~isempty(filenameA) || ~isempty(filenameB)
             minyA=min(Perr_a_m(p,:))-.5;if minyA<0, minyA=0;end
             maxyA=max(Perr_a_m(p,:))+.5;
             h=errorbar([posA],[Perr_a_m(p,:) ], [Perr_a_se(p,:) ] );hold on
-            set(h, 'color','k', 'LineStyle','none');
+            set(h, 'color',th.axesFg, 'LineStyle','none');
             h=bar([posA], (Perr_a_m(p,:) ));
             set(h, 'facecolor',[colorA],'facealpha',.8,'BarWidth',.4)
             set(h1,'tickdir','out','xminortick','off','yminortick','on');
@@ -158,7 +159,7 @@ if ~isempty(filenameA) || ~isempty(filenameB)
             minyB=min(Perr_b_m(p,:))-.5;if minyB<0, minyB=0;end
             maxyB=max(Perr_b_m(p,:))+.5;
             h=errorbar([posB],[ Perr_b_m(p,:)], [ Perr_b_se(p,:)] );
-            set(h, 'color','k', 'LineStyle','none');
+            set(h, 'color',th.axesFg, 'LineStyle','none');
             h=bar([posB], (Perr_b_m(p,:)));
             set(h, 'facecolor',[colorB],'facealpha',.8,'BarWidth',.4)
             set(h1,'tickdir','out','xminortick','off','yminortick','on');
@@ -184,6 +185,8 @@ if ~isempty(filenameA) || ~isempty(filenameB)
 %      
 end
 
+allax = findobj(PSerrfig, 'Type', 'axes');
+for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
 set(PSerrfig, 'pointer', 'arrow')
 
 

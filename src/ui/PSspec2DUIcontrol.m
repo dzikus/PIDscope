@@ -122,7 +122,8 @@ if exist('isOctave','var') && isOctave
     spec2CrtlpanelPos = [cpL .16+vPosSpec2d cpW .76];
 end
 spec2Crtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
-              'BackgroundColor',[.95 .95 .95],...
+              'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+              'HighlightColor',panelBorder,...
               'Position',spec2CrtlpanelPos);
  
 guiHandlesSpec2.computeSpec = uicontrol(PSspecfig2,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec],...
@@ -247,7 +248,7 @@ delayDataReady = false;
 else
      warndlg('Please select file(s)');
 end
-
+PSstyleControls(PSspecfig2);
 
 % functions
 function selection2(src,event)

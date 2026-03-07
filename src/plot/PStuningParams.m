@@ -8,6 +8,7 @@
 % ----------------------------------------------------------------------------------
     
 PStunefig=figure(4);
+th = PStheme();
 
 PStunefig_pos = get(PStunefig, 'Position');
 screensz_tmp = get(0,'ScreenSize'); if PStunefig_pos(3) > 10, PStunefig_pos(3:4) = PStunefig_pos(3:4) ./ screensz_tmp(3:4); end
@@ -77,7 +78,7 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
 
                         pidvar = [ylab2{p} 'PIDF'];
                         PID = eval([pidvar '{f}']);
-                        if cnt <= 3, h=text(505, ymax, [pidlabels]);set(h,'fontsize',fontsz,'fontweight','bold'); end
+                        if cnt <= 3, h=text(505, ymax, [pidlabels]);set(h,'fontsize',fontsz,'fontweight','bold','Color',th.textPrimary); end
                         h=text(505, ymax-(fcntSR*(ymax*.09)), [int2str(fcntSR) ') ' PID '  (n=' int2str(size(stepresp_A{p},1)) ')']);set(h,'fontsize',fontsz);
                         set(h, 'Color',[multiLineCols(fcntSR,:)],'fontweight','bold')
                         set(h,'fontsize',fontsz)
@@ -85,34 +86,34 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                         peakresp(p, fcntSR) = nan;
                         peaktime(p, fcntSR) = nan;
                         latencyHalfHeight(p, fcntSR) = nan;
-                        if cnt <= 3, h=text(505, ymax, [pidlabels]);set(h,'fontsize',fontsz,'fontweight','bold'); end
-                        h=text(505, ymax-(fcntSR*(ymax*.09)), [int2str(fcntSR) ') insufficient data']); 
+                        if cnt <= 3, h=text(505, ymax, [pidlabels]);set(h,'fontsize',fontsz,'fontweight','bold','Color',th.textPrimary); end
+                        h=text(505, ymax-(fcntSR*(ymax*.09)), [int2str(fcntSR) ') insufficient data']);
                         set(h,'Color',[multiLineCols(fcntSR,:)],'fontsize',fontsz, 'fontweight','bold')
                     end
 
-                    set(gca,'fontsize',fontsz,'xminortick','on','yminortick','on','xtick',[0 100 200 300 400 500],'xticklabel',{'0' '100' '200' '300' '400' '500'},'ytick',[0 .25 .5 .75 1 1.25 1.5 1.75 2],'tickdir','out'); 
+                    set(gca,'fontsize',fontsz,'xminortick','on','yminortick','on','xtick',[0 100 200 300 400 500],'xticklabel',{'0' '100' '200' '300' '400' '500'},'ytick',[0 .25 .5 .75 1 1.25 1.5 1.75 2],'tickdir','out');
 
                     box off
                     if cnt <= 3, h=ylabel([ylab{p} ' Response '], 'fontweight','bold'); end
 
                     xlabel('Time (ms)', 'fontweight','bold');
-                    
+
                     if p==1, title('Step Response Functions');end
-                    h=plot([0 500],[1 1],'k--');
+                    h=plot([0 500],[1 1],'--','Color',th.axesFg);
                     set(h,'linewidth',.5)
                     axis([0 500 0 ymax])
                     grid on
-                    
-                    
-                    h2=subplot('position',posInfo.TparamsPos(p+6,:)); 
-                    h=plot(fcntSR, peakresp(p, fcntSR),'sk'); 
+
+
+                    h2=subplot('position',posInfo.TparamsPos(p+6,:));
+                    h=plot(fcntSR, peakresp(p, fcntSR),'sk');
                     set(h,'Markersize',markerSz, 'MarkerFaceColor', [multiLineCols(fcntSR,:)])
                     set(gca,'fontsize',fontsz, 'ylim',[0.8 ymax],'ytick',[0.8:.1:ymax],'xlim',[0.5 fcntSR+0.5],'xtick',[1:fcntSR])
                     ylabel([ylab{p} ' Peak '], 'fontweight','bold');
-                    xlabel('Test', 'fontweight','bold'); 
+                    xlabel('Test', 'fontweight','bold');
                     hold on
                     grid on
-                    plot([0 10],[1 1],'--k')
+                    plot([0 10],[1 1],'--','Color',th.axesFg)
 
                     h3=subplot('position',posInfo.TparamsPos(p+9,:)); 
                     h=plot(fcntSR, latencyHalfHeight(p, fcntSR),'sk'); 
@@ -159,27 +160,27 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                                 h=text(505, ypos(p)+0.04, [ylab{p} ' (' lnLabels{cnt2} ')']);
                             end
 
-                            set(h,'fontsize',fontsz,'fontweight','bold'); 
+                            set(h,'fontsize',fontsz,'fontweight','bold','Color',th.textPrimary);
                             h=text(505, ypos(p), [pidlabels]);
-                            set(h,'fontsize',fontsz,'fontweight','bold'); 
+                            set(h,'fontsize',fontsz,'fontweight','bold','Color',th.textPrimary);
                         end
-                        h=text(505, ypos(p)-(fcntSR*.044), [int2str(fcntSR) ') ' PID '  (n=' int2str(size(stepresp_A{p},1)) ')']);set(h,'fontsize',fontsz);  %  |  Peak = ' num2str(peakresp(fcntSR)) ', Peak Time = ' num2str(peaktime) 'ms, Latency = ' num2str(latencyHalfHeight(fcntSR)) 'ms']);set(h,'fontsize',fontsz);  
+                        h=text(505, ypos(p)-(fcntSR*.044), [int2str(fcntSR) ') ' PID '  (n=' int2str(size(stepresp_A{p},1)) ')']);set(h,'fontsize',fontsz);
                         set(h, 'Color',[multiLineCols(fcntSR,:)],'fontweight','bold')
                         set(h,'fontsize',fontsz)
                     else
                         peakresp(p, fcntSR) = nan;
                         peaktime(p, fcntSR) = nan;
                         latencyHalfHeight(p, fcntSR) = nan;
-                        if cnt <= 3 
+                        if cnt <= 3
                             if size(axesOptions,2) < 2
                                 h=text(505, ypos(p)+0.04, [ylab{p}]);
                             else
                                 h=text(505, ypos(p)+0.04, [ylab{p} ' (' lnLabels{cnt2} ')']);
                             end
 
-                            set(h,'fontsize',fontsz,'fontweight','bold'); 
+                            set(h,'fontsize',fontsz,'fontweight','bold','Color',th.textPrimary);
                             h=text(505, ypos(p), [pidlabels]);
-                            set(h,'fontsize',fontsz,'fontweight','bold'); 
+                            set(h,'fontsize',fontsz,'fontweight','bold','Color',th.textPrimary);
                         end
                         h=text(505, ypos(p)-(fcntSR*.044), [int2str(fcntSR) ') insufficient data']); 
                         set(h,'Color',[multiLineCols(fcntSR,:)],'fontsize',fontsz, 'fontweight','bold')
@@ -193,7 +194,7 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                     xlabel('Time (ms)', 'fontweight','bold');
                     
                     title('Step Response Functions');
-                    h=plot([0 500],[1 1],'k--');
+                    h=plot([0 500],[1 1],'--','Color',th.axesFg);
                     set(h,'linewidth',.5)
                     axis([0 500 0 ymax])
                     grid on
@@ -204,6 +205,8 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
             warndlg('10 files maximum. Click reset.');
         end 
     end
+   allax = findobj(PStunefig, 'Type', 'axes');
+   for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
    set(PStunefig, 'pointer', 'arrow')
 
     updateStep=0;

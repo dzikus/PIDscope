@@ -11,6 +11,7 @@
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
     set(PSfig, 'pointer', 'watch')
+    th = PStheme();
 
     global logviewerYscale 
     logviewerYscale = str2num(get(guiHandles.maxY_input, 'String'));
@@ -175,12 +176,12 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 xmax=max(tta{fileIdx}/us2sec);
 
 
-                h=plot([0 xmax],[-maxY -maxY],'k');
+                h=plot([0 xmax],[-maxY -maxY],'Color',th.axesFg);
                 set(h,'linewidth',.2)
                 hold on
-
-                set(gca,'ytick',[  -(maxY/2) 0 maxY/2 ],'yticklabel',{num2str(-(maxY/2)) '0' num2str((maxY/2)) ''},'YColor',[.2 .2 .2],'fontweight','bold') 
-                set(gca,'xtick',[round(xmax/10):round(xmax/10):round(xmax)],'XColor',[.2 .2 .2])  
+                set(gca,'Color',th.axesBg);
+                set(gca,'ytick',[  -(maxY/2) 0 maxY/2 ],'yticklabel',{num2str(-(maxY/2)) '0' num2str((maxY/2)) ''},'YColor',th.axesFg,'fontweight','bold')
+                set(gca,'xtick',[round(xmax/10):round(xmax/10):round(xmax)],'XColor',th.axesFg,'GridColor',th.gridColor)  
 
                 sFactor = lineSmoothFactors(get(guiHandles.lineSmooth, 'Value'));
                 fileIdx = get(guiHandles.FileNum, 'Value');
@@ -198,10 +199,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 if get(guiHandles.checkbox9, 'Value'), hch10=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['piderr_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch10,'color', [linec.col9],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
 
     
-                 h=fill([0,t1,t1,0],[-maxY,-maxY,maxY,maxY],[.8 .8 .8]);
-                 set(h,'FaceAlpha',0.8,'EdgeColor',[.8 .8 .8]);
-                 h=fill([t2,xmax,xmax,t2],[-maxY,-maxY,maxY,maxY],[.8 .8 .8]);
-                 set(h,'FaceAlpha',0.8,'EdgeColor',[.8 .8 .8]);
+                 h=fill([0,t1,t1,0],[-maxY,-maxY,maxY,maxY],th.epochFill);
+                 set(h,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill);
+                 h=fill([t2,xmax,xmax,t2],[-maxY,-maxY,maxY,maxY],th.epochFill);
+                 set(h,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill);
 
                  try zoomOn2 = strcmp(get(zoom(PSfig), 'Enable'),'on'); catch, zoomOn2 = 0; end
                  if zoomOn2
@@ -219,9 +220,9 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 end
 
 
-                set(y,'Units','normalized', 'position', [-.035 .5 1],'color',[.2 .2 .2]); 
+                set(y,'Units','normalized', 'position', [-.035 .5 1],'color',th.textPrimary);
                 y=xlabel('Time (s)','fontweight','bold');
-                set(y,'color',[.2 .2 .2]); 
+                set(y,'color',th.textPrimary);
                 set(gca,'fontsize',fontsz,'XMinorGrid','on')
                 grid on
                 
@@ -240,17 +241,18 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 if get(guiHandles.checkbox14, 'Value'), hch19=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.setpoint_3_/10, sFactor, 'loess'));hold on;set(hch19,'color', [linec.col14],'LineWidth',lwVal), end
 
                 axis([0 xmax 0 100])
-                
-                 h=fill([0,t1,t1,0],[0, 0, 100, 100],[.8 .8 .8]);
-                 set(h,'FaceAlpha',0.8,'EdgeColor',[.8 .8 .8]); 
-                 h=fill([t2,xmax,xmax,t2],[0, 0, 100, 100],[.8 .8 .8]);
-                 set(h,'FaceAlpha',0.8,'EdgeColor',[.8 .8 .8]);
- 
+                set(gca,'Color',th.axesBg);
+                 h=fill([0,t1,t1,0],[0, 0, 100, 100],th.epochFill);
+                 set(h,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill);
+                 h=fill([t2,xmax,xmax,t2],[0, 0, 100, 100],th.epochFill);
+                 set(h,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill);
+
                 y=xlabel('Time (s)','fontweight','bold');
-                set(y,'color',[.2 .2 .2]); 
+                set(y,'color',th.textPrimary);
                 y=ylabel({'Throttle | Motor (%)'},'fontweight','bold');
                 set(gca,'fontsize',fontsz,'XMinorGrid','on','ylim',[0 100],'ytick',[0 20 40 60 80 100],'fontweight','bold')
-                set(gca,'xtick',[round(xmax/10):round(xmax/10):round(xmax)],'XColor',[.2 .2 .2])  
+                set(gca,'xtick',[round(xmax/10):round(xmax/10):round(xmax)],'XColor',th.axesFg,'YColor',th.axesFg,'GridColor',th.gridColor)
+                set(y,'color',th.textPrimary);
                 grid on
                 
                 

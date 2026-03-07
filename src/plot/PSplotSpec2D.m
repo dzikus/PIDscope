@@ -9,7 +9,8 @@
 % ----------------------------------------------------------------------------------
 
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
-%% update fonts 
+th = PStheme();
+%% update fonts
 PSspecfig2_pos = get(PSspecfig2, 'Position');
 screensz_tmp = get(0,'ScreenSize'); if PSspecfig2_pos(3) > 10, PSspecfig2_pos(3:4) = PSspecfig2_pos(3:4) ./ screensz_tmp(3:4); end
 prop_max_screen=(max([PSspecfig2_pos(3) PSspecfig2_pos(4)]));
@@ -218,43 +219,43 @@ for k = 1 : length(tmpSpecVal)
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0:m/10:m], 'yminortick','on')
                         axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])             
-                        xlabel('Frequency (Hz)','fontweight','bold');
+                        xlabel('Frequency (Hz)','fontweight','bold','Color',th.textPrimary);
                         if get(guiHandlesSpec2.checkboxPSD, 'Value')
-                            ylabel(['Power Spectral Density (dB)'],'fontweight','bold');
+                            ylabel(['Power Spectral Density (dB)'],'fontweight','bold','Color',th.textPrimary);
                         else
-                            ylabel(['Amplitude'],'fontweight','bold');
+                            ylabel(['Amplitude'],'fontweight','bold','Color',th.textPrimary);
                         end
                         if a == 1
-                            title('Full Spectrum','fontweight','bold');
+                            title('Full Spectrum','fontweight','bold','Color',th.textPrimary);
                         end
                         if p < 4
                         h=text(2,climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)*.92,axLabel{a});
-                        set(h,'Color',[.2 .2 .2],'fontsize',fontsz,'fontweight','bold');
+                        set(h,'Color',th.textPrimary,'fontsize',fontsz,'fontweight','bold');
                         end
                         grid on
 
-                        h2=subplot('position',posInfo.Spec2Pos(a+3,:)); 
+                        h2=subplot('position',posInfo.Spec2Pos(a+3,:));
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
                         set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',multilineStyle{k})
                         set(h2,'fontsize',fontsz)
-                        set(h,'Color',[multiLineCols(f,:)]) 
+                        set(h,'Color',[multiLineCols(f,:)])
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0 20 40 60 80 100],'yminortick','on')
-                        axis([0 100 climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)]) 
-                        xlabel('Frequency (Hz)','fontweight','bold');
+                        axis([0 100 climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])
+                        xlabel('Frequency (Hz)','fontweight','bold','Color',th.textPrimary);
                         if get(guiHandlesSpec2.checkboxPSD, 'Value')
-                            ylabel(['Power Spectral Density (dB)'],'fontweight','bold');
+                            ylabel(['Power Spectral Density (dB)'],'fontweight','bold','Color',th.textPrimary);
                         else
-                            ylabel(['Amplitude'],'fontweight','bold');
+                            ylabel(['Amplitude'],'fontweight','bold','Color',th.textPrimary);
                         end
                         if a == 1
-                            title('Sub 100Hz','fontweight','bold');
+                            title('Sub 100Hz','fontweight','bold','Color',th.textPrimary);
                         end
                         if p < 4
                         h=text(1,climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)*.92,axLabel{a});
-                        set(h,'Color',[.2 .2 .2],'fontsize',fontsz,'fontweight','bold');
+                        set(h,'Color',th.textPrimary,'fontsize',fontsz,'fontweight','bold');
                         end
                         
                         %%%%%%%%%%%%%%%%%%% Plot Latencies %%%%%%%%%%%%%%%
@@ -316,18 +317,18 @@ for k = 1 : length(tmpSpecVal)
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0:m/10:m], 'yminortick','on')
                         axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])             
-                        xlabel('Frequency (Hz)','fontweight','bold');
+                        xlabel('Frequency (Hz)','fontweight','bold','Color',th.textPrimary);
                         if get(guiHandlesSpec2.checkboxPSD, 'Value')
-                            ylabel(['Power Spectral Density (dB)'],'fontweight','bold');
+                            ylabel(['Power Spectral Density (dB)'],'fontweight','bold','Color',th.textPrimary);
                         else
-                            ylabel(['Amplitude'],'fontweight','bold');
+                            ylabel(['Amplitude'],'fontweight','bold','Color',th.textPrimary);
                         end
                         if a == 1
-                            title('Full Spectrum','fontweight','bold');
+                            title('Full Spectrum','fontweight','bold','Color',th.textPrimary);
                         end
                         grid on
 
-                    
+
                     end
                     
                     grid on
@@ -368,9 +369,13 @@ if ~isempty(freq2d2) && ~isempty(amp2d2)
     else
         h=legend(legnd, 'Location','NorthEast')
     end
+    try PSstyleLegend(h, th); catch, end
 end
 
 
+% Apply dark theme to all axes
+allax = findobj(PSspecfig2, 'Type', 'axes');
+for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
 % Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig2);
 

@@ -39,6 +39,7 @@ guiHandlesInfo.checkboxDIFF =uicontrol(PSdisp,'Style','checkbox','String','Show 
 else
      warndlg('Please select file(s)');
 end
+PSstyleControls(PSdisp);
 
 % functions
 function selection(src,event)
