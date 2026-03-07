@@ -77,7 +77,8 @@ if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 || get(guiHandlesSpec.SpecSelect
                 else
                     p=p+1;
                     try
-                    eval(['dat{k}(a,:) = T{tmpFileSelK}.' char(datSelectionString(vars(k))) '_' int2str(a-1) '_(tIND{tmpFileSelK});';])
+                    fld = [char(datSelectionString(vars(k))) '_' int2str(a-1) '_'];
+                    dat{k}(a,:) = T{tmpFileSelK}.(fld)(tIND{tmpFileSelK});
                     Throt=T{tmpFileSelK}.setpoint_3_(tIND{tmpFileSelK}) / 10;% throttle
                     lograte = A_lograte(tmpFileSelK);%in kHz
                     waitbar(min(1, p/12), hw, ['processing spectrogram... '  int2str(p) ]);

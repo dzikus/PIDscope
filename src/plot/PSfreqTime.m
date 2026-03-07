@@ -42,7 +42,8 @@ for i = 1 : 3
     delete(subplot('position',posInfo.Spec3Pos(i,:)));
     try
     if ~updateSpec
-        eval(['dat = T{tmpFileVal3}.' char(datSelectionString(tmpSpecVal3)) '_' int2str(i-1) '_(tIND{tmpFileVal3})'';';])
+        fld = [char(datSelectionString(tmpSpecVal3)) '_' int2str(i-1) '_'];
+        dat = T{tmpFileVal3}.(fld)(tIND{tmpFileVal3})';
         [Tm F specMat{i}] = PStimeFreqCalc(dat', A_lograte(tmpFileVal3), specSmoothFactors(tmpSmoothVal3), timeSmoothFactors(tmpSubVal3));
     end
     

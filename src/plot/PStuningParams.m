@@ -51,8 +51,8 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                 try 
                     if ~updateStep   
                         clear H G L
-                        eval(['H = T{f}.setpoint_' int2str(p-1) '_(tIND{f});'])
-                        eval(['G = T{f}.gyroADC_' int2str(p-1) '_(tIND{f});'])
+                        H = T{f}.(['setpoint_' int2str(p-1) '_'])(tIND{f});
+                        G = T{f}.(['gyroADC_' int2str(p-1) '_'])(tIND{f});
                         [stepresp_A{p} tA] = PSstepcalc(H, G, A_lograte(f), get(guiHandlesTune.Ycorrection, 'Value'), get(guiHandlesTune.smoothFactor_select, 'Value'));
                      %   xcorrLag(p) = finddelay(H, G) * A_lograte(f);
                     end
@@ -75,9 +75,10 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                         peakresp(p, fcntSR)=max(m(find(tA<150)));%max(m); %%%%%%%%%%%%% CONSTRAIN from 0-150ms %%%%%
                         peaktime(p, fcntSR)=find(m == max(m(find(tA<150)))) / A_lograte(f);
 
-                        eval(['PID=' ylab2{p} 'PIDF{f};'])  
+                        pidvar = [ylab2{p} 'PIDF'];
+                        PID = eval([pidvar '{f}']);
                         if cnt <= 3, h=text(505, ymax, [pidlabels]);set(h,'fontsize',fontsz,'fontweight','bold'); end
-                        h=text(505, ymax-(fcntSR*(ymax*.09)), [int2str(fcntSR) ') ' PID '  (n=' int2str(size(stepresp_A{p},1)) ')']);set(h,'fontsize',fontsz);  %  |  Peak = ' num2str(peakresp(fcntSR)) ', Peak Time = ' num2str(peaktime) 'ms, Latency = ' num2str(latencyHalfHeight(fcntSR)) 'ms']);set(h,'fontsize',fontsz);  
+                        h=text(505, ymax-(fcntSR*(ymax*.09)), [int2str(fcntSR) ') ' PID '  (n=' int2str(size(stepresp_A{p},1)) ')']);set(h,'fontsize',fontsz);
                         set(h, 'Color',[multiLineCols(fcntSR,:)],'fontweight','bold')
                         set(h,'fontsize',fontsz)
                     else
@@ -150,8 +151,8 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                         peakresp(p, fcntSR)=max(m(find(tA<150)));%max(m); %%%%%%%%%%%%% CONSTRAIN from 0-150ms %%%%%
                         peaktime(p, fcntSR)=find(m == max(m(find(tA<150)))) / A_lograte(f);
 
-                        eval(['PID=' ylab2{p} 'PIDF{f};'])  
-                        if cnt <= 3 
+                        PID = eval([ylab2{p} 'PIDF{f}']);
+                        if cnt <= 3
                             if size(axesOptions,2) < 2
                                 h=text(505, ypos(p)+0.04, [ylab{p}]);
                             else

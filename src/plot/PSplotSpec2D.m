@@ -45,6 +45,7 @@ set(PSspecfig2, 'pointer', 'watch')
 
 %%% compute delay/overlay data (deferred from UI open to Run click)
 if ~exist('delayDataReady','var') || ~delayDataReady
+    hw_delay = waitbar(0, 'computing delays...');
     FilterDelayDterm={};
     SPGyroDelay=[];
     Debug01={};
@@ -54,6 +55,7 @@ if ~exist('delayDataReady','var') || ~delayDataReady
     notchData={};
     rpmFilterData={};
     for k = 1 : Nfiles
+        waitbar(k/Nfiles, hw_delay, ['computing delays... file ' int2str(k) '/' int2str(Nfiles)]);
         Fs=1000/A_lograte(k);
         maxlag=round(30000/Fs);
 
@@ -139,12 +141,14 @@ if ~exist('delayDataReady','var') || ~delayDataReady
         end
     end
     delayDataReady = true;
+    try close(hw_delay); catch, end
 end
 
 clear s dat a RC smat amp2d2 freq2d2
 freq2d2 = {};
 amp2d2 = {};
 p=0;
+hw_fft = waitbar(0, 'computing FFT...');
 tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
 tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
 tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
@@ -159,16 +163,18 @@ for k = 1 : length(tmpSpecVal)
                 freq2d2{p}=[];% freq2d2
             else
                 p = p + 1;
-                clear dat
-                eval(['dat = T{tmpFileVal(f)}.' char(datSelectionString(tmpSpecVal(k))) '_' int2str(a-1) '_(tIND{tmpFileVal(f)})'';';])
-                lograte = A_lograte(tmpFileVal(f));%in kHz
+                fld = [s '_' int2str(a-1) '_'];
+                dat = T{tmpFileVal(f)}.(fld)(tIND{tmpFileVal(f)})';
+                lograte = A_lograte(tmpFileVal(f));
                 smat{p}=s;
-                eval(['[freq2d2{p}.f' int2str(f) ' amp2d2{p}.f' int2str(f) ' ]=PSSpec2d(dat,lograte, tmpPSDVal);']) %compute 2d amp spec at same time
+                waitbar(min(1, p/(length(tmpSpecVal)*size(tmpFileVal,2)*length(axesOptionsSpec))), hw_fft, ['computing FFT... ' int2str(p)]);
+                ff = ['f' int2str(f)];
+                [freq2d2{p}.(ff) amp2d2{p}.(ff)] = PSSpec2d(dat,lograte, tmpPSDVal);
             end
        end
     end
 end
-
+try close(hw_fft); catch, end
 
 
 figure(PSspecfig2);
@@ -203,7 +209,8 @@ for k = 1 : length(tmpSpecVal)
                     if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
                         
                         h2=subplot('position',posInfo.Spec2Pos(a,:)); 
-                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (tmpSmoothVal^3), ''lowess''));hold on'])
+                        ff = ['f' int2str(f)];
+                        h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
                         set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',multilineStyle{k})
                         set(h2,'fontsize',fontsz)
@@ -227,7 +234,8 @@ for k = 1 : length(tmpSpecVal)
                         grid on
 
                         h2=subplot('position',posInfo.Spec2Pos(a+3,:)); 
-                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (tmpSmoothVal^3), ''lowess''));hold on'])
+                        ff = ['f' int2str(f)];
+                        h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
                         set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',multilineStyle{k})
                         set(h2,'fontsize',fontsz)
@@ -294,7 +302,8 @@ for k = 1 : length(tmpSpecVal)
                     else
                         % combine R P Y
                         h2=subplot('position',[0.0500    0.1000    0.800    0.840]); 
-                        eval(['h=plot(freq2d2{p}.f' int2str(f) ', smooth(amp2d2{p}.f' int2str(f) ', log10(size(amp2d2{p}.f' int2str(f) ',1)) * (tmpSmoothVal^3), ''lowess''));hold on'])
+                        ff = ['f' int2str(f)];
+                        h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
                         if k == 1
                             set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/1.4,'linestyle',rpyLineStyle{cnt})
