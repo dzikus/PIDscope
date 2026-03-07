@@ -38,20 +38,116 @@ s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'pidsum'};
 datSelectionString=[s1];
 axesOptionsSpec = find([get(guiHandlesSpec2.plotR, 'Value') get(guiHandlesSpec2.plotP, 'Value') get(guiHandlesSpec2.plotY, 'Value')]);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% compute fft %%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 set(PSspecfig2, 'pointer', 'watch')
+
+%%% compute delay/overlay data (deferred from UI open to Run click)
+if ~exist('delayDataReady','var') || ~delayDataReady
+    FilterDelayDterm={};
+    SPGyroDelay=[];
+    Debug01={};
+    Debug02={};
+    gyro_phase_shift_deg=zeros(Nfiles,1);
+    dterm_phase_shift_deg=zeros(Nfiles,1);
+    notchData={};
+    rpmFilterData={};
+    for k = 1 : Nfiles
+        Fs=1000/A_lograte(k);
+        maxlag=round(30000/Fs);
+
+        try
+            pg = smooth(T{k}.debug_0_(tIND{k}),50);
+        catch
+            pg = 0;
+        end
+        g1 = smooth(T{k}.gyroADC_0_(tIND{k}),50);
+        s1 = smooth(T{k}.setpoint_0_(tIND{k}),50);
+        g2 = smooth(T{k}.gyroADC_1_(tIND{k}),50);
+        s2 = smooth(T{k}.setpoint_1_(tIND{k}),50);
+        g3 = smooth(T{k}.gyroADC_2_(tIND{k}),50);
+        s3 = smooth(T{k}.setpoint_2_(tIND{k}),50);
+
+        [c,lags] = xcorr(g1,pg,maxlag);
+        d = lags(find(c==max(c),1));
+        d = d * (Fs / 1000);
+        if d<.1, Debug01{k} = ' '; else Debug01{k} = num2str(d); end
+
+        [c,lags] = xcorr(s1,pg,maxlag);
+        d = lags(find(c==max(c),1));
+        d = d * (Fs / 1000);
+        if d<.1, Debug02{k} = ' '; else Debug02{k} = num2str(d); end
+
+        [c,lags] = xcorr(g1,s1,maxlag);
+        d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
+        if d<.1, SPGyroDelay(k,1) = 0; else, SPGyroDelay(k,1) = d; end
+
+        [c,lags] = xcorr(g2,s2,maxlag);
+        d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
+        if d<.1, SPGyroDelay(k,2) = 0; else, SPGyroDelay(k,2) = d; end
+
+        [c,lags] = xcorr(g3,s3,maxlag);
+        d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
+        if d<.1, SPGyroDelay(k,3) = 0; else, SPGyroDelay(k,3) = d; end
+
+        try
+            d1 = smooth(T{k}.axisDpf_0_(tIND{k}),50);
+            d2 = smooth(T{k}.axisD_0_(tIND{k}),50);
+            [c,lags] = xcorr(d2,d1,maxlag);
+            d = lags(find(c==max(c)));
+            d = d * (Fs / 1000);
+            if d<.1, FilterDelayDterm{k} = ' '; else FilterDelayDterm{k} = num2str(d); end
+        catch
+            FilterDelayDterm{k} = ' ';
+        end
+
+        try
+            if ~isempty(str2num(Debug01{k})) && SPGyroDelay(k,1) > 0
+                gyro_phase_shift_deg(k,1) = round(PSphaseShiftDeg(str2num(Debug01{k}), 1000/(SPGyroDelay(k,1))));
+            end
+            if ~isempty(str2num(FilterDelayDterm{k})) && SPGyroDelay(k,1) > 0
+                dterm_phase_shift_deg(k,1) = round(PSphaseShiftDeg(str2num(FilterDelayDterm{k}), 1000/(SPGyroDelay(k,1))));
+            end
+        catch, end
+
+        % dynamic notch data for FFT_FREQ overlay
+        tmpFFTidx = FFT_FREQ;
+        if exist('debugIdx','var') && numel(debugIdx) >= k
+            tmpFFTidx = debugIdx{k}.FFT_FREQ;
+        end
+        if exist('debugmode','var') && numel(debugmode) >= k && debugmode(k) == tmpFFTidx
+            if exist('fwMajor','var') && numel(fwMajor) >= k && fwMajor(k) >= 2025
+                notchData{k} = [T{k}.debug_1_(tIND{k}), T{k}.debug_2_(tIND{k}), T{k}.debug_3_(tIND{k})];
+            else
+                notchData{k} = [T{k}.debug_0_(tIND{k}), T{k}.debug_1_(tIND{k}), T{k}.debug_2_(tIND{k})];
+            end
+        else
+            notchData{k} = [];
+        end
+
+        % RPM filter data for motor noise overlay
+        tmpRPMidx = 46;
+        if exist('debugIdx','var') && numel(debugIdx) >= k
+            tmpRPMidx = debugIdx{k}.RPM_FILTER;
+        end
+        if exist('debugmode','var') && numel(debugmode) >= k && debugmode(k) == tmpRPMidx
+            rpmFilterData{k} = [T{k}.debug_0_(tIND{k}), T{k}.debug_1_(tIND{k}), ...
+                                T{k}.debug_2_(tIND{k}), T{k}.debug_3_(tIND{k})];
+        else
+            rpmFilterData{k} = [];
+        end
+    end
+    delayDataReady = true;
+end
 
 clear s dat a RC smat amp2d2 freq2d2
 freq2d2 = {};
 amp2d2 = {};
 p=0;
-hw = waitbar(0,['please wait... ' ]);
 tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
 tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
 tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
-pTotal = max(1, length(tmpSpecVal) * size(tmpFileVal,2) * length(axesOptionsSpec));
 for k = 1 : length(tmpSpecVal)
     s = char(datSelectionString(tmpSpecVal(k)));
     for f = 1 : size(tmpFileVal,2)
@@ -66,15 +162,12 @@ for k = 1 : length(tmpSpecVal)
                 clear dat
                 eval(['dat = T{tmpFileVal(f)}.' char(datSelectionString(tmpSpecVal(k))) '_' int2str(a-1) '_(tIND{tmpFileVal(f)})'';';])
                 lograte = A_lograte(tmpFileVal(f));%in kHz
-                waitbar(min(1, p/pTotal), hw, ['processing spectrogram... '  int2str(p) ]);
                 smat{p}=s;
                 eval(['[freq2d2{p}.f' int2str(f) ' amp2d2{p}.f' int2str(f) ' ]=PSSpec2d(dat,lograte, tmpPSDVal);']) %compute 2d amp spec at same time
             end
        end
     end
 end
-close(hw)
-
 
 
 

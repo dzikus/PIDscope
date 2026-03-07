@@ -231,110 +231,16 @@ try set(guiHandlesSpec2.plotY, 'Value', defaults.Values(find(strcmp(defaults.Par
 try set(guiHandlesSpec2.RPYcomboSpec, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-SinglePanel')))), catch, set(guiHandlesSpec2.RPYcomboSpec, 'Value', 0), end
 
 
-FilterDelayDterm={};
-SPGyroDelay=[];
-Debug01={};
-Debug02={};
-gyro_phase_shift_deg=zeros(Nfiles,1);
-dterm_phase_shift_deg=zeros(Nfiles,1);
-for k = 1 : Nfiles
-    Fs=1000/A_lograte(k);% yields more consistent results (mode(diff(tta)));
-    maxlag=round(30000/Fs); %~30ms delay
- 
- 
-    clear d pg g1 g1 s1 g2 s2  g3 s3 
-    try
-        pg = smooth(T{k}.debug_0_(tIND{k}),50);
-    catch
-        pg = 0;
-    end
-    g1 = smooth(T{k}.gyroADC_0_(tIND{k}),50);
-    s1 = smooth(T{k}.setpoint_0_(tIND{k}),50);
-    
-    g2 = smooth(T{k}.gyroADC_1_(tIND{k}),50);
-    s2 = smooth(T{k}.setpoint_1_(tIND{k}),50);
-    
-    g3 = smooth(T{k}.gyroADC_2_(tIND{k}),50);
-    s3 = smooth(T{k}.setpoint_2_(tIND{k}),50);
- 
- 
-    [c,lags] = xcorr(g1,pg,maxlag);
-    d = lags(find(c==max(c),1));
-    d = d * (Fs / 1000);
-    if d<.1,  Debug01{k} = ' '; else Debug01{k} = num2str(d);end 
- 
-    [c,lags] = xcorr(s1,pg,maxlag);
-    d = lags(find(c==max(c),1));
-    d = d * (Fs / 1000);
-    if d<.1,  Debug02{k} = ' '; else Debug02{k} = num2str(d);end 
-  
-    [c,lags] = xcorr(g1,s1,maxlag);
-    d = lags(find(c==max(c),1));
-    d = d * (Fs / 1000);
-    if d<.1, SPGyroDelay(k,1) = 0; else, SPGyroDelay(k,1) = d; end
-    
-    [c,lags] = xcorr(g2,s2,maxlag);
-    d = lags(find(c==max(c),1));
-    d = d * (Fs / 1000);
-    if d<.1, SPGyroDelay(k,2) = 0; else, SPGyroDelay(k,2) = d; end
-    
-    [c,lags] = xcorr(g3,s3,maxlag);
-    d = lags(find(c==max(c),1));
-    d = d * (Fs / 1000);
-    if d<.1, SPGyroDelay(k,3) = 0; else, SPGyroDelay(k,3) = d; end
- 
-    clear d d1 d2
-    try
-        d1 = smooth(T{k}.axisDpf_0_(tIND{k}),50);
-        d2 = smooth(T{k}.axisD_0_(tIND{k}),50);
-        [c,lags] = xcorr(d2,d1,maxlag);
-        d = lags(find(c==max(c)));
-        d=d * (Fs / 1000);
-        if d<.1, FilterDelayDterm{k} = ' '; else FilterDelayDterm{k} = num2str(d); end
-    catch
-        FilterDelayDterm{k} = ' ';
-    end
-
-    try
-        if ~isempty(str2num(Debug01{k})) && SPGyroDelay(k,1) > 0
-            [gyro_phase_shift_deg(k,1)] = round(PSphaseShiftDeg(str2num(Debug01{k}), 1000/(SPGyroDelay(k,1)) ));
-        end
-        if ~isempty(str2num(FilterDelayDterm{k})) && SPGyroDelay(k,1) > 0
-            [dterm_phase_shift_deg(k,1)] = round(PSphaseShiftDeg(str2num(FilterDelayDterm{k}), 1000/(SPGyroDelay(k,1)) ));
-        end
-    catch, end
-
-    %%%%%%%%%% extract dynamic notch data for FFT_FREQ overlay %%%%%%%%%%
-    tmpFFTidx = FFT_FREQ; % global default
-    if exist('debugIdx','var') && numel(debugIdx) >= k
-        tmpFFTidx = debugIdx{k}.FFT_FREQ;
-    end
-    if exist('debugmode','var') && numel(debugmode) >= k && debugmode(k) == tmpFFTidx
-        % FFT_FREQ debug field layout depends on BF version
-        if exist('fwMajor','var') && numel(fwMajor) >= k && fwMajor(k) >= 2025
-            % BF 2025.12+: [0]=pre_DN_gyro, [1-3]=notch_Hz
-            notchData{k} = [T{k}.debug_1_(tIND{k}), T{k}.debug_2_(tIND{k}), T{k}.debug_3_(tIND{k})];
-        else
-            % BF 4.3-4.5: [0-2]=notch_Hz, [3]=pre_DN_gyro
-            notchData{k} = [T{k}.debug_0_(tIND{k}), T{k}.debug_1_(tIND{k}), T{k}.debug_2_(tIND{k})];
-        end
-    else
-        notchData{k} = [];
-    end
-
-    %%%%%%%%%% extract RPM filter data for motor noise overlay %%%%%%%%%%
-    tmpRPMidx = 46; % default BF 4.x
-    if exist('debugIdx','var') && numel(debugIdx) >= k
-        tmpRPMidx = debugIdx{k}.RPM_FILTER;
-    end
-    if exist('debugmode','var') && numel(debugmode) >= k && debugmode(k) == tmpRPMidx
-        % RPM_FILTER: debug[0-3] = motor 1-4 fundamental frequency in Hz
-        rpmFilterData{k} = [T{k}.debug_0_(tIND{k}), T{k}.debug_1_(tIND{k}), ...
-                            T{k}.debug_2_(tIND{k}), T{k}.debug_3_(tIND{k})];
-    else
-        rpmFilterData{k} = [];
-    end
-end
+% Delay/overlay data computed lazily in PSplotSpec2D on "Run" click
+if ~exist('FilterDelayDterm','var'), FilterDelayDterm = {}; end
+if ~exist('SPGyroDelay','var'), SPGyroDelay = []; end
+if ~exist('Debug01','var'), Debug01 = {}; end
+if ~exist('Debug02','var'), Debug02 = {}; end
+if ~exist('gyro_phase_shift_deg','var'), gyro_phase_shift_deg = zeros(Nfiles,1); end
+if ~exist('dterm_phase_shift_deg','var'), dterm_phase_shift_deg = zeros(Nfiles,1); end
+if ~exist('notchData','var'), notchData = {}; end
+if ~exist('rpmFilterData','var'), rpmFilterData = {}; end
+delayDataReady = false;
 
 
 
