@@ -198,55 +198,56 @@ try
 
                 isArduPilot = strcmpi(sfext, '.bin');
 
+                Nsamples = length(T{fcnt}.loopIteration);
+                isINAV = (get(guiHandles.Firmware, 'Value') == 3);
                 for k = 0 : 3
                   if ~isArduPilot
-                    try
-                        eval(['T{fcnt}.debug_' int2str(k) '_(1);'])
-                    catch
-                        eval(['T{fcnt}.(''debug_' int2str(k) '_'')' '= zeros(length(T{fcnt}.loopIteration),1);']) ;
+                    dbg_f = ['debug_' int2str(k) '_'];
+                    if ~isfield(T{fcnt}, dbg_f)
+                        T{fcnt}.(dbg_f) = zeros(Nsamples, 1);
                     end
-                    try
-                        eval(['T{fcnt}.axisF_' int2str(k) '_(1);'])
-                    catch
-                        eval(['T{fcnt}.(''axisF_' int2str(k) '_'')' '= zeros(length(T{fcnt}.loopIteration),1);']);
+                    axF_f = ['axisF_' int2str(k) '_'];
+                    if ~isfield(T{fcnt}, axF_f)
+                        T{fcnt}.(axF_f) = zeros(Nsamples, 1);
                     end
 
-                    if get(guiHandles.Firmware, 'Value') == 3 % INAV
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_ - 1000)) / 10;'])% scale motor sigs to %
-                        catch, end
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k+4) '_ = ((T{fcnt}.motor_' int2str(k+4) '_ - 1000)) / 10;'])% scale motor sigs 4-7 for x8 configuration
-                        catch
+                    mot_f = ['motor_' int2str(k) '_'];
+                    mot8_f = ['motor_' int2str(k+4) '_'];
+                    if isINAV
+                        if isfield(T{fcnt}, mot_f)
+                            T{fcnt}.(mot_f) = (T{fcnt}.(mot_f) - 1000) / 10;
+                        end
+                        if isfield(T{fcnt}, mot8_f)
+                            T{fcnt}.(mot8_f) = (T{fcnt}.(mot8_f) - 1000) / 10;
                         end
                     else
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_) / 2000) * 100;'])% scale motor sigs to %
-                        catch, end
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k+4) '_ = ((T{fcnt}.motor_' int2str(k+4) '_) / 2000) * 100;'])% scale motor sigs 4-7 for x8 configuration
-                        catch
+                        if isfield(T{fcnt}, mot_f)
+                            T{fcnt}.(mot_f) = T{fcnt}.(mot_f) / 2000 * 100;
+                        end
+                        if isfield(T{fcnt}, mot8_f)
+                            T{fcnt}.(mot8_f) = T{fcnt}.(mot8_f) / 2000 * 100;
                         end
                     end
                   end % ~isArduPilot
                     if k < 3
-                        if k < 2 % compute prefiltered dterm and scale
+                        ks = int2str(k);
+                        if k < 2 % compute prefiltered dterm
                           try
-                            eval(['T{fcnt}.axisDpf_' int2str(k) '_ = -[0; diff(T{fcnt}.gyroADC_' int2str(k) '_)];'])
-                            clear d1 d2 d3 sclr
-                            eval(['d1 = smooth(T{fcnt}.axisDpf_' int2str(k) '_, 100);'])
-                            eval(['d2 = smooth(T{fcnt}.axisD_' int2str(k) '_, 100);'])
-                            d3 = (d2 ./ d1);
+                            dpf_f = ['axisDpf_' ks '_'];
+                            T{fcnt}.(dpf_f) = -[0; diff(T{fcnt}.(['gyroADC_' ks '_']))];
+                            d1 = smooth(T{fcnt}.(dpf_f), 100);
+                            d2 = smooth(T{fcnt}.(['axisD_' ks '_']), 100);
+                            d3 = d2 ./ d1;
                             sclr = nanmedian(d3(~isinf(d3) & d3 > 0));
-                            eval(['T{fcnt}.axisDpf_' int2str(k) '_ = T{fcnt}.axisDpf_' int2str(k) '_ * sclr;'])
+                            T{fcnt}.(dpf_f) = T{fcnt}.(dpf_f) * sclr;
                           catch, end
                         end
 
-                        eval(['T{fcnt}.(''piderr_' int2str(k) '_'') = T{fcnt}.gyroADC_' int2str(k) '_ - T{fcnt}.setpoint_' int2str(k) '_;'])
+                        T{fcnt}.(['piderr_' ks '_']) = T{fcnt}.(['gyroADC_' ks '_']) - T{fcnt}.(['setpoint_' ks '_']);
                         try
-                            eval(['T{fcnt}.(''pidsum_' int2str(k) '_'') = T{fcnt}.axisP_' int2str(k) '_ + T{fcnt}.axisI_' int2str(k) '_ + T{fcnt}.axisD_' int2str(k) '_ + T{fcnt}.axisF_' int2str(k) '_;'])
+                            T{fcnt}.(['pidsum_' ks '_']) = T{fcnt}.(['axisP_' ks '_']) + T{fcnt}.(['axisI_' ks '_']) + T{fcnt}.(['axisD_' ks '_']) + T{fcnt}.(['axisF_' ks '_']);
                         catch
-                            eval(['T{fcnt}.(''pidsum_' int2str(k) '_'') = T{fcnt}.axisP_' int2str(k) '_ + T{fcnt}.axisI_' int2str(k) '_ + T{fcnt}.axisF_' int2str(k) '_;'])
+                            T{fcnt}.(['pidsum_' ks '_']) = T{fcnt}.(['axisP_' ks '_']) + T{fcnt}.(['axisI_' ks '_']) + T{fcnt}.(['axisF_' ks '_']);
                         end
                     end
                 end
