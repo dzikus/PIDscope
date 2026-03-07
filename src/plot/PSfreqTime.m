@@ -13,15 +13,6 @@ th = PStheme();
 set(PSspecfig3, 'pointer', 'watch')
 
 figure(PSspecfig3)
-PSspecfig3_pos = get(PSspecfig3, 'Position');
-screensz_tmp = get(0,'ScreenSize'); if PSspecfig3_pos(3) > 10, PSspecfig3_pos(3:4) = PSspecfig3_pos(3:4) ./ screensz_tmp(3:4); end
-prop_max_screen=(max([PSspecfig3_pos(3) PSspecfig3_pos(4)]));
-fontsz=(screensz_multiplier*prop_max_screen);
-
-f = fields(guiHandlesSpec3);
-for i = 1 : size(f,1)
-    try set(guiHandlesSpec3.(f{i}), 'FontSize', fontsz); catch, end
-end
 
 specSmoothFactors = [1 5 10 20];
 timeSmoothFactors = [1 2 5 10];
@@ -92,7 +83,7 @@ for i = 1 : 3
             tmpFFTft = debugIdx{tmpFileVal3}.FFT_FREQ;
         end
         if debugmode(tmpFileVal3) == tmpFFTft && numel(notchData) >= tmpFileVal3 && ~isempty(notchData{tmpFileVal3})
-            % Only overlay on the axis matching gyro_debug_axis
+            % match gyro_debug_axis
             tmpGdaFt = 0;
             if exist('gyro_debug_axis','var') && numel(gyro_debug_axis) >= tmpFileVal3
                 tmpGdaFt = gyro_debug_axis(tmpFileVal3);
@@ -120,10 +111,8 @@ for i = 1 : 3
 end
 updateSpec = 0;
 
-% Apply dark theme to all axes
 allax = findobj(PSspecfig3, 'Type', 'axes');
 for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
-% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig3);
 
 set(PSspecfig3, 'pointer', 'arrow')

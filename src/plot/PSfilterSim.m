@@ -5,7 +5,10 @@ function PSfilterSim(gyroRaw, Fs, setupInfo)
 %  setupInfo - cell array {param, value} from header
 
 thm = PStheme();
+fontsz = thm.fontsz;
 screensz = get(0, 'ScreenSize');
+fig = findobj('Type', 'figure', 'Name', 'Filter Simulation');
+if ~isempty(fig), close(fig); end
 fig = figure('Name', 'Filter Simulation', 'NumberTitle', 'off', ...
     'Color', thm.figBg, ...
     'Position', round([.1*screensz(3) .08*screensz(4) .75*screensz(3) .8*screensz(4)]));
@@ -22,65 +25,65 @@ cpL = .72; cpW = .27;
 uipanel('Parent', fig, 'Title', 'Filter Settings', 'FontWeight', 'bold', ...
     'BackgroundColor', thm.panelBg, 'ForegroundColor', thm.panelFg, ...
     'HighlightColor', thm.panelBorder, ...
-    'FontSize', 12, 'Position', [cpL .02 cpW .96]);
+    'FontSize', fontsz, 'Position', [cpL .02 cpW .96]);
 
 row = .92; rh = .032; gap = .005;
 bgc = thm.panelBg; fgc = thm.panelFg;
 cb = @(~,~) doUpdate();
 
 % axis selector
-mkLabel(fig, 'Axis:', cpL, row, rh, bgc, fgc);
+mkLabel(fig, 'Axis:', cpL, row, rh, bgc, fgc, fontsz);
 h.axis = uicontrol(fig, 'Style', 'popupmenu', 'String', axNames, 'Value', 1, ...
-    'Units', 'normalized', 'Position', [cpL+.06 row .08 rh], 'FontSize', 11, 'Callback', cb);
+    'Units', 'normalized', 'Position', [cpL+.06 row .08 rh], 'FontSize', fontsz, 'Callback', cb);
 row = row - rh - gap*3;
 
 % Gyro LPF1
-mkSection(fig, '--- Gyro LPF1 ---', cpL, row, cpW, rh, bgc, [.5 .9 1]);
+mkSection(fig, '--- Gyro LPF1 ---', cpL, row, cpW, rh, bgc, [.5 .9 1], fontsz);
 row = row - rh - gap;
-[h.glpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf1_type, cb);
-[h.glpf1_hz, h.glpf1_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_lpf1_hz, cb);
+[h.glpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf1_type, cb, fontsz);
+[h.glpf1_hz, h.glpf1_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_lpf1_hz, cb, fontsz);
 row = row - gap*2;
 
 % Gyro LPF2
-mkSection(fig, '--- Gyro LPF2 ---', cpL, row, cpW, rh, bgc, [.5 .9 1]);
+mkSection(fig, '--- Gyro LPF2 ---', cpL, row, cpW, rh, bgc, [.5 .9 1], fontsz);
 row = row - rh - gap;
-[h.glpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf2_type, cb);
-[h.glpf2_hz, h.glpf2_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_lpf2_hz, cb);
+[h.glpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf2_type, cb, fontsz);
+[h.glpf2_hz, h.glpf2_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_lpf2_hz, cb, fontsz);
 row = row - gap*2;
 
 % Gyro Notch 1
-mkSection(fig, '--- Gyro Notch 1 ---', cpL, row, cpW, rh, bgc, [1 .8 .4]);
+mkSection(fig, '--- Gyro Notch 1 ---', cpL, row, cpW, rh, bgc, [1 .8 .4], fontsz);
 row = row - rh - gap;
-[h.gn1_hz, h.gn1_hz_lbl, row] = mkSlider(fig, 'Center:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_notch1_hz, cb);
-[h.gn1_cut, h.gn1_cut_lbl, row] = mkSlider(fig, 'Cutoff:', cpL, row, rh, gap, bgc, fgc, 0, 800, fp.gyro_notch1_cut, cb);
+[h.gn1_hz, h.gn1_hz_lbl, row] = mkSlider(fig, 'Center:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_notch1_hz, cb, fontsz);
+[h.gn1_cut, h.gn1_cut_lbl, row] = mkSlider(fig, 'Cutoff:', cpL, row, rh, gap, bgc, fgc, 0, 800, fp.gyro_notch1_cut, cb, fontsz);
 row = row - gap*2;
 
 % Gyro Notch 2
-mkSection(fig, '--- Gyro Notch 2 ---', cpL, row, cpW, rh, bgc, [1 .8 .4]);
+mkSection(fig, '--- Gyro Notch 2 ---', cpL, row, cpW, rh, bgc, [1 .8 .4], fontsz);
 row = row - rh - gap;
-[h.gn2_hz, h.gn2_hz_lbl, row] = mkSlider(fig, 'Center:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_notch2_hz, cb);
-[h.gn2_cut, h.gn2_cut_lbl, row] = mkSlider(fig, 'Cutoff:', cpL, row, rh, gap, bgc, fgc, 0, 800, fp.gyro_notch2_cut, cb);
+[h.gn2_hz, h.gn2_hz_lbl, row] = mkSlider(fig, 'Center:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_notch2_hz, cb, fontsz);
+[h.gn2_cut, h.gn2_cut_lbl, row] = mkSlider(fig, 'Cutoff:', cpL, row, rh, gap, bgc, fgc, 0, 800, fp.gyro_notch2_cut, cb, fontsz);
 row = row - gap*2;
 
 % D-term LPF1
-mkSection(fig, '--- D-term LPF1 ---', cpL, row, cpW, rh, bgc, [.5 1 .5]);
+mkSection(fig, '--- D-term LPF1 ---', cpL, row, cpW, rh, bgc, [.5 1 .5], fontsz);
 row = row - rh - gap;
-[h.dlpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf1_type, cb);
-[h.dlpf1_hz, h.dlpf1_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 500, fp.dterm_lpf1_hz, cb);
+[h.dlpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf1_type, cb, fontsz);
+[h.dlpf1_hz, h.dlpf1_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 500, fp.dterm_lpf1_hz, cb, fontsz);
 row = row - gap*2;
 
 % D-term LPF2
-mkSection(fig, '--- D-term LPF2 ---', cpL, row, cpW, rh, bgc, [.5 1 .5]);
+mkSection(fig, '--- D-term LPF2 ---', cpL, row, cpW, rh, bgc, [.5 1 .5], fontsz);
 row = row - rh - gap;
-[h.dlpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf2_type, cb);
-[h.dlpf2_hz, h.dlpf2_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 500, fp.dterm_lpf2_hz, cb);
+[h.dlpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf2_type, cb, fontsz);
+[h.dlpf2_hz, h.dlpf2_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 500, fp.dterm_lpf2_hz, cb, fontsz);
 row = row - gap*2;
 
 % D-term Notch
-mkSection(fig, '--- D-term Notch ---', cpL, row, cpW, rh, bgc, [1 .6 .6]);
+mkSection(fig, '--- D-term Notch ---', cpL, row, cpW, rh, bgc, [1 .6 .6], fontsz);
 row = row - rh - gap;
-[h.dn_hz, h.dn_hz_lbl, row] = mkSlider(fig, 'Center:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.dterm_notch_hz, cb);
-[h.dn_cut, h.dn_cut_lbl, row] = mkSlider(fig, 'Cutoff:', cpL, row, rh, gap, bgc, fgc, 0, 800, fp.dterm_notch_cut, cb);
+[h.dn_hz, h.dn_hz_lbl, row] = mkSlider(fig, 'Center:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.dterm_notch_hz, cb, fontsz);
+[h.dn_cut, h.dn_cut_lbl, row] = mkSlider(fig, 'Cutoff:', cpL, row, rh, gap, bgc, fgc, 0, 800, fp.dterm_notch_cut, cb, fontsz);
 
 doUpdate();
 
@@ -164,7 +167,7 @@ doUpdate();
 
 end
 
-%% helpers (NOT nested — no closure issues)
+%% helpers (NOT nested - no closure issues)
 function y = applyLPF(x, type, hz, Fs)
     if type == 0 || hz == 0, y = x; return; end
     types = {'pt1', 'biquad', 'pt2', 'pt3'};
@@ -223,39 +226,39 @@ function s = hstr(si, key, default)
     end
 end
 
-function mkLabel(fig, txt, cpL, row, rh, bgc, fgc)
+function mkLabel(fig, txt, cpL, row, rh, bgc, fgc, fsz)
     uicontrol(fig, 'Style', 'text', 'String', txt, ...
         'Units', 'normalized', 'Position', [cpL+.01 row .05 rh], ...
-        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
+        'FontSize', fsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
 end
 
-function mkSection(fig, txt, cpL, row, cpW, rh, bgc, col)
+function mkSection(fig, txt, cpL, row, cpW, rh, bgc, col, fsz)
     uicontrol(fig, 'Style', 'text', 'String', txt, ...
         'Units', 'normalized', 'Position', [cpL+.01 row cpW-.02 rh], ...
-        'FontSize', 11, 'FontWeight', 'bold', 'BackgroundColor', bgc, 'ForegroundColor', col);
+        'FontSize', fsz, 'FontWeight', 'bold', 'BackgroundColor', bgc, 'ForegroundColor', col);
 end
 
-function [hType, rowOut] = mkType(fig, cpL, row, rh, gap, bgc, fgc, initVal, cb)
+function [hType, rowOut] = mkType(fig, cpL, row, rh, gap, bgc, fgc, initVal, cb, fsz)
     uicontrol(fig, 'Style', 'text', 'String', 'Type:', ...
         'Units', 'normalized', 'Position', [cpL+.01 row .05 rh], ...
-        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
+        'FontSize', fsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
     hType = uicontrol(fig, 'Style', 'popupmenu', ...
         'String', {'OFF', 'PT1', 'Biquad', 'PT2', 'PT3'}, 'Value', initVal + 1, ...
-        'Units', 'normalized', 'Position', [cpL+.06 row .10 rh], 'FontSize', 11, 'Callback', cb);
+        'Units', 'normalized', 'Position', [cpL+.06 row .10 rh], 'FontSize', fsz, 'Callback', cb);
     rowOut = row - rh - gap;
 end
 
-function [hSlider, hLbl, rowOut] = mkSlider(fig, label, cpL, row, rh, gap, bgc, fgc, mn, mx, initVal, cb)
+function [hSlider, hLbl, rowOut] = mkSlider(fig, label, cpL, row, rh, gap, bgc, fgc, mn, mx, initVal, cb, fsz)
     initVal = max(mn, min(mx, initVal));
     uicontrol(fig, 'Style', 'text', 'String', label, ...
         'Units', 'normalized', 'Position', [cpL+.01 row .05 rh], ...
-        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
+        'FontSize', fsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
     step1 = 1/max(mx-mn, 1); step10 = 10/max(mx-mn, 1);
     hSlider = uicontrol(fig, 'Style', 'slider', 'Min', mn, 'Max', mx, 'Value', initVal, ...
         'Units', 'normalized', 'Position', [cpL+.06 row .13 rh], ...
         'SliderStep', [step1 step10], 'Callback', cb);
     hLbl = uicontrol(fig, 'Style', 'text', 'String', num2str(round(initVal)), ...
         'Units', 'normalized', 'Position', [cpL+.20 row .05 rh], ...
-        'FontSize', 11, 'BackgroundColor', bgc, 'ForegroundColor', [1 1 .6], 'HorizontalAlignment', 'left');
+        'FontSize', fsz, 'BackgroundColor', bgc, 'ForegroundColor', [1 1 .6], 'HorizontalAlignment', 'left');
     rowOut = row - rh - gap;
 end

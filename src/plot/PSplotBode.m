@@ -8,8 +8,12 @@ function PSplotBode(freq, G_track, G_plant, C, stepData, titleStr)
 %  titleStr  - plot title suffix
 
 th = PStheme();
+fontsz = th.fontsz;
 screensz = get(0, 'ScreenSize');
-fig = figure('Name', ['Chirp Analysis - ' titleStr], 'NumberTitle', 'off', ...
+figName = ['Chirp Analysis - ' titleStr];
+fig = findobj('Type', 'figure', 'Name', figName);
+if ~isempty(fig), close(fig); end
+fig = figure('Name', figName, 'NumberTitle', 'off', ...
     'Color', th.figBg, ...
     'Position', round([.08*screensz(3) .06*screensz(4) .78*screensz(3) .82*screensz(4)]));
 
@@ -76,7 +80,7 @@ if ~isempty(stepData) && isfield(stepData, 't_ms') && isfield(stepData, 'step')
         [~, pk_idx] = max(stepData.step);
         plot(ax4, stepData.t_ms(pk_idx), peak, 'ro', 'MarkerSize', 8, 'LineWidth', 2);
         text(stepData.t_ms(pk_idx)+5, peak, sprintf('%.0f%%', os_pct), ...
-            'Color', [1 .3 .3], 'FontSize', 12, 'FontWeight', 'bold', 'Parent', ax4);
+            'Color', [1 .3 .3], 'FontSize', fontsz, 'FontWeight', 'bold', 'Parent', ax4);
     end
     hold(ax4, 'off');
 end
@@ -105,7 +109,7 @@ if ~isempty(stepData) && isfield(stepData, 'step')
     end
 end
 text(0.05, 0.9, infoLines, 'Parent', ax5, 'Color', th.textAccent, ...
-    'FontSize', 12, 'FontWeight', 'bold', 'VerticalAlignment', 'top', ...
+    'FontSize', fontsz, 'FontWeight', 'bold', 'VerticalAlignment', 'top', ...
     'Units', 'normalized');
 
 PSdatatipSetup(fig);

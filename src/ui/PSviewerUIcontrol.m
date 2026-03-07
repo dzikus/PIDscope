@@ -44,10 +44,11 @@ posInfo.linepos4=[0.095 0.1 0.77 0.11];%
 fullszPlot = [0.095 0.255 0.77 0.63];
 
 
+if ~exist('checkpanel','var') || ~ishandle(checkpanel)
 checkpanel = uipanel('Title','','FontSize',fontsz,...
              'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
              'HighlightColor',panelBorder,...
-             'Position',[.096 .932 .68 .065]);        
+             'Position',[.096 .932 .68 .065]);
 
 guiHandles.checkbox0=uicontrol(PSfig,'Style','checkbox','String','Debug','fontsize',fontsz,'ForegroundColor',[linec.col0],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox0],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
@@ -94,8 +95,23 @@ guiHandles.checkbox15=uicontrol(PSfig,'Style','checkbox','String','All','fontsiz
 TooltipString_FileNum=['Select the file you wish to plot in the logviewer. '];
 guiHandles.FileNum = uicontrol(PSfig,'Style','popupmenu','string',[fnameMaster],'TooltipString', [TooltipString_FileNum],...
     'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), try set(zoom, ''Enable'',''off''); catch, end, expandON=0; PSplotLogViewer; if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), try, [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; catch, end, end, end');
+maxY_textToolTip = ['+/- Scaling factor for the Y axis in degs/s'];
+guiHandles.maxY_text = uicontrol(PSfig,'style','text','string','y scale','fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYtext]);
+guiHandles.maxY_input = uicontrol(PSfig,'style','edit','string',int2str(maxY),'fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','Position',[posInfo.maxYinput],...
+     'callback','PSplotLogViewer; ');
 
-            
+guiHandles.nCols_text = uicontrol(PSfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.nCols_text]);
+guiHandles.nCols_input = uicontrol(PSfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','Position',[posInfo.nCols_input],...
+     'callback','if str2num(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2num(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PSlinecmap(str2num(get(guiHandles.nCols_input, ''String''))); ');
+
+subplot('position',[posInfo.YTstick]);
+set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on');
+box on
+subplot('position',[posInfo.RPstick])
+set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on');
+box on
+end % ishandle(checkpanel)
+
 fileIdx = get(guiHandles.FileNum, 'Value');
 if exist('tta','var') && iscell(tta) && numel(tta) >= fileIdx
     if numel(epoch1_A) < fileIdx || numel(epoch2_A) < fileIdx
@@ -108,22 +124,6 @@ end
 for f = 1 : Nfiles
     tIND{f} = tta{f} > (epoch1_A(f)*us2sec) & tta{f} < (epoch2_A(f)*us2sec);
 end
-
-maxY_textToolTip = ['+/- Scaling factor for the Y axis in degs/s'];
-guiHandles.maxY_text = uicontrol(PSfig,'style','text','string','y scale','fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYtext]);
-guiHandles.maxY_input = uicontrol(PSfig,'style','edit','string',int2str(maxY),'fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','Position',[posInfo.maxYinput],...
-     'callback','PSplotLogViewer; ');
- 
-guiHandles.nCols_text = uicontrol(PSfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.nCols_text]);
-guiHandles.nCols_input = uicontrol(PSfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','Position',[posInfo.nCols_input],...
-     'callback','if str2num(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2num(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PSlinecmap(str2num(get(guiHandles.nCols_input, ''String''))); ');
- 
-subplot('position',[posInfo.YTstick]); 
-set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on'); 
-box on
-subplot('position',[posInfo.RPstick])
-set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on'); 
-box on
 
 try set(guiHandles.maxY_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ymax'))))), catch, end
 try set(guiHandles.nCols_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ncolors'))))), catch, end

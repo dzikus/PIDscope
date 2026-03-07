@@ -62,12 +62,16 @@ ClimScale3 = [-30 10];
 posInfo.sub100HzfreqTime  =  [cpL+.003 .564 cpW-.006 .025];
 posInfo.playerBtn3        =  [cpL+.003 .530 cpW-.006 rh];
 
-PSspecfig3=figure(31);
-set(PSspecfig3, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
-set(PSspecfig3, 'NumberTitle', 'off');
-set(PSspecfig3, 'Name', ['PIDscope (' PsVersion ') - Frequency x Time Spectrogram']);
-set(PSspecfig3, 'InvertHardcopy', 'off');
-set(PSspecfig3,'color',bgcolor);
+if exist('PSspecfig3','var') && ishandle(PSspecfig3)
+    figure(PSspecfig3);
+else
+    PSspecfig3=figure(31);
+    set(PSspecfig3, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSspecfig3, 'NumberTitle', 'off');
+    set(PSspecfig3, 'Name', ['PIDscope (' PsVersion ') - Frequency x Time Spectrogram']);
+    set(PSspecfig3, 'InvertHardcopy', 'off');
+    set(PSspecfig3,'color',bgcolor);
+end
 
 
 try  % datacursormode not available in Octave
@@ -75,11 +79,12 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PSdatatip);
 end
 
+if ~exist('Spec3Crtlpanel','var') || ~ishandle(Spec3Crtlpanel)
 Spec3Crtlpanel = uipanel('Title','select file ','FontSize',fontsz,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
               'Position',[cpL .515 cpW .405]);
- 
+
 guiHandlesSpec3.computeSpec = uicontrol(PSspecfig3,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec3],...
     'callback','updateSpec = 0; clear specMat; PSfreqTime;');
 set(guiHandlesSpec3.computeSpec, 'ForegroundColor', colRun);
@@ -133,6 +138,7 @@ guiHandlesSpec3.playerBtn = uicontrol(PSspecfig3,'string','Player','fontsize',fo
         'PSdynSpecPlayer(specMat,Tm,F,{''Roll'',''Pitch'',''Yaw''},tmpSA3{get(guiHandlesSpec3.SpecList,''Value'')});' ...
     'else,warndlg(''Run spectrogram first''),end']);
 set(guiHandlesSpec3.playerBtn, 'ForegroundColor', [0 .4 .8]);
+end % ishandle(Spec3Crtlpanel)
 
 try set(guiHandlesSpec3.SpecList, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-Preset')))), catch, set(guiHandlesSpec3.SpecList, 'Value', 1), end
 try set(guiHandlesSpec3.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-FreqSmoothing')))), catch, set(guiHandlesSpec3.smoothFactor_select, 'Value', 2), end

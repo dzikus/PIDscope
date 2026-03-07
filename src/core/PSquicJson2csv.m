@@ -46,7 +46,7 @@ function [headerFile, csvFile] = PSquicJson2csv(jsonFile)
   end
   nEntries = numel(entries);
 
-  % Initialize output arrays
+  
   loopIter   = zeros(nEntries, 1);
   time_us    = zeros(nEntries, 1);
   gyro       = zeros(nEntries, 3);  % RPY filtered

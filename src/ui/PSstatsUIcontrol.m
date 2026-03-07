@@ -7,14 +7,18 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
     
-if ~isempty(filenameA) || ~isempty(filenameB)
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
-PSstatsfig=figure(6);
-set(PSstatsfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
-set(PSstatsfig, 'NumberTitle', 'off');
-set(PSstatsfig, 'Name', ['PIDscope (' PsVersion ') - Flight stats']);
-set(PSstatsfig, 'InvertHardcopy', 'off');
-set(PSstatsfig,'color',bgcolor)
+if exist('PSstatsfig','var') && ishandle(PSstatsfig)
+    figure(PSstatsfig);
+else
+    PSstatsfig=figure(6);
+    set(PSstatsfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSstatsfig, 'NumberTitle', 'off');
+    set(PSstatsfig, 'Name', ['PIDscope (' PsVersion ') - Flight stats']);
+    set(PSstatsfig, 'InvertHardcopy', 'off');
+    set(PSstatsfig,'color',bgcolor);
+end
 
 TooltipString_degsecStick=['Plots rate curve (Histograms Figs) in terms of degs per sec per stick-travel units, or how fast one''s rates change across stick travel '];
 TooltipString_crossAxesStats=['Selects from several plotting options, from basic histograms of stick use per flight, to means',...
@@ -49,10 +53,7 @@ updateStats=0;
 zScale=1;
 zTransparency=1;
 
-PSstatsfig_pos = get(PSstatsfig, 'Position');
-screensz_tmp = get(0,'ScreenSize'); if PSstatsfig_pos(3) > 10, PSstatsfig_pos(3:4) = PSstatsfig_pos(3:4) ./ screensz_tmp(3:4); end
-prop_max_screen=(max([PSstatsfig_pos(3) PSstatsfig_pos(4)]));
-fontsz5=round(screensz_multiplier*prop_max_screen);
+fontsz5 = fontsz;
 
 clear posInfo.statsPos
 cols=[0.06 0.54];
@@ -75,50 +76,38 @@ posInfo.crossAxesStats_input = [.385 .945 .03 .03];
 posInfo.crossAxesStats_text2 = [.42 .965 .03 .03]; 
 posInfo.crossAxesStats_input2 = [.42 .945 .03 .03];
 
+if ~exist('statsCrtlpanel','var') || ~ishandle(statsCrtlpanel)
 statsCrtlpanel = uipanel('Title','','FontSize',fontsz5,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
               'Position',[.06 .935 .40 .06]);
 
 guiHandlesStats.saveFig5 = uicontrol(PSstatsfig,'string','Save Fig','fontsize',fontsz5,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig5],...
-    'callback','set(guiHandlesStats.saveFig5, ''FontWeight'', ''bold'');PSsaveFig; set(guiHandlesStats.saveFig5, ''FontWeight'', ''normal'');');
-set(guiHandlesStats.saveFig5, 'BackgroundColor', [.8 .8 .8]);
+    'callback','PSsaveFig;');
+set(guiHandlesStats.saveFig5, 'ForegroundColor', saveCol);
 
-guiHandlesStats.refresh = uicontrol(PSstatsfig,'string','Refresh','fontsize',fontsz5,'TooltipString',[TooltipString_refresh],'units','normalized','Position',[posInfo.refresh3],...
+guiHandlesStats.refresh = uicontrol(PSstatsfig,'string','Refresh','fontsize',fontsz5,'TooltipString','Refresh plots','units','normalized','Position',[posInfo.refresh3],...
     'callback','updateStats=1;PSplotStats;');
-set(guiHandlesStats.refresh, 'BackgroundColor', [1 1 .2]);
+set(guiHandlesStats.refresh, 'ForegroundColor', colRun);
 
 guiHandlesStats.degsecStick =uicontrol(PSstatsfig,'Style','checkbox','String','rate of change','fontsize',fontsz5,'TooltipString',[TooltipString_degsecStick],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.degsecStick],'callback','if (~isempty(filenameA) | ~isempty(filenameB)), end; PSplotStats;');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.degsecStick],'callback','PSplotStats;');
 guiHandlesStats.crossAxesStats =uicontrol(PSstatsfig,'Style','popupmenu','String',{'Histograms'; 'Mean & Standard Deviation'; 'Mode 1 topography'; 'Mode 2 topography'; 'Axes X Throttle'},'fontsize',fontsz5,'TooltipString',[TooltipString_crossAxesStats],...
-    'units','normalized','BackgroundColor',[1 1 1 ],'Position',[posInfo.crossAxesStats],'callback','@selection; if (~isempty(filenameA) | ~isempty(filenameB)), end; PSplotStats;');
+    'units','normalized','BackgroundColor',[1 1 1 ],'Position',[posInfo.crossAxesStats],'callback','PSplotStats;');
 %guiHandlesStats.crossAxesStats.Value=0;
 
 guiHandlesStats.crossAxesStats_text = uicontrol(PSstatsfig,'style','text','string','scale','fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text]);
 guiHandlesStats.crossAxesStats_input = uicontrol(PSstatsfig,'style','edit','string',[num2str(zScale)],'fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','Position',[posInfo.crossAxesStats_input],...
-     'callback','@textinput_call4; zScale=str2num(get(guiHandlesStats.crossAxesStats_input, ''String''));updateStats=1;PSplotStats;');
+     'callback','zScale=str2num(get(guiHandlesStats.crossAxesStats_input, ''String''));updateStats=1;PSplotStats;');
  
 guiHandlesStats.crossAxesStats_text2 = uicontrol(PSstatsfig,'style','text','string','alpha','fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text2]);
 guiHandlesStats.crossAxesStats_input2 = uicontrol(PSstatsfig,'style','edit','string',[num2str(zTransparency)],'fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','Position',[posInfo.crossAxesStats_input2],...
-     'callback','@textinput_call4; zTransparency=str2num(get(guiHandlesStats.crossAxesStats_input2, ''String'')); if (zTransparency>1), zTransparency=1; end; if (zTransparency<0), zTransparency=0; end; updateStats=1;PSplotStats;');
+     'callback','zTransparency=str2num(get(guiHandlesStats.crossAxesStats_input2, ''String'')); if (zTransparency>1), zTransparency=1; end; if (zTransparency<0), zTransparency=0; end; updateStats=1;PSplotStats;');
+end % ishandle(statsCrtlpanel)
+
+PSstyleControls(PSstatsfig);
 
 else
     errordlg('Please select file(s) then click ''load+run''', 'Error, no data');
     pause(2);
-end
-PSstyleControls(PSstatsfig);
-
-function textinput_call4(src,eventdata)
-str=get(src,'String');
-    if isempty(str2num(str))
-        set(src,'string','0');
-        warndlg('Input must be numerical');  
-    end
-end
-
-function selection(src,event)
-    val = c.Value;
-    str = c.String;
-    str{val};
-   % disp(['Selection: ' str{val}]);
 end

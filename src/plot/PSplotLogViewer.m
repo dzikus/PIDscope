@@ -23,17 +23,6 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     alpha_red=.8;
     alpha_blue=.8;
 
-    % scale fonts according to size of window and/or screen
-    PSfig_pos = get(PSfig, 'Position');
-    screensz_tmp = get(0,'ScreenSize'); if PSfig_pos(3) > 10, PSfig_pos(3:4) = PSfig_pos(3:4) ./ screensz_tmp(3:4); end
-    prop_max_screen=(max([PSfig_pos(3) PSfig_pos(4)]));
-    fontsz=(screensz_multiplier*prop_max_screen);
-
-    f = fields(guiHandles);
-    for i = 1 : size(f,1)
-        try set(guiHandles.(f{i}), 'FontSize', fontsz); catch, end
-    end
-    set(controlpanel, 'FontSize', fontsz);
 
     lineSmoothFactors = [1 10 20 40 80];
 
@@ -286,7 +275,6 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         'elseif kk==''o'', try, [xt,~]=ginput(1); epoch2_A(fIdx)=round(xt*10)/10; PSplotLogViewer; catch, end; ' ...
         'end, end']);
 
-    % Set up click-to-show-value datatips on all axes
     PSdatatipSetup(PSfig);
 
     set(PSfig, 'pointer', 'arrow')

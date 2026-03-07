@@ -37,6 +37,10 @@ th.btnDash4    = [.20 .70 .30];   % Motor Noise
 th.btnDash5    = [.20 .80 .80];   % Chirp Analysis
 th.btnLink     = [.85 .55 .15];   % Support PIDscope
 
+% font size - single source of truth
+screensz = get(0, 'ScreenSize');
+th.fontsz = round(screensz(4) * .011);
+
 % checkbox / input bg
 th.checkBg     = [.18 .18 .20];
 th.inputBg     = [.14 .14 .16];

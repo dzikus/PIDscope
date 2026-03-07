@@ -10,15 +10,6 @@
 PStunefig=figure(4);
 th = PStheme();
 
-PStunefig_pos = get(PStunefig, 'Position');
-screensz_tmp = get(0,'ScreenSize'); if PStunefig_pos(3) > 10, PStunefig_pos(3:4) = PStunefig_pos(3:4) ./ screensz_tmp(3:4); end
-prop_max_screen=(max([PStunefig_pos(3) PStunefig_pos(4)]));
-fontsz=(screensz_multiplier*prop_max_screen);
-
-f = fields(guiHandlesTune);
-for i = 1 : size(f,1)
-    try set(guiHandlesTune.(f{i}), 'FontSize', fontsz); catch, end
-end
 
 
 %% step resp computed directly from set point and gyro

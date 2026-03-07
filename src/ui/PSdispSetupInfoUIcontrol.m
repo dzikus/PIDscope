@@ -10,20 +10,25 @@
     
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
-PSdisp=figure(5);
-screensz = get(0,'ScreenSize');
-set(PSdisp, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
-set(PSdisp, 'NumberTitle', 'on');
-set(PSdisp, 'Name', ['PIDscope (' PsVersion ') -  Setup Info']);
-set(PSdisp,'color',bgcolor)
+if exist('PSdisp','var') && ishandle(PSdisp)
+    figure(PSdisp);
+else
+    PSdisp=figure(5);
+    screensz = get(0,'ScreenSize');
+    set(PSdisp, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSdisp, 'NumberTitle', 'on');
+    set(PSdisp, 'Name', ['PIDscope (' PsVersion ') -  Setup Info']);
+    set(PSdisp,'color',bgcolor);
+end
 
-columnWidth=55*round(screensz_multiplier*prop_max_screen);
+columnWidth = 55 * fontsz;
 
 TooltipString_FileNumDispA=['List of files available. Click to view setup info for each']; 
 posInfo.FileNumDispA=[.22 .95 .1 .04];
 posInfo.FileNumDispB=[.72 .95 .1 .04];
 posInfo.checkboxDIFF=[.04 .96 .1 .04];
   
+if ~exist('setupInfoWidgets_init','var') || ~ishandle(guiHandlesInfo.FileNumDispA)
 guiHandlesInfo.FileNumDispA = uicontrol(PSdisp,'Style','popupmenu','string',[fnameMaster],...
     'fontsize',fontsz, 'units','normalized','Position', [posInfo.FileNumDispA],'callback','@selection; PSdispSetupInfo;');
 set(guiHandlesInfo.FileNumDispA, 'Value', 1);
@@ -35,6 +40,8 @@ end
 
 guiHandlesInfo.checkboxDIFF =uicontrol(PSdisp,'Style','checkbox','String','Show Differences Only','fontsize',fontsz,'TooltipString', [''],...
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxDIFF],'callback', 'PSdispSetupInfo;');
+setupInfoWidgets_init = true;
+end % ishandle widgets
 
 else
      warndlg('Please select file(s)');

@@ -51,7 +51,7 @@ for t = 1:nBins
     if any(f2mask) && max(spec(f2mask)) > noiseFloor * 1.5
         fundFreq(t) = f0;
     else
-        % might be a harmonic itself — check if f0/2 has a peak
+        % might be a harmonic itself - check if f0/2 has a peak
         fhlo = f0 * 0.4;
         fhhi = f0 * 0.6;
         fhmask = freqAxis >= fhlo & freqAxis <= fhhi & fMask;

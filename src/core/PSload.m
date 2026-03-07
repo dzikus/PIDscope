@@ -14,7 +14,7 @@
 try
     if ~isempty(filenameA)
 
-        %% Detect firmware type change — mixing firmware types causes issues
+        %% Detect firmware type change - mixing firmware types causes issues
         current_fw = get(guiHandles.Firmware, 'Value');
         if exist('loaded_firmware','var') && loaded_firmware ~= current_fw && exist('fnameMaster','var') && ~isempty(fnameMaster)
             fw_names = get(guiHandles.Firmware, 'String');
@@ -120,7 +120,7 @@ try
 
                 [~, ~, sfext] = fileparts(subFiles{jj});
                 if strcmpi(sfext, '.bin')
-                    % ArduPilot DataFlash binary — direct parse
+                    % ArduPilot DataFlash binary - direct parse
                     binpath = fullfile(logfile_directory, subFiles{jj});
                     [ardu_data, ardu_parms] = PSarduRead(binpath);
                     [T{fcnt}, SetupInfo{fcnt}, A_lograte(fcnt)] = PSarduConvert(ardu_data, ardu_parms);

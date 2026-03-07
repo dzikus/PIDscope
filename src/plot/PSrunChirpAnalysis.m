@@ -13,7 +13,7 @@ ax = axisIdx + 1;
 
 % check CHIRP debug mode
 if ~isfield(T, 'debug_0_')
-    warndlg('No debug data in log — chirp analysis requires debug_mode = CHIRP');
+    warndlg('No debug data in log - chirp analysis requires debug_mode = CHIRP');
     return
 end
 

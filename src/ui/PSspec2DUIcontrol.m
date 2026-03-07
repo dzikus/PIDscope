@@ -104,12 +104,16 @@ end
 climScale1=[0 ; -50 ];
 climScale2=[0.5 ; 20];
 
-PSspecfig2=figure(3);
-set(PSspecfig2, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
-set(PSspecfig2, 'NumberTitle', 'off');
-set(PSspecfig2, 'Name', ['PIDscope (' PsVersion ') - Spectral Analyzer']);
-set(PSspecfig2, 'InvertHardcopy', 'off');
-set(PSspecfig2,'color',bgcolor);
+if exist('PSspecfig2','var') && ishandle(PSspecfig2)
+    figure(PSspecfig2);
+else
+    PSspecfig2=figure(3);
+    set(PSspecfig2, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSspecfig2, 'NumberTitle', 'off');
+    set(PSspecfig2, 'Name', ['PIDscope (' PsVersion ') - Spectral Analyzer']);
+    set(PSspecfig2, 'InvertHardcopy', 'off');
+    set(PSspecfig2,'color',bgcolor);
+end
 
 
 try  % datacursormode not available in Octave
@@ -121,11 +125,12 @@ spec2CrtlpanelPos = [cpL .21+vPosSpec2d cpW .71];
 if exist('isOctave','var') && isOctave
     spec2CrtlpanelPos = [cpL .16+vPosSpec2d cpW .76];
 end
+if ~exist('spec2Crtlpanel','var') || ~ishandle(spec2Crtlpanel)
 spec2Crtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
               'Position',spec2CrtlpanelPos);
- 
+
 guiHandlesSpec2.computeSpec = uicontrol(PSspecfig2,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec],...
     'callback','PSplotSpec2D;');
 set(guiHandlesSpec2.computeSpec, 'ForegroundColor', colRun);
@@ -221,7 +226,7 @@ guiHandlesSpec2.climMax1_input = uicontrol(PSspecfig2,'style','edit','string',[n
  guiHandlesSpec2.climMax2_text = uicontrol(PSspecfig2,'style','text','string','Y max','fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax2_text]);
 guiHandlesSpec2.climMax2_input = uicontrol(PSspecfig2,'style','edit','string',[num2str(climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','Position',[posInfo.climMax2_input],...
      'callback','@textinput_call2; climScale2(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec2.climMax2_input, ''String''));PSplotSpec2D;');
-
+end % ishandle(spec2Crtlpanel)
 
 try set(guiHandlesSpec2.SpecList, 'Value', [defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term1'))) defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term2')))]), catch, set(guiHandlesSpec2.SpecList, 'Value', [1 2]), end
 try set(guiHandlesSpec2.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-smoothing')))), catch, set(guiHandlesSpec2.smoothFactor_select, 'Value', 3), end

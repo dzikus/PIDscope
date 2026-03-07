@@ -51,7 +51,7 @@ function PSdatatip_click(ax)
   x = cp(1,1);
   y = cp(1,2);
 
-  % Check if click is within axes limits
+  
   xl = get(ax, 'XLim');
   yl = get(ax, 'YLim');
   if x < xl(1) || x > xl(2) || y < yl(1) || y > yl(2)
@@ -77,7 +77,7 @@ function PSdatatip_click(ax)
       img_obj = ch;
       break  % image takes priority (heatmap background)
     elseif strcmp(t, 'line')
-      % Check if line has visible data
+      
       xd = get(ch, 'XData');
       yd = get(ch, 'YData');
       if isempty(xd) || length(xd) < 2, continue; end

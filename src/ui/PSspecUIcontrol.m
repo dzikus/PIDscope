@@ -138,12 +138,16 @@ climScale=[0.5 0.5 0.5 0.5; 10 10 10 10];
 Flim1=20; % 3.3333Hz steps
 Flim2=60;
 
-PSspecfig=figure(2);
-set(PSspecfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
-set(PSspecfig, 'NumberTitle', 'off');
-set(PSspecfig, 'Name', ['PIDscope (' PsVersion ') - Frequency x Throttle Spectrogram']);
-set(PSspecfig, 'InvertHardcopy', 'off');
-set(PSspecfig,'color',bgcolor);
+if exist('PSspecfig','var') && ishandle(PSspecfig)
+    figure(PSspecfig);
+else
+    PSspecfig=figure(2);
+    set(PSspecfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSspecfig, 'NumberTitle', 'off');
+    set(PSspecfig, 'Name', ['PIDscope (' PsVersion ') - Frequency x Throttle Spectrogram']);
+    set(PSspecfig, 'InvertHardcopy', 'off');
+    set(PSspecfig,'color',bgcolor);
+end
 
 
 try  % datacursormode not available in Octave
@@ -155,11 +159,12 @@ specCrtlpanelPos = [cpL .59 cpW .33];
 if exist('isOctave','var') && isOctave
     specCrtlpanelPos = [cpL .55 cpW .37];
 end
+if ~exist('specCrtlpanel','var') || ~ishandle(specCrtlpanel)
 specCrtlpanel = uipanel('Title','Params','FontSize',fontsz,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
               'Position',specCrtlpanelPos);
- 
+
 %%% PRESET CONFIGURATIONS
 
 % guiHandles.FileNum = uicontrol(PSspecfig,'Style','popupmenu','string',[fnameMaster],'TooltipString', [TooltipString_FileNum],...
@@ -255,6 +260,7 @@ guiHandlesSpec.climMax_input4 = uicontrol(PSspecfig,'style','edit','string',[num
  guiHandlesSpec.ColormapSelect = uicontrol(PSspecfig,'Style','popupmenu','string',{'viridis','jet','hot','cool','gray','bone','copper','linear-RED','linear-GREY'},...
     'fontsize',fontsz,'TooltipString', [TooltipString_cmap], 'units','normalized','Position',[posInfo.ColormapSelect],'callback','@selection2;updateSpec=1; PSplotSpec;');
 set(guiHandlesSpec.ColormapSelect, 'Value', 3);% jet 2 hot 3 viridis 8
+end % ishandle(specCrtlpanel)
 
 try set(guiHandlesSpec.SpecSelect{1}, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqXthr-Column1')))), catch, set(guiHandlesSpec.SpecSelect{1}, 'Value', 3); end
 try set(guiHandlesSpec.SpecSelect{2}, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqXthr-Column2')))), catch, set(guiHandlesSpec.SpecSelect{2}, 'Value', 2); end

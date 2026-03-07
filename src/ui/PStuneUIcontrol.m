@@ -9,12 +9,16 @@
     
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
     
-PStunefig=figure(4);
-set(PStunefig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
-set(PStunefig, 'NumberTitle', 'on');
-set(PStunefig, 'Name', ['PIDscope (' PsVersion ') - Step Response Tool']);
-set(PStunefig, 'InvertHardcopy', 'off');
-set(PStunefig,'color',bgcolor)
+if exist('PStunefig','var') && ishandle(PStunefig)
+    figure(PStunefig);
+else
+    PStunefig=figure(4);
+    set(PStunefig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PStunefig, 'NumberTitle', 'on');
+    set(PStunefig, 'Name', ['PIDscope (' PsVersion ') - Step Response Tool']);
+    set(PStunefig, 'InvertHardcopy', 'off');
+    set(PStunefig,'color',bgcolor);
+end
 
 updateStep=0;
 
@@ -66,11 +70,12 @@ posInfo.Ycorrection=         [cpL+.005 .455 cpW-.01 .025];
 posInfo.maxYStepInput=       [cpL+.005 .421 cpW/3 .025];
 posInfo.maxYStepTxt=         [cpL+cpW/3+.005 .421 cpW/2 .025];
 
+if ~exist('tuneCrtlpanel_init','var') || ~ishandle(guiHandlesTune.tuneCrtlpanel)
 guiHandlesTune.tuneCrtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
               'Position',[cpL .41 cpW .51]);
-       
+
 guiHandlesTune.run4 = uicontrol(PStunefig,'string','Run','fontsize',fontsz,'TooltipString',[TooltipString_steprun],'units','normalized','Position',[posInfo.run4],...
     'callback','PStuningParams;'); 
 set(guiHandlesTune.run4, 'ForegroundColor', colRun);
@@ -117,6 +122,8 @@ guiHandlesTune.maxYStepInput = uicontrol(PStunefig,'style','edit','string','1.75
 guiHandlesTune.smoothFactor_select = uicontrol(PStunefig,'style','popupmenu','string',{'smoothing off' 'smoothing low' 'smoothing medium' 'smoothing high'},'fontsize',fontsz,'TooltipString', ['Smooth the gyro when step response traces are too noisy'], 'units','normalized','Position',[posInfo.smooth_tuning],...
      'callback','@selection2;');
 set(guiHandlesTune.smoothFactor_select, 'Value', 1);
+tuneCrtlpanel_init = true;
+end % ishandle(tuneCrtlpanel)
 
 try set(guiHandlesTune.plotR, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotR')))), catch, set(guiHandlesTune.plotR, 'Value', 1), end
 try set(guiHandlesTune.plotP, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotP')))), catch, set(guiHandlesTune.plotP, 'Value', 1), end

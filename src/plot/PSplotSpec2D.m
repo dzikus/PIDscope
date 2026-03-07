@@ -10,18 +10,6 @@
 
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 th = PStheme();
-%% update fonts
-PSspecfig2_pos = get(PSspecfig2, 'Position');
-screensz_tmp = get(0,'ScreenSize'); if PSspecfig2_pos(3) > 10, PSspecfig2_pos(3:4) = PSspecfig2_pos(3:4) ./ screensz_tmp(3:4); end
-prop_max_screen=(max([PSspecfig2_pos(3) PSspecfig2_pos(4)]));
-fontsz=(screensz_multiplier*prop_max_screen);
-
-f = fields(guiHandlesSpec2);
-for i = 1 : size(f,1)
-    try set(guiHandlesSpec2.(f{i}), 'FontSize', fontsz); catch, end
-end
-
-set(spec2Crtlpanel, 'FontSize', fontsz);
 
 guiHandlesSpec2.climMax1_text = uicontrol(PSspecfig2,'style','text','string','Y min','fontsize',fontsz,'TooltipString',['Y min'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax1_text]);
 guiHandlesSpec2.climMax1_input = uicontrol(PSspecfig2,'style','edit','string',[num2str(climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y min'],'units','normalized','Position',[posInfo.climMax1_input],...
@@ -373,10 +361,8 @@ if ~isempty(freq2d2) && ~isempty(amp2d2)
 end
 
 
-% Apply dark theme to all axes
 allax = findobj(PSspecfig2, 'Type', 'axes');
 for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
-% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig2);
 
 set(PSspecfig2, 'pointer', 'arrow')

@@ -152,9 +152,9 @@ set(PSfig, 'Name', ['PIDscope (' PsVersion ') - Log Viewer']);
 
 pause(.1)% need to wait for figure to open before extracting screen values
 
-screensz_multiplier = sqrt(screensz(4)^2) * .011; % based on vertical dimension only, to deal with for ultrawide monitors
-prop_max_screen = figPos(4) / screensz(4);
-fontsz = (screensz_multiplier*prop_max_screen);
+th = PStheme();
+fontsz = th.fontsz;
+screensz_multiplier = screensz(4) * .011;
 % Octave font scaling is done below in layout section
 markerSz = round(screensz_multiplier * 0.75);
 vPos = 0.92;
@@ -186,6 +186,8 @@ posInfo.lineSmooth = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
 posInfo.linewidth = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
 posInfo.spectrogramButton = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
 posInfo.TuningButton = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
+posInfo.PIDErrorButton = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
+posInfo.FlightStatsButton = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
 posInfo.period2Hz = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
 posInfo.DispInfoButton = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
 posInfo.saveFig = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
@@ -251,8 +253,9 @@ guiHandles.fileA = uicontrol(PSfig,'string','Select ','fontsize',fontsz,'Tooltip
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PSfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
-     'callback',['clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData ampmat freq2d2 amp2d2 specMat; ' ...
+     'callback',['clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData rpmFilterData ampmat freq2d2 amp2d2 specMat delayDataReady FilterDelayDterm SPGyroDelay Debug01 Debug02 gyro_phase_shift_deg dterm_phase_shift_deg tuneCrtlpanel_init setupInfoWidgets_init; ' ...
      'fcnt=0; filenameA={}; fnameMaster={}; Nfiles=0; expandON=0; ' ...
+     'try, delete(checkpanel); clear checkpanel; catch, end; ' ...
      'try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; ' ...
      'figs=findobj(''Type'',''figure''); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end; ' ...
      'set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;']);
@@ -289,6 +292,14 @@ set(guiHandles.spectrogramButton, 'ForegroundColor', colorA);
 guiHandles.TuningButton = uicontrol(PSfig,'string','Step Resp Tool','fontsize',fontsz,'TooltipString', [TooltipString_step],'units','normalized','Position',[posInfo.TuningButton],...
     'callback','PStuneUIcontrol');
 set(guiHandles.TuningButton, 'ForegroundColor', colorB);
+
+guiHandles.PIDErrorButton = uicontrol(PSfig,'string','PID Error','fontsize',fontsz,'TooltipString', ['PID error distribution analysis'],'units','normalized','Position',[posInfo.PIDErrorButton],...
+    'callback','PSerrUIcontrol; PSplotPIDerror;');
+set(guiHandles.PIDErrorButton, 'ForegroundColor', [.8 .4 .1]);
+
+guiHandles.FlightStatsButton = uicontrol(PSfig,'string','Flight Stats','fontsize',fontsz,'TooltipString', ['Flight statistics and stick analysis'],'units','normalized','Position',[posInfo.FlightStatsButton],...
+    'callback','PSstatsUIcontrol; PSplotStats;');
+set(guiHandles.FlightStatsButton, 'ForegroundColor', [.2 .6 .8]);
 
 guiHandles.period2Hz = uicontrol(PSfig,'string','Period','fontsize',fontsz,'TooltipString', ['Calculates peak to peak in Hz similar to the BBE ''Mark'' tool' , newline, 'press button, position mouse over 1st peak, mouse click,' , newline, 'then position over 2nd peak, then mouse click again'], 'units','normalized','Position',[posInfo.period2Hz],...
      'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.period2Hz, ''Value''), try, [x1 y1] = ginput(1); figure(PSfig); h=plot([x1 x1],[-(maxY*2) maxY],''-r'');set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2);  [x2 y2] = ginput(1); h=plot([x2 x2],[-(maxY*2) maxY],''-r''); set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2); plot([x1 x2],[y1 y2],'':k''); x3=[round(x1*1000) round(x2*1000)]; f = 1000/(x3(2)-x3(1)); text(x2, y2, [num2str(x3(2)-x3(1)) ''ms, '' num2str(f) ''Hz''],''FontSize'',fontsz, ''FontWeight'', ''Bold''); catch, end, end');      

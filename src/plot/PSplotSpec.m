@@ -11,24 +11,6 @@
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
 th = PStheme();
-PSspecfig_pos = get(PSspecfig, 'Position');
-screensz_tmp = get(0,'ScreenSize'); if PSspecfig_pos(3) > 10, PSspecfig_pos(3:4) = PSspecfig_pos(3:4) ./ screensz_tmp(3:4); end
-prop_max_screen=(max([PSspecfig_pos(3) PSspecfig_pos(4)]));
-fontsz=(screensz_multiplier*prop_max_screen);
-%% update fonts
-
-f = fields(guiHandlesSpec);
-for i = 1 : size(f,1)
-    try
-        h = guiHandlesSpec.(f{i});
-        if iscell(h)
-            for ci = 1:numel(h), set(h{ci}, 'FontSize', fontsz); end
-        else
-            set(h, 'FontSize', fontsz);
-        end
-    catch
-    end
-end
 
 guiHandlesSpec.climMax_input = uicontrol(PSspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input],...
      'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec.climMax_input, ''String''));updateSpec=1;PSplotSpec;');
@@ -195,7 +177,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                     tmpFFTk = debugIdx{tmpFileK}.FFT_FREQ;
                 end
                 if debugmode(tmpFileK) == tmpFFTk && numel(notchData) >= tmpFileK && ~isempty(notchData{tmpFileK})
-                    % Only overlay on the axis matching gyro_debug_axis
+                    % match gyro_debug_axis
                     tmpGdaK = 0;
                     if exist('gyro_debug_axis','var') && numel(gyro_debug_axis) >= tmpFileK
                         tmpGdaK = gyro_debug_axis(tmpFileK);
@@ -286,18 +268,20 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
         set(hCbar4,'Position', [posInfo.hCbar4pos])
     end
 
-    % color maps - use set() to avoid stale colorbar listener errors in colormap()
+    % color maps
     try
-        tmpCmapVal = get(guiHandlesSpec.ColormapSelect, 'Value');
-        if tmpCmapVal <= 7
-            tmpCmapStr = get(guiHandlesSpec.ColormapSelect, 'String');
-            cm = feval(char(tmpCmapStr(tmpCmapVal)), 64);
-        elseif tmpCmapVal == 8
-            cm = linearREDcmap;
-        else
-            cm = linearGREYcmap;
+        if ishandle(PSspecfig)
+            tmpCmapVal = get(guiHandlesSpec.ColormapSelect, 'Value');
+            if tmpCmapVal <= 7
+                tmpCmapStr = get(guiHandlesSpec.ColormapSelect, 'String');
+                cm = feval(char(tmpCmapStr(tmpCmapVal)), 64);
+            elseif tmpCmapVal == 8
+                cm = linearREDcmap;
+            else
+                cm = linearGREYcmap;
+            end
+            colormap(PSspecfig, cm);
         end
-        set(PSspecfig, 'Colormap', cm);
     catch, end
 
 end
@@ -359,7 +343,6 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
         end
     end
 end
-% Set up click-to-show-value datatips + double-click expand on all axes
 PSdatatipSetup(PSspecfig);
 
 set(PSspecfig, 'pointer', 'arrow')
