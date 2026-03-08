@@ -31,14 +31,17 @@ function [freq ampMat] = PSthrSpec(X, Y, F, psd)
     if subsampleFactor < 1, subsampleFactor = 1; end
 
     segment_vector = 1 : segment_length / subsampleFactor : length(Y);
+    Tm = []; Yseg = [];
     for i = 1 : length(segment_vector) - subsampleFactor - 1
-        Tm(i) = nanmean(X(segment_vector(i) : segment_vector(i) + segment_length));  
-        Yseg(i,:) = Y(segment_vector(i) : segment_vector(i) + segment_length-1); 
+        if segment_vector(i) + segment_length > length(Y), break; end
+        Tm(i) = nanmean(X(segment_vector(i) : segment_vector(i) + segment_length));
+        Yseg(i,:) = Y(segment_vector(i) : segment_vector(i) + segment_length-1);
     end
-        
+
       ampMat = zeros(Tr,(segment_length / 2));
       freq = zeros(Tr,(segment_length / 2));
 
+    if isempty(Tm), return; end
     Tm(find(Tm < 0)) = 0;
     [Thr_sort Thr_sortInd] = sort(Tm');
     Yseg_sort = Yseg(Thr_sortInd,:);% sorted Y according to X (throttle or motor output) 

@@ -11,7 +11,8 @@ fig = findobj('Type', 'figure', 'Name', 'Filter Simulation');
 if ~isempty(fig), close(fig); end
 fig = figure('Name', 'Filter Simulation', 'NumberTitle', 'off', ...
     'Color', thm.figBg, ...
-    'Position', round([.1*screensz(3) .08*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    'Position', round([0 0 screensz(3) screensz(4)]));
+try set(fig, 'WindowState', 'maximized'); catch, end
 
 fp = parseFilterParams(setupInfo);
 

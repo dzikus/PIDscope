@@ -4,7 +4,10 @@ if nargin < 2, th = PStheme(); end
 controls = findobj(fig, 'Type', 'uicontrol');
 for i = 1:numel(controls)
     style = get(controls(i), 'Style');
-    if strcmp(style, 'pushbutton'), continue; end
+    if strcmp(style, 'pushbutton')
+        set(controls(i), 'BackgroundColor', th.btnBg);
+        continue;
+    end
     fg = get(controls(i), 'ForegroundColor');
     % fix controls still at default black [0 0 0]
     if all(abs(fg) < 0.01)

@@ -127,14 +127,8 @@ ldr = ['logfileDirectory: ' logfile_directory ];
 
 try
     defaults = readtable('PSdefaults.txt');
-    a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
-    t = uitable(PSfig,'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
 catch
-    defaults = ' '; 
-    a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
-    t = uitable(PSfig,'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
+    defaults = ' ';
 end
 
 clear var

@@ -25,12 +25,15 @@ try
                  'Reset data before loading?'], ...
                 'Firmware type changed', 'Reset & Load', 'Cancel', 'Reset & Load');
             if strcmp(choice, 'Reset & Load')
-                clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData;
-                fcnt = 0; fnameMaster = {};
+                clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData rpmFilterData ampmat freq2d2 amp2d2 specMat delayDataReady FilterDelayDterm SPGyroDelay Debug01 Debug02 gyro_phase_shift_deg dterm_phase_shift_deg tuneCrtlpanel_init setupInfoWidgets_init;
+                fcnt = 0; fnameMaster = {}; Nfiles = 0;
+                try, delete(checkpanel); clear checkpanel; catch, end
                 try, delete(subplot('position',posInfo.linepos1)); catch, end
                 try, delete(subplot('position',posInfo.linepos2)); catch, end
                 try, delete(subplot('position',posInfo.linepos3)); catch, end
                 try, delete(subplot('position',posInfo.linepos4)); catch, end
+                figs=findobj('Type','figure'); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end
+                clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel freqTimeCrtlpanel tuneCrtlpanel;
                 set(guiHandles.FileNum, 'String', ' ');
                 try, set(guiHandles.Epoch1_A_Input, 'String', ' '); set(guiHandles.Epoch2_A_Input, 'String', ' '); catch, end
             else
@@ -64,13 +67,9 @@ try
         try
             defaults = readtable('PSdefaults.txt');
             a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
-            t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-            set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
         catch
-            defaults = ' '; 
+            defaults = ' ';
             a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
-            t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-            set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
         end
         
         fnameMaster = [fnameMaster filenameA];

@@ -25,7 +25,7 @@ if plotMode == 1
 
     clear posInfo.statsPos
     cols = [0.06 0.54];
-    rows = [0.75 0.52 0.29 0.06];
+    rows = [0.69 0.48 0.27 0.06];
     k = 0;
     for c = 1:2
         for r = 1:4
@@ -107,7 +107,7 @@ end
 if plotMode == 2
 
     cols = [0.06 0.30 0.54 0.78];
-    rows = [0.76 0.53 0.30 0.08];
+    rows = [0.69 0.48 0.27 0.06];
     k = 0;
     for c = 1:length(cols)
         for r = 1:length(rows)

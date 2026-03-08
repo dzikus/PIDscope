@@ -12,7 +12,8 @@ fig = findobj('Type', 'figure', 'Name', 'Motor / Prop Noise Analysis');
 if ~isempty(fig), close(fig); end
 fig = figure('Name', 'Motor / Prop Noise Analysis', 'NumberTitle', 'off', ...
     'Color', th.figBg, ...
-    'Position', round([.08*screensz(3) .06*screensz(4) .78*screensz(3) .82*screensz(4)]));
+    'Position', round([0 0 screensz(3) screensz(4)]));
+try set(fig, 'WindowState', 'maximized'); catch, end
 
 F_kHz = Fs / 1000;
 motorCol = {'motor_0_', 'motor_1_', 'motor_2_', 'motor_3_'};

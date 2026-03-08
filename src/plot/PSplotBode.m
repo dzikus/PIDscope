@@ -15,7 +15,8 @@ fig = findobj('Type', 'figure', 'Name', figName);
 if ~isempty(fig), close(fig); end
 fig = figure('Name', figName, 'NumberTitle', 'off', ...
     'Color', th.figBg, ...
-    'Position', round([.08*screensz(3) .06*screensz(4) .78*screensz(3) .82*screensz(4)]));
+    'Position', round([0 0 screensz(3) screensz(4)]));
+try set(fig, 'WindowState', 'maximized'); catch, end
 
 freq = freq(:);
 fPlot = freq(freq > 0);  % skip DC for log plot

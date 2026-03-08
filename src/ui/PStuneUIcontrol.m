@@ -13,7 +13,8 @@ if exist('PStunefig','var') && ishandle(PStunefig)
     figure(PStunefig);
 else
     PStunefig=figure(4);
-    set(PStunefig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PStunefig, 'Position', round([0 0 screensz(3) screensz(4)]));
+    try set(PStunefig, 'WindowState', 'maximized'); catch, end
     set(PStunefig, 'NumberTitle', 'on');
     set(PStunefig, 'Name', ['PIDscope (' PsVersion ') - Step Response Tool']);
     set(PStunefig, 'InvertHardcopy', 'off');
@@ -52,29 +53,30 @@ for c=1 : size(cols,2)
     end
 end
 
-% Control panel layout (consistent with Log Viewer cpL/cpW)
-cpL = .875; cpW = .12;
-rh = .030; rs = .034;
-
-posInfo.fileListWindowStep=  [cpL+.003 .660 cpW-.006 .24];
-posInfo.run4=                [cpL+.006 .625 cpW/2-.006 rh];
-posInfo.clearPlots=          [cpL+cpW/2 .625 cpW/2-.006 rh];
-posInfo.saveFig4=            [cpL+.006 .591 cpW/2-.006 rh];
-posInfo.saveSettings4=       [cpL+cpW/2 .591 cpW/2-.006 rh];
-posInfo.smooth_tuning=       [cpL+.003 .557 cpW-.006 rh];
-posInfo.plotR=               [cpL+.005 .523 .035 .025];
-posInfo.plotP=               [cpL+.04 .523 .035 .025];
-posInfo.plotY=               [cpL+.075 .523 .035 .025];
-posInfo.RPYcombo=            [cpL+.005 .489 cpW-.01 .025];
-posInfo.Ycorrection=         [cpL+.005 .455 cpW-.01 .025];
-posInfo.maxYStepInput=       [cpL+.005 .421 cpW/3 .025];
-posInfo.maxYStepTxt=         [cpL+cpW/3+.005 .421 cpW/2 .025];
+% Control panel layout — cpL/cpW/rh/rs/ddh/cpM/cbW inherited from PIDscope.m (pixel-based)
+% yTop tracks where TOP of next element goes; Position Y = yTop - height
+listH_step = 8*rs;  gap = rs - rh;  fw = cpW-2*cpM;  hw = cpW/2-cpM;
+tbOff_s4 = 40/screensz(4);
+yTop = 1 - tbOff_s4 - cpTitleH - cpMv;
+posInfo.fileListWindowStep=  [cpL+cpM yTop-listH_step fw listH_step]; yTop=yTop-listH_step-gap;
+posInfo.run4=                [cpL+cpM yTop-rh hw rh];
+posInfo.clearPlots=          [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
+posInfo.saveFig4=            [cpL+cpM yTop-rh hw rh];
+posInfo.saveSettings4=       [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
+posInfo.smooth_tuning=       [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.plotR=               [cpL+cpM yTop-rh cbW rh];
+posInfo.plotP=               [cpL+cpM+cbW yTop-rh cbW rh];
+posInfo.plotY=               [cpL+cpM+2*cbW yTop-rh cbW rh]; yTop=yTop-rh-gap;
+posInfo.RPYcombo=            [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.Ycorrection=         [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.maxYStepInput=       [cpL+cpM yTop-rh cpW/3 rh];
+posInfo.maxYStepTxt=         [cpL+cpW/3+cpM yTop-rhs cpW/2 rhs];
 
 if ~exist('tuneCrtlpanel_init','var') || ~ishandle(guiHandlesTune.tuneCrtlpanel)
 guiHandlesTune.tuneCrtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
-              'Position',[cpL .41 cpW .51]);
+              'Position',[cpL yTop-rh-gap cpW vPos-(yTop-rh-gap)+cpTitleH+cpMv]);
 
 guiHandlesTune.run4 = uicontrol(PStunefig,'string','Run','fontsize',fontsz,'TooltipString',[TooltipString_steprun],'units','normalized','Position',[posInfo.run4],...
     'callback','PStuningParams;'); 
@@ -124,6 +126,27 @@ guiHandlesTune.smoothFactor_select = uicontrol(PStunefig,'style','popupmenu','st
 set(guiHandlesTune.smoothFactor_select, 'Value', 1);
 tuneCrtlpanel_init = true;
 end % ishandle(tuneCrtlpanel)
+
+% Register CP for fixed-pixel resize
+cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
+              'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', 0);
+cpI = {};
+listH_step_px = 8*rs_px;
+cpI{end+1} = struct('h', guiHandlesTune.tuneCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0);
+cpI{end+1} = struct('h', guiHandlesTune.fileListWindowStep, 'type','full', 'row',0, 'col',0, 'hpx',listH_step_px);
+cpI{end+1} = struct('h', guiHandlesTune.run4, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.clearPlots, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.saveFig4, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.saveSettings, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.smoothFactor_select, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesTune.plotR, 'type','cb', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.plotP, 'type','cb', 'row',0, 'col',1, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.plotY, 'type','cb_end', 'row',0, 'col',2, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.RPYcombo, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.Ycorrection, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.maxYStepInput, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.maxYStepTxt, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+PSregisterResize(PStunefig, cpPx, cpI, 'seq');
 
 try set(guiHandlesTune.plotR, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotR')))), catch, set(guiHandlesTune.plotR, 'Value', 1), end
 try set(guiHandlesTune.plotP, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotP')))), catch, set(guiHandlesTune.plotP, 'Value', 1), end

@@ -14,7 +14,8 @@ if exist('PSerrfig','var') && ishandle(PSerrfig)
     figure(PSerrfig);
 else
     PSerrfig=figure(7);
-    set(PSerrfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSerrfig, 'Position', round([0 0 screensz(3) screensz(4)]));
+    try set(PSerrfig, 'WindowState', 'maximized'); catch, end
     set(PSerrfig, 'NumberTitle', 'off');
     set(PSerrfig, 'Name', ['PIDscope (' PsVersion ') - PID Error Tool']);
     set(PSerrfig, 'InvertHardcopy', 'off');
@@ -31,7 +32,7 @@ TooltipString_degsec=['Sets the maximum rate used in the PID error analysis (dis
 
 clear posInfo.PIDerrAnalysis
 cols=[0.1 0.55];
-rows=[0.66 0.38 0.1];
+rows=[0.63 0.36 0.09];
 k=0;
 for c=1:2
     for r=1:3
@@ -40,17 +41,24 @@ for c=1:2
     end
 end
 
-posInfo.refresh2=[.09 .94 .06 .04];
-posInfo.saveFig3=[.16 .94 .06 .04];
-
-posInfo.maxSticktext=[.23 .966 .12 .03];
-posInfo.maxStick=[.26 .94 .06 .03];
+% Top bar layout — pixel-based sizes
+topBtnW = 100/screensz(3); topBtnH = rh; topEdtW = 80/screensz(3);
+topTxtW = 120/screensz(3); topBarL = 0.09;
+tbOff = 40/screensz(4);  % toolbar offset
+topBtnY = 1 - tbOff - rh - cpMv;
+topX = topBarL + cpM;
+posInfo.refresh2=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
+posInfo.saveFig3=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
+posInfo.maxStick=    [topX topBtnY topEdtW topBtnH]; topX=topX+topEdtW+cpM;
+posInfo.maxSticktext=[topX topBtnY topTxtW topBtnH];
+topPanelW = topX + topTxtW + cpM - topBarL;
+topPanelH = 1 - tbOff - topBtnY + cpMv;
 
 if ~exist('errCrtlpanel','var') || ~ishandle(errCrtlpanel)
 errCrtlpanel = uipanel('Title','','FontSize',fontsz3,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
-              'Position',[.085 .93 .28 .06]);
+              'Position',[topBarL topBtnY-cpMv topPanelW topPanelH]);
 
 guiHandlesPIDerr.refresh = uicontrol(PSerrfig,'string','Refresh','fontsize',fontsz3,'TooltipString','Refresh plots','units','normalized','Position',[posInfo.refresh2],...
     'callback','updateErr=1;PSplotPIDerror;');
@@ -64,6 +72,17 @@ guiHandlesPIDerr.saveFig3 = uicontrol(PSerrfig,'string','Save Fig','fontsize',fo
     'callback','PSsaveFig;');
 set(guiHandlesPIDerr.saveFig3, 'ForegroundColor', saveCol);
 end % ishandle(errCrtlpanel)
+
+% Register top bar for fixed-pixel resize
+cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
+              'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', 0);
+cpI = {};
+cpI{end+1} = struct('h', guiHandlesPIDerr.refresh, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',100);
+cpI{end+1} = struct('h', guiHandlesPIDerr.saveFig3, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',100);
+cpI{end+1} = struct('h', guiHandlesPIDerr.maxStick, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',80);
+cpI{end+1} = struct('h', guiHandlesPIDerr.maxSticktext, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',120);
+cpI{end+1} = struct('h', errCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0, 'wpx',0);
+PSregisterResize(PSerrfig, cpPx, cpI, 'topbar', topBarL);
 
 PSstyleControls(PSerrfig);
 

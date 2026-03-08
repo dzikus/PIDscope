@@ -13,7 +13,8 @@ if exist('PSstatsfig','var') && ishandle(PSstatsfig)
     figure(PSstatsfig);
 else
     PSstatsfig=figure(6);
-    set(PSstatsfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSstatsfig, 'Position', round([0 0 screensz(3) screensz(4)]));
+    try set(PSstatsfig, 'WindowState', 'maximized'); catch, end
     set(PSstatsfig, 'NumberTitle', 'off');
     set(PSstatsfig, 'Name', ['PIDscope (' PsVersion ') - Flight stats']);
     set(PSstatsfig, 'InvertHardcopy', 'off');
@@ -57,7 +58,7 @@ fontsz5 = fontsz;
 
 clear posInfo.statsPos
 cols=[0.06 0.54];
-rows=[0.75 0.52 0.29 0.06];
+rows=[0.69 0.48 0.27 0.06];
 k=0;
 for c=1:2
     for r=1:4
@@ -66,21 +67,28 @@ for c=1:2
     end
 end
 
-posInfo.saveFig5=[.065 .945 .06 .04];
-posInfo.refresh3=[.135 .945 .06 .04];
-posInfo.degsecStick=[.20 .945 .09 .04];
-posInfo.crossAxesStats=[.29 .945 .08 .04];
-
-posInfo.crossAxesStats_text = [.385 .965 .03 .03];
-posInfo.crossAxesStats_input = [.385 .945 .03 .03];
-posInfo.crossAxesStats_text2 = [.42 .965 .03 .03]; 
-posInfo.crossAxesStats_input2 = [.42 .945 .03 .03];
+% Top bar layout — pixel-based sizes
+topBtnW = 100/screensz(3); topBtnH = rh; topCbW = 150/screensz(3);
+topDdW = 140/screensz(3); topEdtW = 50/screensz(3); topTxtW = 50/screensz(3);
+topBarL = 0.065;
+tbOff = 40/screensz(4);  % toolbar offset
+topLblY = 1 - tbOff - rhs - cpMv;  topBtnY = topLblY - rhs - cpMv;
+topX = topBarL + cpM;
+posInfo.saveFig5=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
+posInfo.refresh3=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
+posInfo.degsecStick= [topX topBtnY topCbW topBtnH]; topX=topX+topCbW+cpM;
+posInfo.crossAxesStats=[topX topBtnY topDdW topBtnH]; topX=topX+topDdW+cpM;
+posInfo.crossAxesStats_text =  [topX topLblY topTxtW rhs];
+posInfo.crossAxesStats_input = [topX topBtnY topEdtW topBtnH]; topX=topX+topEdtW+cpM;
+posInfo.crossAxesStats_text2 =  [topX topLblY topTxtW rhs];
+posInfo.crossAxesStats_input2 = [topX topBtnY topEdtW topBtnH];
+topPanelW = topX + topEdtW + cpM - topBarL;
 
 if ~exist('statsCrtlpanel','var') || ~ishandle(statsCrtlpanel)
 statsCrtlpanel = uipanel('Title','','FontSize',fontsz5,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
-              'Position',[.06 .935 .40 .06]);
+              'Position',[topBarL topBtnY-cpMv topPanelW 1-tbOff-topBtnY+cpMv]);
 
 guiHandlesStats.saveFig5 = uicontrol(PSstatsfig,'string','Save Fig','fontsize',fontsz5,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig5],...
     'callback','PSsaveFig;');
@@ -93,7 +101,7 @@ set(guiHandlesStats.refresh, 'ForegroundColor', colRun);
 guiHandlesStats.degsecStick =uicontrol(PSstatsfig,'Style','checkbox','String','rate of change','fontsize',fontsz5,'TooltipString',[TooltipString_degsecStick],...
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.degsecStick],'callback','PSplotStats;');
 guiHandlesStats.crossAxesStats =uicontrol(PSstatsfig,'Style','popupmenu','String',{'Histograms'; 'Mean & Standard Deviation'; 'Mode 1 topography'; 'Mode 2 topography'; 'Axes X Throttle'},'fontsize',fontsz5,'TooltipString',[TooltipString_crossAxesStats],...
-    'units','normalized','BackgroundColor',[1 1 1 ],'Position',[posInfo.crossAxesStats],'callback','PSplotStats;');
+    'units','normalized','Position',[posInfo.crossAxesStats],'callback','PSplotStats;');
 %guiHandlesStats.crossAxesStats.Value=0;
 
 guiHandlesStats.crossAxesStats_text = uicontrol(PSstatsfig,'style','text','string','scale','fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text]);
@@ -104,6 +112,21 @@ guiHandlesStats.crossAxesStats_text2 = uicontrol(PSstatsfig,'style','text','stri
 guiHandlesStats.crossAxesStats_input2 = uicontrol(PSstatsfig,'style','edit','string',[num2str(zTransparency)],'fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','Position',[posInfo.crossAxesStats_input2],...
      'callback','zTransparency=str2num(get(guiHandlesStats.crossAxesStats_input2, ''String'')); if (zTransparency>1), zTransparency=1; end; if (zTransparency<0), zTransparency=0; end; updateStats=1;PSplotStats;');
 end % ishandle(statsCrtlpanel)
+
+% Register top bar for fixed-pixel resize
+cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
+              'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', 0);
+cpI = {};
+cpI{end+1} = struct('h', guiHandlesStats.saveFig5, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',100);
+cpI{end+1} = struct('h', guiHandlesStats.refresh, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',100);
+cpI{end+1} = struct('h', guiHandlesStats.degsecStick, 'type','cb', 'row',0, 'col',0, 'hpx',0, 'wpx',150);
+cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',140);
+cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_text, 'type','lbl', 'row',0, 'col',0, 'hpx',0, 'wpx',50);
+cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_input, 'type','input', 'row',0, 'col',0, 'hpx',0, 'wpx',50);
+cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_text2, 'type','lbl', 'row',0, 'col',0, 'hpx',0, 'wpx',50);
+cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_input2, 'type','input', 'row',0, 'col',0, 'hpx',0, 'wpx',50);
+cpI{end+1} = struct('h', statsCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0, 'wpx',0);
+PSregisterResize(PSstatsfig, cpPx, cpI, 'topbar', topBarL);
 
 PSstyleControls(PSstatsfig);
 

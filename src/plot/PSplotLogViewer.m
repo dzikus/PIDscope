@@ -46,7 +46,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     end
     plotall_flag=-1;
 
-    expand_sz=[0.05 0.06 0.815 0.835];
+    expand_sz=[0.05 0.06 0.815 posInfo.slider(2)-0.07];
 
 
     %% where you want full range of data
@@ -63,15 +63,24 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         set(guiHandles.checkbox0, 'String', 'Debug');
     end
 
-    % if start or end > length of file, or start > end
-    if (epoch1_A(fileIdx) > (tta{fileIdx}(end) / us2sec))  ||  (epoch2_A(fileIdx) > (tta{fileIdx}(end) / us2sec)) || (epoch1_A(fileIdx) > epoch2_A(fileIdx))
-        epoch1_A(fileIdx) = 2;
-        epoch2_A(fileIdx) = floor(tta{fileIdx}(end) / us2sec) - 1;
+    % clamp epochs to valid data range
+    if ~exist('tta','var') || ~iscell(tta) || numel(tta) < fileIdx
+        set(PSfig, 'pointer', 'arrow'); return;
+    end
+    tStart = tta{fileIdx}(1) / us2sec;
+    tEnd = tta{fileIdx}(end) / us2sec;
+    if epoch1_A(fileIdx) >= tEnd || epoch2_A(fileIdx) <= tStart || epoch1_A(fileIdx) >= epoch2_A(fileIdx)
+        epoch1_A(fileIdx) = tStart;
+        epoch2_A(fileIdx) = tEnd;
     end
 
-     y=[epoch1_A(fileIdx)*us2sec epoch2_A(fileIdx)*us2sec];%%% used for fill in unused data range
-     t1=(tta{fileIdx}(find(tta{fileIdx}>y(1),1))) / us2sec;
-     t2=(tta{fileIdx}(find(tta{fileIdx}>y(2),1))) / us2sec;
+     y=[epoch1_A(fileIdx)*us2sec epoch2_A(fileIdx)*us2sec];
+     idx1 = find(tta{fileIdx} >= y(1), 1);
+     idx2 = find(tta{fileIdx} >= y(2), 1);
+     if isempty(idx1), idx1 = 1; end
+     if isempty(idx2), idx2 = length(tta{fileIdx}); end
+     t1 = tta{fileIdx}(idx1) / us2sec;
+     t2 = tta{fileIdx}(idx2) / us2sec;
 
     tIND{fileIdx} = (tta{fileIdx} > (t1*us2sec)) & (tta{fileIdx} < (t2*us2sec));
 
@@ -80,7 +89,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 %     set(jRangeSlider, 'MajorTickSpacing',50, 'PaintTicks',true, 'PaintLabels',true, 'Background',java.awt.Color.white)
 %     jRangeSlider.LowValue = 20;, jRangeSlider.HighValue = 180;
 
-    guiHandles.slider = uicontrol(PSfig, 'style','slider','SliderStep',[0.001 0.01],'Visible', 'on', 'units','normalized','position',[0.0826 0.905 0.787 0.02],...
+    guiHandles.slider = uicontrol(PSfig, 'style','slider','SliderStep',[0.001 0.01],'Visible', 'on', 'units','normalized','position',posInfo.slider,...
         'min',0,'max',1, 'callback','PSslider1Actions;');
 
         

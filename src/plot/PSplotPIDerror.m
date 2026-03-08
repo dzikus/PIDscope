@@ -142,8 +142,8 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         posAx = .8:1:9.8;
         posBx = 1.2:1:10.2;
 
-        minyA = min(Perr_a_m(p,:)) - .5; if minyA < 0, minyA = 0; end
-        maxyA = max(Perr_a_m(p,:)) + .5;
+        minyA = min(Perr_a_m(p,:)) - .5; if isnan(minyA) || minyA < 0, minyA = 0; end
+        maxyA = max(Perr_a_m(p,:)) + .5; if isnan(maxyA), maxyA = 1; end
         h = errorbar(posAx, Perr_a_m(p,:), Perr_a_se(p,:)); hold on;
         set(h, 'color', th.axesFg, 'LineStyle', 'none');
         h = bar(posAx, Perr_a_m(p,:));
@@ -163,8 +163,8 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         end
 
         if ~isempty(fB)
-            minyB = min(Perr_b_m(p,:)) - .5; if minyB < 0, minyB = 0; end
-            maxyB = max(Perr_b_m(p,:)) + .5;
+            minyB = min(Perr_b_m(p,:)) - .5; if isnan(minyB) || minyB < 0, minyB = 0; end
+            maxyB = max(Perr_b_m(p,:)) + .5; if isnan(maxyB), maxyB = 1; end
             h = errorbar(posBx, Perr_b_m(p,:), Perr_b_se(p,:));
             set(h, 'color', th.axesFg, 'LineStyle', 'none');
             h = bar(posBx, Perr_b_m(p,:));

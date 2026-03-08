@@ -23,42 +23,54 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     end
      
     th = PStheme();
-    BGCol = [];
+    diffCol = th.diffBg;
+    nA = size(setupA,1);
+    BGCol = repmat(th.panelBg, nA, 1);
+    u = false(nA, 1);
     try
-        for i = 1 : size(setupA,1)
-            if strcmp(setupA{i}, setupB{i})
-                BGCol(i,:) = th.panelBg;
-            else
-                BGCol(i,:) = [.6 .2 .2];
+        for i = 1 : min(nA, size(setupB,1))
+            if ~strcmp(setupA{i}, setupB{i})
+                BGCol(i,:) = diffCol;
+                u(i) = true;
             end
         end
+        for i = size(setupB,1)+1 : nA
+            BGCol(i,:) = diffCol;
+            u(i) = true;
+        end
     catch
-        BGCol=th.panelBg;
     end
-    u=[];
-    u = (sum(BGCol,2)/3) < 1;
 
+    delete(findobj(PSdisp, 'Type', 'uitable'));
+
+    tbH = 0.88;
     if get(guiHandlesInfo.checkboxDIFF, 'Value') == 1
-         t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupA(u)))]);
-         set(t,'units','normalized','Position',[.02 .05 .45 .9],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}])
-         set(t,'BackgroundColor', [.6 .2 .2])
-         try set(t,'ForegroundColor', th.textPrimary); catch, end
+         nDiff = sum(u);
+         diffBG = repmat(diffCol, max(nDiff,1), 1);
+         st = uitable(PSdisp,'ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupA(u)))]);
+         set(st,'units','normalized','Position',[.02 .02 .45 tbH],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}]);
+         try set(st,'BackgroundColor', diffBG); catch, end
+         try set(st,'ForegroundColor', th.textPrimary); catch, end
+         try set(st,'RowStriping', 'off'); catch, end
         if Nfiles > 1
-              t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupB(u)))]);
-              set(t,'units','normalized','Position',[.52 .05 .45 .9],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')})
-              set(t,'BackgroundColor', [.6 .2 .2])
-              try set(t,'ForegroundColor', th.textPrimary); catch, end
+              st = uitable(PSdisp,'ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupB(u)))]);
+              set(st,'units','normalized','Position',[.52 .02 .45 tbH],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')});
+              try set(st,'BackgroundColor', diffBG); catch, end
+              try set(st,'ForegroundColor', th.textPrimary); catch, end
+              try set(st,'RowStriping', 'off'); catch, end
         end
     else
-        t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupA))]);
-         set(t,'units','normalized','Position',[.02 .05 .45 .9],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}])
-         set(t,'BackgroundColor', [BGCol])
-         try set(t,'ForegroundColor', th.textPrimary); catch, end
+        st = uitable(PSdisp,'ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupA))]);
+         set(st,'units','normalized','Position',[.02 .02 .45 tbH],'FontSize',fontsz, 'ColumnName', [fnameMaster{get(guiHandlesInfo.FileNumDispA, 'Value')}]);
+         try set(st,'BackgroundColor', BGCol); catch, end
+         try set(st,'ForegroundColor', th.textPrimary); catch, end
+         try set(st,'RowStriping', 'off'); catch, end
         if Nfiles > 1
-              t = uitable('ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupB))]);
-              set(t,'units','normalized','Position',[.52 .05 .45 .9],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')})
-              set(t,'BackgroundColor', [BGCol])
-              try set(t,'ForegroundColor', th.textPrimary); catch, end
+              st = uitable(PSdisp,'ColumnWidth',{columnWidth},'ColumnFormat',{'char'},'Data',[cellstr(char(setupB))]);
+              set(st,'units','normalized','Position',[.52 .02 .45 tbH],'FontSize',fontsz, 'ColumnName', fnameMaster{get(guiHandlesInfo.FileNumDispB, 'Value')});
+              try set(st,'BackgroundColor', BGCol); catch, end
+              try set(st,'ForegroundColor', th.textPrimary); catch, end
+              try set(st,'RowStriping', 'off'); catch, end
         end
     end
 end

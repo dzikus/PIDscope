@@ -39,7 +39,8 @@ figName = ['Spectrum Player - ' signalName];
 fig = findobj('Type', 'figure', 'Name', figName);
 if ~isempty(fig), close(fig); end
 fig = figure('Name', figName, 'NumberTitle', 'off', ...
-    'Color', thm.figBg, 'Position', [round(.2*screensz(3)) round(.07*screensz(4)) figW figH]);
+    'Color', thm.figBg, 'Position', round([0 0 screensz(3) screensz(4)]));
+try set(fig, 'WindowState', 'maximized'); catch, end
 
 axColors = {[0 .85 .85], [.85 .85 0], [.85 .3 .85]};
 

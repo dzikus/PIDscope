@@ -38,68 +38,38 @@ for c=1 : size(cols,2)
     end
 end
 
-vPosSpec2d = .037;
-sp2_rh = .026; sp2_ddh = .04;
-if exist('isOctave','var') && isOctave
-    sp2_rh = .030; sp2_ddh = .035;
-end
+% Control panel layout — cpL/cpW/rh/rs/cpM/ddh inherited from PIDscope.m
+% yTop tracks where the TOP of the next element goes; Position Y = yTop - height
+listH = 5*rs;  termH = 4*rs;  gap = rs - rh;  fw = cpW-2*cpM;  hw = cpW/2-cpM;
+tbOff_s2 = 40/screensz(4);
+yTop = 1 - tbOff_s2 - cpTitleH - cpMv;
+posInfo.fileListWindowSpec=  [cpL+cpM yTop-listH fw listH]; yTop=yTop-listH-gap;
+posInfo.TermListWindowSpec=  [cpL+cpM yTop-termH fw termH]; yTop=yTop-termH-gap;
 
-% Control panel layout (consistent with Log Viewer cpL/cpW)
-cpL = .875; cpW = .12;
+posInfo.computeSpec=         [cpL+cpM yTop-rh hw rh];
+posInfo.resetSpec=           [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
+posInfo.spectrogramButton2=  [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.spectrogramButton3=  [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.filterSimButton=     [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.motorNoiseButton=    [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.chirpButton=         [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.saveFig2=            [cpL+cpM yTop-rh hw rh];
+posInfo.saveSettings2=       [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 
-posInfo.fileListWindowSpec=  [cpL+.003 .7+vPosSpec2d cpW-.006 .20];
-posInfo.TermListWindowSpec=  [cpL+.003 .55+vPosSpec2d cpW-.006 .14];
+posInfo.smooth_select =      [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.Delay =              [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
 
-posInfo.computeSpec=         [cpL+.006 .52+vPosSpec2d cpW/2-.006 sp2_rh];
-posInfo.resetSpec=           [cpL+cpW/2 .52+vPosSpec2d cpW/2-.006 sp2_rh];
-posInfo.spectrogramButton2=  [cpL+.003 .49+vPosSpec2d cpW-.006 sp2_rh];
-posInfo.spectrogramButton3=  [cpL+.003 .46+vPosSpec2d cpW-.006 sp2_rh];
-posInfo.filterSimButton=     [cpL+.003 .43+vPosSpec2d cpW-.006 sp2_rh];
-posInfo.motorNoiseButton=    [cpL+.003 .40+vPosSpec2d cpW-.006 sp2_rh];
-posInfo.chirpButton=         [cpL+.003 .37+vPosSpec2d cpW-.006 sp2_rh];
-posInfo.saveFig2=            [cpL+.006 .34+vPosSpec2d cpW/2-.006 sp2_rh];
-posInfo.saveSettings2=       [cpL+cpW/2 .34+vPosSpec2d cpW/2-.006 sp2_rh];
+posInfo.plotRspec =          [cpL+cpM        yTop-rh cbW rh];
+posInfo.plotPspec =          [cpL+cpM+cbW    yTop-rh cbW rh];
+posInfo.plotYspec =          [cpL+cpM+2*cbW  yTop-rh cbW rh]; yTop=yTop-rh-gap;
 
-posInfo.smooth_select =      [cpL+.003 .305+vPosSpec2d cpW-.006 sp2_ddh];
-posInfo.Delay =              [cpL+.003 .27+vPosSpec2d cpW-.006 sp2_ddh];
+posInfo.checkboxPSD =        [cpL+cpM yTop-rh cbW rh];
+posInfo.RPYcomboSpec =       [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 
-posInfo.plotRspec =          [cpL+.005 .245+vPosSpec2d .035 .025];
-posInfo.plotPspec =          [cpL+.04 .245+vPosSpec2d .035 .025];
-posInfo.plotYspec =          [cpL+.075 .245+vPosSpec2d .035 .025];
-
-posInfo.checkboxPSD =        [cpL+.005 .225+vPosSpec2d .04 .02];
-posInfo.RPYcomboSpec =       [cpL+cpW/2-.01 .225+vPosSpec2d cpW/2+.004 .02];
-
-posInfo.climMax1_text =      [cpL+.003 .202+vPosSpec2d cpW/4 .022];
-posInfo.climMax1_input =     [cpL+cpW/4 .180+vPosSpec2d cpW/4 .022];
-posInfo.climMax2_text =      [cpL+cpW/2 .202+vPosSpec2d cpW/4 .022];
-posInfo.climMax2_input =     [cpL+3*cpW/4 .180+vPosSpec2d cpW/4 .022];
-
-if exist('isOctave','var') && isOctave
-    % Octave Qt widgets need more vertical space
-    vPosSpec2d = .037;
-    rr = .030; dd = .035;
-    posInfo.computeSpec=         [cpL+.006 .52+vPosSpec2d cpW/2-.006 rr];
-    posInfo.resetSpec=           [cpL+cpW/2 .52+vPosSpec2d cpW/2-.006 rr];
-    posInfo.spectrogramButton2=  [cpL+.003 .485+vPosSpec2d cpW-.006 rr];
-    posInfo.spectrogramButton3=  [cpL+.003 .450+vPosSpec2d cpW-.006 rr];
-    posInfo.filterSimButton=     [cpL+.003 .415+vPosSpec2d cpW-.006 rr];
-    posInfo.motorNoiseButton=    [cpL+.003 .380+vPosSpec2d cpW-.006 rr];
-    posInfo.chirpButton=         [cpL+.003 .345+vPosSpec2d cpW-.006 rr];
-    posInfo.saveFig2=            [cpL+.006 .310+vPosSpec2d cpW/2-.006 rr];
-    posInfo.saveSettings2=       [cpL+cpW/2 .310+vPosSpec2d cpW/2-.006 rr];
-    posInfo.smooth_select=       [cpL+.003 .270+vPosSpec2d cpW-.006 dd];
-    posInfo.Delay=               [cpL+.003 .233+vPosSpec2d cpW-.006 dd];
-    posInfo.plotRspec=           [cpL+.005 .208+vPosSpec2d .035 .025];
-    posInfo.plotPspec=           [cpL+.04 .208+vPosSpec2d .035 .025];
-    posInfo.plotYspec=           [cpL+.075 .208+vPosSpec2d .035 .025];
-    posInfo.checkboxPSD=         [cpL+.005 .185+vPosSpec2d .04 .025];
-    posInfo.RPYcomboSpec=        [cpL+cpW/2-.01 .185+vPosSpec2d cpW/2+.004 .025];
-    posInfo.climMax1_text=       [cpL+.003 .162+vPosSpec2d cpW/4 .024];
-    posInfo.climMax1_input=      [cpL+cpW/4 .140+vPosSpec2d cpW/4 .024];
-    posInfo.climMax2_text=       [cpL+cpW/2 .162+vPosSpec2d cpW/4 .024];
-    posInfo.climMax2_input=      [cpL+3*cpW/4 .140+vPosSpec2d cpW/4 .024];
-end
+posInfo.climMax1_text =      [cpL+cpM yTop-rhs cpW/4 rhs];
+posInfo.climMax2_text =      [cpL+cpW/2 yTop-rhs cpW/4 rhs]; yTop=yTop-rhs-gap;
+posInfo.climMax1_input =     [cpL+cpM yTop-rh cpW/4 rh];
+posInfo.climMax2_input =     [cpL+cpW/2 yTop-rh cpW/4 rh];
 
 climScale1=[0 ; -50 ];
 climScale2=[0.5 ; 20];
@@ -108,7 +78,8 @@ if exist('PSspecfig2','var') && ishandle(PSspecfig2)
     figure(PSspecfig2);
 else
     PSspecfig2=figure(3);
-    set(PSspecfig2, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSspecfig2, 'Position', round([0 0 screensz(3) screensz(4)]));
+    try set(PSspecfig2, 'WindowState', 'maximized'); catch, end
     set(PSspecfig2, 'NumberTitle', 'off');
     set(PSspecfig2, 'Name', ['PIDscope (' PsVersion ') - Spectral Analyzer']);
     set(PSspecfig2, 'InvertHardcopy', 'off');
@@ -121,10 +92,9 @@ try  % datacursormode not available in Octave
   set(dcm_obj2,'UpdateFcn',@PSdatatip);
 end
 
-spec2CrtlpanelPos = [cpL .21+vPosSpec2d cpW .71];
-if exist('isOctave','var') && isOctave
-    spec2CrtlpanelPos = [cpL .16+vPosSpec2d cpW .76];
-end
+sp2PanelBot = yTop - rh - gap;
+sp2PanelH = vPos - sp2PanelBot + cpTitleH;
+spec2CrtlpanelPos = [cpL sp2PanelBot cpW sp2PanelH];
 if ~exist('spec2Crtlpanel','var') || ~ishandle(spec2Crtlpanel)
 spec2Crtlpanel = uipanel('Title','select files (max 10)','FontSize',fontsz,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
@@ -227,6 +197,36 @@ guiHandlesSpec2.climMax1_input = uicontrol(PSspecfig2,'style','edit','string',[n
 guiHandlesSpec2.climMax2_input = uicontrol(PSspecfig2,'style','edit','string',[num2str(climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','Position',[posInfo.climMax2_input],...
      'callback','@textinput_call2; climScale2(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec2.climMax2_input, ''String''));PSplotSpec2D;');
 end % ishandle(spec2Crtlpanel)
+
+% Register CP for fixed-pixel resize
+cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
+              'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', 0);
+cpI = {};
+cpI{end+1} = struct('h', spec2Crtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0);
+listH_px = 5*rs_px;  termH_px = 4*rs_px;
+cpI{end+1} = struct('h', guiHandlesSpec2.FileSelect, 'type','full', 'row',0, 'col',0, 'hpx',listH_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.SpecList, 'type','full', 'row',0, 'col',0, 'hpx',termH_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.computeSpec, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.resetSpec, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.spectrogramButton2, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.spectrogramButton3, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.filterSimButton, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.motorNoiseButton, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.chirpButton, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.saveFig2, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.saveSettings2, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.smoothFactor_select, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.Delay, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.plotR, 'type','cb', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.plotP, 'type','cb', 'row',0, 'col',1, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.plotY, 'type','cb_end', 'row',0, 'col',2, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.checkboxPSD, 'type','cb', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.RPYcomboSpec, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.climMax1_text, 'type','text_left', 'row',0, 'col',0, 'hpx',rhs_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.climMax2_text, 'type','text_right', 'row',0, 'col',0, 'hpx',rhs_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.climMax1_input, 'type','input_left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.climMax2_input, 'type','input_right', 'row',0, 'col',0, 'hpx',rh_px);
+PSregisterResize(PSspecfig2, cpPx, cpI, 'seq');
 
 try set(guiHandlesSpec2.SpecList, 'Value', [defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term1'))) defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term2')))]), catch, set(guiHandlesSpec2.SpecList, 'Value', [1 2]), end
 try set(guiHandlesSpec2.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-smoothing')))), catch, set(guiHandlesSpec2.smoothFactor_select, 'Value', 3), end

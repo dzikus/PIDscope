@@ -38,35 +38,34 @@ end
 updateSpec = 0;
 clear specMat
 
-% Control panel layout (consistent with Log Viewer cpL/cpW)
-cpL = .875; cpW = .12;
-rh = .030; rs = .034;
-
-posInfo.fileListWindowSpec=  [cpL+.003 .870 cpW-.006 rh];
-posInfo.TermListWindowSpec=  [cpL+.003 .836 cpW-.006 rh];
-
-posInfo.computeSpec3=        [cpL+.006 .802 cpW/2-.006 rh];
-posInfo.resetSpec3=          [cpL+cpW/2 .802 cpW/2-.006 rh];
-posInfo.saveFig3=            [cpL+.006 .768 cpW/2-.006 rh];
-posInfo.saveSettings3=       [cpL+cpW/2 .768 cpW/2-.006 rh];
-posInfo.smooth_select3 =     [cpL+.003 .734 cpW-.006 rh];
-posInfo.subsampling_select3= [cpL+.003 .700 cpW-.006 rh];
-posInfo.ColormapSelect2 =    [cpL+.003 .666 cpW-.006 rh];
-
-posInfo.clim3Max1_text =     [cpL+.003 .632 cpW/4 .024];
-posInfo.clim3Max1_input =    [cpL+cpW/4 .598 cpW/4 .024];
-posInfo.clim3Max2_text =     [cpL+cpW/2 .632 cpW/4 .024];
-posInfo.clim3Max2_input =    [cpL+3*cpW/4 .598 cpW/4 .024];
+% Control panel layout — cpL/cpW/rh/rs/ddh/cpM inherited from PIDscope.m (pixel-based)
+% yTop tracks where TOP of next element goes; Position Y = yTop - height
+gap = rs - rh;  fw = cpW-2*cpM;  hw = cpW/2-cpM;
+tbOff_s3 = 40/screensz(4);
+yTop = 1 - tbOff_s3 - cpTitleH - cpMv;
+posInfo.fileListWindowSpec=  [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.TermListWindowSpec=  [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.computeSpec3=        [cpL+cpM yTop-rh hw rh];
+posInfo.resetSpec3=          [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
+posInfo.saveFig3=            [cpL+cpM yTop-rh hw rh];
+posInfo.saveSettings3=       [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
+posInfo.smooth_select3 =     [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.subsampling_select3= [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.ColormapSelect2 =    [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.clim3Max1_text =     [cpL+cpM yTop-rhs cpW/4 rhs];
+posInfo.clim3Max2_text =     [cpL+cpW/2 yTop-rhs cpW/4 rhs]; yTop=yTop-rhs-gap;
+posInfo.clim3Max1_input =    [cpL+cpM yTop-rh cpW/4 rh];
+posInfo.clim3Max2_input =    [cpL+cpW/2 yTop-rh cpW/4 rh]; yTop=yTop-rh-gap;
 ClimScale3 = [-30 10];
-
-posInfo.sub100HzfreqTime  =  [cpL+.003 .564 cpW-.006 .025];
-posInfo.playerBtn3        =  [cpL+.003 .530 cpW-.006 rh];
+posInfo.sub100HzfreqTime  =  [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.playerBtn3        =  [cpL+cpM yTop-rh fw rh];
 
 if exist('PSspecfig3','var') && ishandle(PSspecfig3)
     figure(PSspecfig3);
 else
     PSspecfig3=figure(31);
-    set(PSspecfig3, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
+    set(PSspecfig3, 'Position', round([0 0 screensz(3) screensz(4)]));
+    try set(PSspecfig3, 'WindowState', 'maximized'); catch, end
     set(PSspecfig3, 'NumberTitle', 'off');
     set(PSspecfig3, 'Name', ['PIDscope (' PsVersion ') - Frequency x Time Spectrogram']);
     set(PSspecfig3, 'InvertHardcopy', 'off');
@@ -83,7 +82,7 @@ if ~exist('Spec3Crtlpanel','var') || ~ishandle(Spec3Crtlpanel)
 Spec3Crtlpanel = uipanel('Title','select file ','FontSize',fontsz,...
               'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
               'HighlightColor',panelBorder,...
-              'Position',[cpL .515 cpW .405]);
+              'Position',[cpL yTop-rh-gap cpW vPos-(yTop-rh-gap)+cpTitleH]);
 
 guiHandlesSpec3.computeSpec = uicontrol(PSspecfig3,'string','Run','fontsize',fontsz,'TooltipString', [TooltipString_specRun],'units','normalized','Position',[posInfo.computeSpec3],...
     'callback','updateSpec = 0; clear specMat; PSfreqTime;');
@@ -139,6 +138,28 @@ guiHandlesSpec3.playerBtn = uicontrol(PSspecfig3,'string','Player','fontsize',fo
     'else,warndlg(''Run spectrogram first''),end']);
 set(guiHandlesSpec3.playerBtn, 'ForegroundColor', [0 .4 .8]);
 end % ishandle(Spec3Crtlpanel)
+
+% Register CP for fixed-pixel resize
+cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
+              'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', 0);
+cpI = {};
+cpI{end+1} = struct('h', Spec3Crtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0);
+cpI{end+1} = struct('h', guiHandlesSpec3.FileSelect, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.SpecList, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.computeSpec, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.resetSpec, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.saveFig3, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.saveSettings3, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.smoothFactor_select, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.subsampleFactor_select, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.ColormapSelect, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.climMax1_text, 'type','text_left', 'row',0, 'col',0, 'hpx',rhs_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.climMax2_text, 'type','text_right', 'row',0, 'col',0, 'hpx',rhs_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.climMax1_input, 'type','input_left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.climMax2_input, 'type','input_right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.sub100HzfreqTime, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.playerBtn, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+PSregisterResize(PSspecfig3, cpPx, cpI, 'seq');
 
 try set(guiHandlesSpec3.SpecList, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-Preset')))), catch, set(guiHandlesSpec3.SpecList, 'Value', 1), end
 try set(guiHandlesSpec3.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-FreqSmoothing')))), catch, set(guiHandlesSpec3.smoothFactor_select, 'Value', 2), end

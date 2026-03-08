@@ -27,9 +27,10 @@ th.epochFill   = [.30 .30 .32];
 th.epochAlpha  = 0.7;
 
 % buttons
-th.btnRun      = [.20 .70 .30];
-th.btnReset    = [.85 .55 .15];
-th.btnSave     = [.65 .65 .65];
+th.btnBg       = [.30 .30 .32];
+th.btnRun      = [.15 .85 .25];
+th.btnReset    = [.95 .55 .15];
+th.btnSave     = [.70 .70 .70];
 th.btnDash1    = [.85 .25 .25];   % Spectral Analyzer
 th.btnDash2    = [.25 .50 .90];   % Step Response
 th.btnDash3    = [.85 .55 .15];   % Filter Sim
@@ -40,6 +41,13 @@ th.btnLink     = [.85 .55 .15];   % Support PIDscope
 % font size - single source of truth
 screensz = get(0, 'ScreenSize');
 th.fontsz = round(screensz(4) * .011);
+% Octave Qt renders fonts bigger than MATLAB
+if exist('OCTAVE_VERSION', 'builtin')
+    th.fontsz = round(th.fontsz * 0.85);
+end
+
+% diff highlight (Setup Info)
+th.diffBg      = [.45 .18 .18];
 
 % checkbox / input bg
 th.checkBg     = [.18 .18 .20];
