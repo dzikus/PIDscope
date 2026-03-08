@@ -102,9 +102,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     lineStyle2LVnames = {'solid' ; 'dashed' ; 'dotted'};
     axesOptionsLV = find([get(guiHandles.plotR, 'Value') get(guiHandles.plotP, 'Value') get(guiHandles.plotY, 'Value')]);
     
-    try delete(hexpand1); catch, end
-    try delete(hexpand2); catch, end
-    try delete(hexpand3); catch, end
+    for ei=1:3, try delete(hexpand{ei}); catch, end, end
     expandON = 0;
 
     ylabelname='';
@@ -127,12 +125,16 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
          delete(subplot('position',posInfo.linepos4));
     end
     
-    for i = 1 : 19
-        try
-            eval(['delete([hch' int2str(i) '])'])
-        catch
-        end
-    end
+    try delete(hch1); catch, end, try delete(hch2); catch, end
+    try delete(hch3); catch, end, try delete(hch4); catch, end
+    try delete(hch5); catch, end, try delete(hch6); catch, end
+    try delete(hch7); catch, end, try delete(hch8); catch, end
+    try delete(hch9); catch, end, try delete(hch10); catch, end
+    try delete(hch11); catch, end, try delete(hch12); catch, end
+    try delete(hch13); catch, end, try delete(hch14); catch, end
+    try delete(hch15); catch, end, try delete(hch16); catch, end
+    try delete(hch17); catch, end, try delete(hch18); catch, end
+    try delete(hch19); catch, end
 
             
     try  % datacursormode not available in Octave
@@ -142,32 +144,33 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
     cntLV = 0;
     lnstyle = lineStyleLV;
-    
+    LVpanels = {[], [], []};
+
     if exist('fnameMaster','var') && ~isempty(fnameMaster)
-        for ii = axesOptionsLV  
+        for ii = axesOptionsLV
             if get(guiHandles.RPYcomboLV, 'Value'), expandON = 0; end
-            %%%%%%%
+            lpKey = ['linepos' int2str(ii)];
             if ~get(guiHandles.RPYcomboLV, 'Value') && ~expandON
-                eval(['LVpanel' int2str(ii) '=subplot(' '''position''' ',posInfo.linepos' int2str(ii) ');'])
+                LVpanels{ii} = subplot('position', posInfo.(lpKey));
                 LVpanel5 = subplot('position',posInfo.linepos4);
             end
             if ~get(guiHandles.RPYcomboLV, 'Value') && expandON
                 try
-                 eval(['subplot(hexpand' int2str(ii) ',' '''position''' ',expand_sz);'])
-                 warning off
+                    subplot(hexpand{ii}, 'position', expand_sz);
                 catch
                 end
             end
 
-            if eval(['~isempty(hexpand' int2str(ii) ') && ishandle(hexpand' int2str(ii) ') || ~expandON'])
-                
+            hexp = []; try hexp = hexpand{ii}; catch, end
+            if (~isempty(hexp) && ishandle(hexp)) || ~expandON
+
                 cntLV = cntLV + 1;
-                if get(guiHandles.RPYcomboLV, 'Value') 
-                    LVpanel4 = subplot('position' ,fullszPlot)
+                if get(guiHandles.RPYcomboLV, 'Value')
+                    LVpanel4 = subplot('position' ,fullszPlot);
                     lnstyle = lineStyle2LV;
                 end
                 if ~get(guiHandles.RPYcomboLV, 'Value') && expandON == 0
-                    eval(['LVpanel' int2str(ii) '= subplot(' '''position''' ',posInfo.linepos' int2str(ii) ');'])
+                    LVpanels{ii} = subplot('position', posInfo.(lpKey));
                     lnstyle = lineStyleLV;
                 end
 
@@ -185,16 +188,17 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 fileIdx = get(guiHandles.FileNum, 'Value');
                 lwVal = get(guiHandles.linewidth, 'Value')/2;
 
-                if get(guiHandles.checkbox0, 'Value'), hch1=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['debug_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch1,'color', [linec.col0],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox1, 'Value'), hch2=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['gyroADC_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch2,'color', [linec.col1],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox2, 'Value'), hch3=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisP_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch3,'color', [linec.col2],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox3, 'Value'), hch4=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisI_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch4,'color', [linec.col3],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox4, 'Value') && ii<3, hch5=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisDpf_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch5,'color', [linec.col4],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox5, 'Value') && ii<3, hch6=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisD_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch6,'color', [linec.col5],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox6, 'Value'), hch7=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['axisF_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch7,'color', [linec.col6],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox7, 'Value'), hch8=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['setpoint_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch8,'color', [linec.col7],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox8, 'Value'), hch9=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['pidsum_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch9,'color', [linec.col8],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
-                if get(guiHandles.checkbox9, 'Value'), hch10=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.(['piderr_' int2str(ii-1) '_']), sFactor, 'loess'));hold on;set(hch10,'color', [linec.col9],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                tSec = tta{fileIdx}/us2sec;
+                if get(guiHandles.checkbox0, 'Value'), hch1=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['debug_' int2str(ii-1) '_'], sFactor));hold on;set(hch1,'color', [linec.col0],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox1, 'Value'), hch2=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['gyroADC_' int2str(ii-1) '_'], sFactor));hold on;set(hch2,'color', [linec.col1],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox2, 'Value'), hch3=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['axisP_' int2str(ii-1) '_'], sFactor));hold on;set(hch3,'color', [linec.col2],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox3, 'Value'), hch4=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['axisI_' int2str(ii-1) '_'], sFactor));hold on;set(hch4,'color', [linec.col3],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox4, 'Value') && ii<3, hch5=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['axisDpf_' int2str(ii-1) '_'], sFactor));hold on;set(hch5,'color', [linec.col4],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox5, 'Value') && ii<3, hch6=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['axisD_' int2str(ii-1) '_'], sFactor));hold on;set(hch6,'color', [linec.col5],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox6, 'Value'), hch7=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['axisF_' int2str(ii-1) '_'], sFactor));hold on;set(hch7,'color', [linec.col6],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox7, 'Value'), hch8=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['setpoint_' int2str(ii-1) '_'], sFactor));hold on;set(hch8,'color', [linec.col7],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox8, 'Value'), hch9=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['pidsum_' int2str(ii-1) '_'], sFactor));hold on;set(hch9,'color', [linec.col8],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkbox9, 'Value'), hch10=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['piderr_' int2str(ii-1) '_'], sFactor));hold on;set(hch10,'color', [linec.col9],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
 
     
                  h=fill([0,t1,t1,0],[-maxY,-maxY,maxY,maxY],th.epochFill);
@@ -226,17 +230,17 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 
                             %  Percent variables
                 LVpanel5 = subplot('position',posInfo.linepos4);
-                if get(guiHandles.checkbox10, 'Value'), try hch11=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_0_, sFactor, 'loess'));hold on;set(hch11,'color', [linec.col10],'LineWidth',lwVal), catch, end, end
-                if get(guiHandles.checkbox11, 'Value'), try hch12=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_1_, sFactor, 'loess'));hold on;set(hch12,'color', [linec.col11],'LineWidth',lwVal), catch, end, end
-                if get(guiHandles.checkbox12, 'Value'), try hch13=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_2_, sFactor, 'loess'));hold on;set(hch13,'color', [linec.col12],'LineWidth',lwVal), catch, end, end
-                if get(guiHandles.checkbox13, 'Value'), try hch14=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_3_, sFactor, 'loess'));hold on;set(hch14,'color', [linec.col13],'LineWidth',lwVal), catch, end, end
+                if get(guiHandles.checkbox10, 'Value'), try hch11=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_0_', sFactor));hold on;set(hch11,'color', [linec.col10],'LineWidth',lwVal), catch, end, end
+                if get(guiHandles.checkbox11, 'Value'), try hch12=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_1_', sFactor));hold on;set(hch12,'color', [linec.col11],'LineWidth',lwVal), catch, end, end
+                if get(guiHandles.checkbox12, 'Value'), try hch13=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_2_', sFactor));hold on;set(hch13,'color', [linec.col12],'LineWidth',lwVal), catch, end, end
+                if get(guiHandles.checkbox13, 'Value'), try hch14=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_3_', sFactor));hold on;set(hch14,'color', [linec.col13],'LineWidth',lwVal), catch, end, end
                 % motor sigs 4-7 for x8 configuration
-                if get(guiHandles.checkbox10, 'Value'), try hch15=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_4_, sFactor, 'loess'));hold on;set(hch15,'color', [linec.col10],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
-                if get(guiHandles.checkbox11, 'Value'), try hch16=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_5_, sFactor, 'loess'));hold on;set(hch16,'color', [linec.col11],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
-                if get(guiHandles.checkbox12, 'Value'), try hch17=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_6_, sFactor, 'loess'));hold on;set(hch17,'color', [linec.col12],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
-                if get(guiHandles.checkbox13, 'Value'), try hch18=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.motor_7_, sFactor, 'loess'));hold on;set(hch18,'color', [linec.col13],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox10, 'Value'), try hch15=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_4_', sFactor));hold on;set(hch15,'color', [linec.col10],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox11, 'Value'), try hch16=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_5_', sFactor));hold on;set(hch16,'color', [linec.col11],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox12, 'Value'), try hch17=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_6_', sFactor));hold on;set(hch17,'color', [linec.col12],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
+                if get(guiHandles.checkbox13, 'Value'), try hch18=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_7_', sFactor));hold on;set(hch18,'color', [linec.col13],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
 
-                if get(guiHandles.checkbox14, 'Value'), hch19=plot(tta{fileIdx}/us2sec, smooth(T{fileIdx}.setpoint_3_/10, sFactor, 'loess'));hold on;set(hch19,'color', [linec.col14],'LineWidth',lwVal), end
+                if get(guiHandles.checkbox14, 'Value'), hch19=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'setpoint_3_', sFactor, 0.1));hold on;set(hch19,'color', [linec.col14],'LineWidth',lwVal), end
 
                 axis([0 xmax 0 100])
                 set(gca,'Color',th.axesBg);
@@ -259,14 +263,8 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
             end
 
             try
-                if ii==1 && ~expandON
-                    set(LVpanel1,'color',[1 1 1],'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos1]);
-                end
-                if ii==2 && ~expandON
-                    set(LVpanel2,'color',[1 1 1],'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos2]);
-                end
-                if ii==3 && ~expandON
-                    set(LVpanel3,'color',[1 1 1],'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos3]);
+                if ~expandON && ~isempty(LVpanels{ii})
+                    set(LVpanels{ii},'color',[1 1 1],'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',posInfo.(['linepos' int2str(ii)]));
                 end
                 if ~expandON
                     set(LVpanel5,'color',[1 1 1],'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos4]);

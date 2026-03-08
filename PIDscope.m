@@ -119,9 +119,7 @@ fcnt=0;
 filepathA=[];
 filenameA={};
 
-hexpand1=[];
-hexpand2=[];
-hexpand3=[];
+hexpand = {[], [], []};
 
 errmsg=[];
 
