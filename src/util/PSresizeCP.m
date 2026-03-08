@@ -10,6 +10,7 @@ if figW < 300 || figH < 200, return; end
 px = cpd.px;
 cpW = px.cpW / figW;
 cpL = 1 - cpW - px.cpM / figW;
+setappdata(fig, 'PScpL', cpL);
 cpM = px.cpM / figW;
 cpMv = px.cpM / figH;
 rh = px.rh / figH;
@@ -108,8 +109,11 @@ elseif strcmp(mode, 'topbar')
 
 else
     % Row-based layout (PIDscope.m main CP)
-    tbOff = 40 / figH;  % toolbar offset
-    vPos = 1 - tbOff - cpTitleH - cpMv;
+    % Always offset for checkbox bar + slider (present on main window)
+    tbOff = 40 / figH;
+    chkRow2 = (1 - tbOff) - rs;
+    sliderBottom = chkRow2 - 2*cpMv - 0.02;
+    vPos = sliderBottom - 0.005 - cpTitleH - cpMv;
     for i = 1:numel(cpd.items)
         it = cpd.items{i};
         if ~ishandle(it.h), continue; end
@@ -149,5 +153,163 @@ else
         catch
         end
     end
+
+% Reposition Log Viewer checkbox bar (fixed pixel sizes)
+chkBar = getappdata(fig, 'PScheckboxBar');
+if ~isempty(chkBar)
+    tbOff = 40 / figH;
+    chkH = rh;
+    chkRow1 = 1 - tbOff;
+    chkRow2 = chkRow1 - rs;
+    chkX = chkBar.x0;
+    for i = 1:numel(chkBar.items)
+        it = chkBar.items{i};
+        if ~ishandle(it.h), continue; end
+        w = it.wpx / figW;
+        row = chkRow1; if it.row == 2, row = chkRow2; end
+        set(it.h, 'Position', [chkX row w chkH]);
+        if it.advance, chkX = chkX + w; end
+    end
+    % Reposition panel background
+    if isfield(chkBar, 'panel') && ishandle(chkBar.panel)
+        panelW = chkX - chkBar.x0 + cpM;
+        set(chkBar.panel, 'Position', [chkBar.x0 chkRow2-cpMv panelW chkRow1+chkH+cpMv-chkRow2+cpMv]);
+    end
+    % Reposition slider
+    sliderY = chkRow2 - 2*cpMv - 0.02;
+    if isfield(chkBar, 'slider') && ishandle(chkBar.slider)
+        sliderW = cpL - 0.0826 - 0.005;
+        set(chkBar.slider, 'Position', [0.0826 sliderY sliderW 0.02]);
+    end
+
+    % Reposition Log Viewer plot axes
+    plotL = 0.095; plotGap = 0.01;
+    gapV = 0.005; linepos4H = 0.11;
+    plotTop = sliderY - 0.005;
+    plotW = cpL - plotL - plotGap;
+
+    motorAx = findobj(fig, 'Tag', 'PSmotor');
+    rpyAxes = findobj(fig, 'Tag', 'PSrpy');
+    comboAx = findobj(fig, 'Tag', 'PScombo');
+    upperAxes = [];
+    for k = 1:numel(rpyAxes), if ishandle(rpyAxes(k)), upperAxes(end+1) = rpyAxes(k); end; end
+    for k = 1:numel(comboAx), if ishandle(comboAx(k)), upperAxes(end+1) = comboAx(k); end; end
+
+    if ~isempty(motorAx) && ishandle(motorAx(1))
+        set(motorAx(1), 'Position', [plotL 0.1 plotW linepos4H]);
+    end
+
+    nUpper = numel(upperAxes);
+    if nUpper > 0
+        upperBot = 0.1 + linepos4H + gapV;
+        upperH = (plotTop - upperBot - max(0,nUpper-1)*gapV) / max(1,nUpper);
+        if nUpper > 1
+            yVals = zeros(nUpper, 1);
+            for k = 1:nUpper, p = get(upperAxes(k), 'Position'); yVals(k) = p(2); end
+            [~, si] = sort(yVals, 'descend');
+            upperAxes = upperAxes(si);
+        end
+        for k = 1:nUpper
+            y = plotTop - k*upperH - (k-1)*gapV;
+            set(upperAxes(k), 'Position', [plotL y plotW upperH]);
+        end
+    end
 end
+
+end % if/elseif/else mode
+
+% Recompute subplot grid positions based on current cpL
+grid = getappdata(fig, 'PSplotGrid');
+if ~isempty(grid) && isfield(grid, 'ncols')
+    plotR = cpL - grid.margin;
+    totalW = plotR - grid.plotL;
+    if totalW > 0.1
+        if isfield(grid, 'colWidthFracs') && numel(grid.colWidthFracs) == grid.ncols
+            usable = totalW - (grid.ncols-1)*grid.colGap;
+            colWidths = usable * grid.colWidthFracs / sum(grid.colWidthFracs);
+        elseif isfield(grid, 'bigColFrac') && ~isempty(grid.bigColFrac)
+            wBig = totalW * grid.bigColFrac;
+            wSmall = (totalW - wBig - (grid.ncols-1)*grid.colGap) / max(1, grid.ncols-1);
+            colWidths = [wBig, repmat(wSmall, 1, grid.ncols-1)];
+        else
+            colW_new = (totalW - (grid.ncols-1)*grid.colGap) / grid.ncols;
+            colWidths = repmat(colW_new, 1, grid.ncols);
+        end
+        newCols = zeros(1, grid.ncols);
+        newCols(1) = grid.plotL;
+        for c = 2:grid.ncols
+            newCols(c) = newCols(c-1) + colWidths(c-1) + grid.colGap;
+        end
+
+        allAx = findobj(fig, 'Type', 'axes', 'Tag', 'PSgrid');
+        validAx = []; validPos = [];
+        for i = 1:numel(allAx)
+            try
+                axP = get(allAx(i), 'Position');
+                if axP(3) >= 0.05 && axP(4) >= 0.04
+                    validAx(end+1) = allAx(i);
+                    validPos(end+1,:) = axP;
+                end
+            catch, end
+        end
+
+        for ri = 1:numel(grid.rows)
+            rowIdx = [];
+            rowX = [];
+            for j = 1:numel(validAx)
+                [~, best_ri] = min(abs(grid.rows - validPos(j,2)));
+                if best_ri == ri && abs(grid.rows(ri) - validPos(j,2)) < 0.15
+                    rowIdx(end+1) = j;
+                    rowX(end+1) = validPos(j,1);
+                end
+            end
+            if numel(rowIdx) < 1 || numel(rowIdx) > grid.ncols, continue; end
+            [~, si] = sort(rowX);
+            for k = 1:numel(si)
+                ci = min(k, grid.ncols);
+                j = rowIdx(si(k));
+                set(validAx(j), 'Position', [newCols(ci) grid.rows(ri) colWidths(ci) grid.rowH]);
+            end
+        end
+
+        % Store grid results for plot files
+        setappdata(fig, 'PSgridCols', newCols);
+        setappdata(fig, 'PSgridWidths', colWidths);
+
+        % Reposition tagged colorbars
+        cbars = findobj(fig, 'Tag', 'PScbar');
+        for cbi = 1:numel(cbars)
+            try
+                cpos = get(cbars(cbi), 'Position');
+                ud = get(cbars(cbi), 'UserData');
+                if ischar(ud) && strcmp(ud, 'north')
+                    [~, cci] = min(abs(newCols - cpos(1)));
+                    if cci <= numel(colWidths)
+                        set(cbars(cbi), 'Position', [newCols(cci) cpos(2) colWidths(cci) cpos(4)]);
+                    end
+                elseif ischar(ud) && strcmp(ud, 'east')
+                    cbarX = plotR + 0.005;
+                    cbarW = max(0.02, grid.margin * 0.35);
+                    set(cbars(cbi), 'Position', [cbarX cpos(2) cbarW cpos(4)]);
+                end
+            catch, end
+        end
+
+        % Reposition per-column top-bar widgets (Freq x Throttle)
+        pci = getappdata(fig, 'PSperColItems');
+        if ~isempty(pci)
+            for pii = 1:numel(pci)
+                try
+                    ph = pci{pii}{1}; pci_col = pci{pii}{2}; pci_xOff = pci{pii}{3};
+                    if pci_col <= numel(newCols) && ishandle(ph)
+                        ppos = get(ph, 'Position');
+                        ppos(1) = newCols(pci_col) + pci_xOff;
+                        set(ph, 'Position', ppos);
+                    end
+                catch, end
+            end
+        end
+    end
+end
+
 end

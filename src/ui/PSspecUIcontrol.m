@@ -48,13 +48,15 @@ SpecLineCols(:,:,3) = [colorA; colorB; colorC; colorD];
 
 tbOff_spec = 40/screensz(4);
 clear posInfo.SpecPos
-cols=[0.04 0.25 0.46 0.67];
-rows=[0.64-tbOff_spec 0.35-tbOff_spec 0.06-tbOff_spec];
+plotR = cpL - 0.04;  plotL4 = 0.04;  colGap4 = 0.01;
+colW4 = (plotR - plotL4 - 3*colGap4) / 4;
+cols = plotL4 + (0:3)*(colW4 + colGap4);
+rows=[0.64-tbOff_spec 0.38-tbOff_spec 0.12-tbOff_spec];
 k=0;
 for c=1:4
     for r=1:3
         k=k+1;
-        posInfo.SpecPos(k,:)=[cols(c) rows(r) 0.175 0.24];
+        posInfo.SpecPos(k,:)=[cols(c) rows(r) colW4 0.21];
     end
 end
 
@@ -81,41 +83,43 @@ posInfo.rpmLegend1=             [cpL+cpM yTop-rhs fw rhs]; yTop=yTop-rhs-cpMv;
 posInfo.rpmLegend2=             [cpL+cpM yTop-rhs fw rhs]; yTop=yTop-rhs-cpMv;
 posInfo.rpmLegend3=             [cpL+cpM yTop-rhs fw rhs];
 
-posInfo.AphasedelayText1=[.06 .984-tbOff_spec .14 .02];
-posInfo.AphasedelayText2=[.27 .984-tbOff_spec .14 .02];
-posInfo.AphasedelayText3=[.48 .984-tbOff_spec .14 .02];
-posInfo.AphasedelayText4=[.69 .984-tbOff_spec .14 .02];
+posInfo.AphasedelayText1=[cols(1)+0.02 .984-tbOff_spec colW4*0.7 .02];
+posInfo.AphasedelayText2=[cols(2)+0.02 .984-tbOff_spec colW4*0.7 .02];
+posInfo.AphasedelayText3=[cols(3)+0.02 .984-tbOff_spec colW4*0.7 .02];
+posInfo.AphasedelayText4=[cols(4)+0.02 .984-tbOff_spec colW4*0.7 .02];
 
-posInfo.hCbar1pos=[0.04 0.89-tbOff_spec 0.175  0.02];
-posInfo.hCbar2pos=[0.25 0.89-tbOff_spec 0.175  0.02];
-posInfo.hCbar3pos=[0.46 0.89-tbOff_spec 0.175  0.02];
-posInfo.hCbar4pos=[0.67 0.89-tbOff_spec 0.175  0.02];
+posInfo.hCbar1pos=[cols(1) 0.86-tbOff_spec colW4  0.02];
+posInfo.hCbar2pos=[cols(2) 0.86-tbOff_spec colW4  0.02];
+posInfo.hCbar3pos=[cols(3) 0.86-tbOff_spec colW4  0.02];
+posInfo.hCbar4pos=[cols(4) 0.86-tbOff_spec colW4  0.02];
 
-ddh = 0.01; % dropdown height
-if exist('isOctave','var') && isOctave, ddh = 0.025; end
-posInfo.hDropdn1pos=[0.08 0.97-tbOff_spec 0.095   ddh];
-posInfo.hDropdn2pos=[0.29 0.97-tbOff_spec 0.095   ddh];
-posInfo.hDropdn3pos=[0.50 0.97-tbOff_spec 0.095   ddh];
-posInfo.hDropdn4pos=[0.71 0.97-tbOff_spec 0.095   ddh];
+ddh_top = 0.01;
+if exist('isOctave','var') && isOctave, ddh_top = 0.025; end
+ddW_top = min(0.095, colW4*0.5);
+cbOff = ddW_top + 0.005;
+posInfo.hDropdn1pos=[cols(1)+0.04 0.97-tbOff_spec ddW_top ddh_top];
+posInfo.hDropdn2pos=[cols(2)+0.04 0.97-tbOff_spec ddW_top ddh_top];
+posInfo.hDropdn3pos=[cols(3)+0.04 0.97-tbOff_spec ddW_top ddh_top];
+posInfo.hDropdn4pos=[cols(4)+0.04 0.97-tbOff_spec ddW_top ddh_top];
 
-posInfo.fDropdn1pos=[0.08 0.942-tbOff_spec 0.095  ddh];
-posInfo.fDropdn2pos=[0.29 0.942-tbOff_spec 0.095  ddh];
-posInfo.fDropdn3pos=[0.50 0.942-tbOff_spec 0.095  ddh];
-posInfo.fDropdn4pos=[0.71 0.942-tbOff_spec 0.095  ddh];
+posInfo.fDropdn1pos=[cols(1)+0.04 0.942-tbOff_spec ddW_top ddh_top];
+posInfo.fDropdn2pos=[cols(2)+0.04 0.942-tbOff_spec ddW_top ddh_top];
+posInfo.fDropdn3pos=[cols(3)+0.04 0.942-tbOff_spec ddW_top ddh_top];
+posInfo.fDropdn4pos=[cols(4)+0.04 0.942-tbOff_spec ddW_top ddh_top];
 
-posInfo.Sub100HzCheck1=[0.175 0.942-tbOff_spec .06 .025];
-posInfo.Sub100HzCheck2=[.385 .942-tbOff_spec .06 .025];
-posInfo.Sub100HzCheck3=[.595 .942-tbOff_spec .06 .025];
-posInfo.Sub100HzCheck4=[.805 .942-tbOff_spec .06 .025];
+posInfo.Sub100HzCheck1=[cols(1)+0.04+cbOff 0.942-tbOff_spec .06 .025];
+posInfo.Sub100HzCheck2=[cols(2)+0.04+cbOff .942-tbOff_spec .06 .025];
+posInfo.Sub100HzCheck3=[cols(3)+0.04+cbOff .942-tbOff_spec .06 .025];
+posInfo.Sub100HzCheck4=[cols(4)+0.04+cbOff .942-tbOff_spec .06 .025];
 
-posInfo.climMax_text = [.01 .913-tbOff_spec .025 .024];
-posInfo.climMax_input = [.01 .888-tbOff_spec .025 .024];
-posInfo.climMax_text2 = [.22 .913-tbOff_spec .025 .024];
-posInfo.climMax_input2 = [.22 .888-tbOff_spec .025 .024];
-posInfo.climMax_text3 = [.43 .913-tbOff_spec .025 .024];
-posInfo.climMax_input3 = [.43 .888-tbOff_spec .025 .024];
-posInfo.climMax_text4 = [.64 .913-tbOff_spec .025 .024];
-posInfo.climMax_input4 = [.64 .888-tbOff_spec .025 .024];
+posInfo.climMax_text = [cols(1)-0.03 .913-tbOff_spec .025 .024];
+posInfo.climMax_input = [cols(1)-0.03 .888-tbOff_spec .025 .024];
+posInfo.climMax_text2 = [cols(2)-0.03 .913-tbOff_spec .025 .024];
+posInfo.climMax_input2 = [cols(2)-0.03 .888-tbOff_spec .025 .024];
+posInfo.climMax_text3 = [cols(3)-0.03 .913-tbOff_spec .025 .024];
+posInfo.climMax_input3 = [cols(3)-0.03 .888-tbOff_spec .025 .024];
+posInfo.climMax_text4 = [cols(4)-0.03 .913-tbOff_spec .025 .024];
+posInfo.climMax_input4 = [cols(4)-0.03 .888-tbOff_spec .025 .024];
 climScale=[0.5 0.5 0.5 0.5; 10 10 10 10];
 Flim1=20; % 3.3333Hz steps
 Flim2=60;
@@ -253,6 +257,22 @@ cpI{end+1} = struct('h', guiHandlesSpec.checkboxEstRPM, 'type','full', 'row',0, 
 cpI{end+1} = struct('h', guiHandlesSpec.rpmLegend1, 'type','full', 'row',0, 'col',0, 'hpx',rhs_px);
 cpI{end+1} = struct('h', guiHandlesSpec.rpmLegend2, 'type','full', 'row',0, 'col',0, 'hpx',rhs_px);
 cpI{end+1} = struct('h', guiHandlesSpec.rpmLegend3, 'type','full', 'row',0, 'col',0, 'hpx',rhs_px);
+setappdata(PSspecfig, 'PSplotGrid', struct('plotL',plotL4, 'colGap',colGap4, ...
+    'ncols',4, 'rows',rows, 'rowH',0.21, 'margin',0.04));
+% Per-column top-bar widgets: {handle, col_index, xOffset_from_col_start}
+perColItems = {};
+for pci_k = 1:4
+    perColItems{end+1} = {guiHandlesSpec.SpecSelect{pci_k}, pci_k, 0.04};
+    perColItems{end+1} = {guiHandlesSpec.FileSelect{pci_k}, pci_k, 0.04};
+    perColItems{end+1} = {guiHandlesSpec.Sub100HzCheck{pci_k}, pci_k, cbOff+0.04};
+end
+climTextH = {guiHandlesSpec.climMax_text, guiHandlesSpec.climMax_text2, guiHandlesSpec.climMax_text3, guiHandlesSpec.climMax_text4};
+climInputH = {guiHandlesSpec.climMax_input, guiHandlesSpec.climMax_input2, guiHandlesSpec.climMax_input3, guiHandlesSpec.climMax_input4};
+for pci_k = 1:4
+    perColItems{end+1} = {climTextH{pci_k}, pci_k, -0.03};
+    perColItems{end+1} = {climInputH{pci_k}, pci_k, -0.03};
+end
+setappdata(PSspecfig, 'PSperColItems', perColItems);
 PSregisterResize(PSspecfig, cpPx, cpI, 'seq');
 
 try set(guiHandlesSpec.SpecSelect{1}, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqXthr-Column1')))), catch, set(guiHandlesSpec.SpecSelect{1}, 'Value', 3); end

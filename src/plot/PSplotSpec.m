@@ -93,6 +93,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
         try
             delete(subplot('position',posInfo.SpecPos(p,:)));
             h1=subplot('position',posInfo.SpecPos(p,:)); cla
+            set(h1, 'Tag', 'PSgrid');
             img = flipud((filter2(ftr, ampmat{p} ))') + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
             imagesc(img); 
 
@@ -238,28 +239,19 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
 
     % color bar2 at the top 
     try
-    delete(hCbar1);delete(hCbar2);delete(hCbar3);delete(hCbar4)
+    delete(findobj(PSspecfig, 'Tag', 'PScbar'))
     catch
     end
-    if vars(1)>1 % 1=none
-        subplot('position',posInfo.SpecPos(1,:));
-        hCbar1= colorbar('NorthOutside');
-        set(hCbar1,'Position', [posInfo.hCbar1pos]);
-    end
-    if vars(2)>1 % 1=none
-        subplot('position',posInfo.SpecPos(4,:));
-        hCbar2= colorbar('NorthOutside');
-        set(hCbar2,'Position', [posInfo.hCbar2pos])
-    end
-    if vars(3)>1 % 1=none
-        subplot('position',posInfo.SpecPos(7,:));
-        hCbar3= colorbar('NorthOutside');
-        set(hCbar3,'Position', [posInfo.hCbar3pos])
-    end
-    if vars(4)>1 % 1=none
-        subplot('position',posInfo.SpecPos(10,:));
-        hCbar4= colorbar('NorthOutside');
-        set(hCbar4,'Position', [posInfo.hCbar4pos])
+    % Standalone colorbar axes — avoids colorbar('NorthOutside') which resizes subplots in Octave
+    bY = baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
+    cbarPosAll = {posInfo.hCbar1pos, posInfo.hCbar2pos, posInfo.hCbar3pos, posInfo.hCbar4pos};
+    for ci = 1:4
+        if vars(ci) > 1
+            cHi = climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, ci);
+            hCb = axes('Position', cbarPosAll{ci});
+            imagesc(hCb, linspace(bY, cHi, 256));
+            set(hCb, 'CLim', [bY cHi], 'XTick', [], 'YTick', [], 'Tag', 'PScbar', 'UserData', 'north');
+        end
     end
 
     % color maps
@@ -283,7 +275,7 @@ end
 if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
     figure(PSspecfig);
     try
-    delete(hCbar1);delete(hCbar2);delete(hCbar3);delete(hCbar4)
+    delete(findobj(PSspecfig, 'Tag', 'PScbar'))
     catch
     end
     baselineYlines = [0 -50];
@@ -296,6 +288,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
         delete(subplot('position',posInfo.SpecPos(p,:)));
         if ~isempty(amp2d{p})
             h2=subplot('position',posInfo.SpecPos(p,:)); cla
+            set(h2, 'Tag', 'PSgrid');
             h=plot(freq2d{p}, smooth(amp2d{p}, log10(size(amp2d{p},1)) * (get(guiHandlesSpec.smoothFactor_select, 'Value')^2), 'lowess'));hold on
             set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2)
             set(h2,'fontsize',fontsz,'fontweight','bold')
@@ -338,6 +331,7 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
     end
 end
 PSdatatipSetup(PSspecfig);
+try PSresizeCP(PSspecfig, []); catch, end
 
 set(PSspecfig, 'pointer', 'arrow')
 updateSpec=0;

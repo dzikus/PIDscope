@@ -39,17 +39,21 @@ TooltipString_clearPlot=['Clears lines from all subplots'];
 fcntSR = 0;
 
 clear posInfo.TparamsPos
-cols=[0.05 0.45 0.58 0.73];
+plotR = cpL - 0.02;  plotLt = 0.07;  colGapT = 0.015;
+% Col 1 = step response, Col 2 = PID text, Col 3 = peak, Col 4 = latency
+totalW = plotR - plotLt;
+colFracs = [0.42, 0.12, 0.23, 0.23];
+usableW = totalW - 3*colGapT;
+wCols = usableW * colFracs / sum(colFracs);
+cols = zeros(1,4);
+cols(1) = plotLt;
+for ci = 2:4, cols(ci) = cols(ci-1) + wCols(ci-1) + colGapT; end
 rows=[0.69 0.395 0.1];
 k=0;
-for c=1 : size(cols,2)
-    for r=1 : size(rows,2)
+for c=1:4
+    for r=1:3
         k=k+1;
-        if c == 1
-            posInfo.TparamsPos(k,:)=[cols(c) rows(r) 0.4 0.245];
-        else
-            posInfo.TparamsPos(k,:)=[cols(c) rows(r) 0.11 0.245];
-        end
+        posInfo.TparamsPos(k,:)=[cols(c) rows(r) wCols(c) 0.245];
     end
 end
 
@@ -146,6 +150,8 @@ cpI{end+1} = struct('h', guiHandlesTune.RPYcombo, 'type','full', 'row',0, 'col',
 cpI{end+1} = struct('h', guiHandlesTune.Ycorrection, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.maxYStepInput, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.maxYStepTxt, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+setappdata(PStunefig, 'PSplotGrid', struct('plotL',plotLt, 'colGap',colGapT, ...
+    'ncols',4, 'rows',rows, 'rowH',0.245, 'margin',0.02, 'colWidthFracs',colFracs));
 PSregisterResize(PStunefig, cpPx, cpI, 'seq');
 
 try set(guiHandlesTune.plotR, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotR')))), catch, set(guiHandlesTune.plotR, 'Value', 1), end
