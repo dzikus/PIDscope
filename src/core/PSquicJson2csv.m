@@ -1,4 +1,4 @@
-function [headerFile, csvFile] = PSquicJson2csv(jsonFile)
+function [headerFile, csvFile] = PSquicJson2csv(jsonFile, outdir)
 %% PSquicJson2csv - Convert QuickSilver JSON blackbox export to CSV
 %
 % Reads JSON exported by BossHobby Configurator ("QUIC download") and
@@ -11,7 +11,7 @@ function [headerFile, csvFile] = PSquicJson2csv(jsonFile)
 %   PID terms: divided by 1000 (stored as int16*1000)
 %   throttle setpoint: 0-1 -> 0-1000 (BF scale)
 %
-% [headerFile, csvFile] = PSquicJson2csv(jsonFile)
+% [headerFile, csvFile] = PSquicJson2csv(jsonFile, outdir)
 
   RAD2DEG = 180 / pi;
 
@@ -129,8 +129,11 @@ function [headerFile, csvFile] = PSquicJson2csv(jsonFile)
   end
 
   % Build CSV output
-  [fdir, fname, ~] = fileparts(jsonFile);
-  csvFile = fullfile(fdir, [fname '.01.csv']);
+  [~, fname, ~] = fileparts(jsonFile);
+  if nargin < 2 || isempty(outdir)
+    [outdir, ~, ~] = fileparts(jsonFile);
+  end
+  csvFile = fullfile(outdir, [fname '.01.csv']);
 
   % Column names matching blackbox_decode output
   header = 'loopIteration,time (us),axisP[0],axisP[1],axisP[2],axisI[0],axisI[1],axisI[2],axisD[0],axisD[1],axisD[2],gyroADC[0],gyroADC[1],gyroADC[2],rcCommand[0],rcCommand[1],rcCommand[2],rcCommand[3],setpoint[0],setpoint[1],setpoint[2],setpoint[3],motor[0],motor[1],motor[2],motor[3],debug[0],debug[1],debug[2],debug[3]';
@@ -145,7 +148,7 @@ function [headerFile, csvFile] = PSquicJson2csv(jsonFile)
   dlmwrite(csvFile, M, '-append', 'delimiter', ',', 'precision', '%.6g');
 
   % Write synthetic header file (mimics BBL header for PSimport)
-  headerFile = fullfile(fdir, [fname '.quic_header.txt']);
+  headerFile = fullfile(outdir, [fname '.quic_header.txt']);
   fid = fopen(headerFile, 'w');
   fprintf(fid, 'H Firmware version:QuickSilver\n');
   fprintf(fid, 'H Firmware revision:QUICKSILVER\n');

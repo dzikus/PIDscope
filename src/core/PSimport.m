@@ -9,7 +9,8 @@ function [DAT newFileName] = PSimport(csvFname, BBLFileName)
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
 
-newFileName=csvFname;
+[~, nfn, nfx] = fileparts(csvFname);
+newFileName = [nfn nfx];
 T=readtable(csvFname);
 
 delete(csvFname);% we r done with this-dont wanna leave junk on main directory

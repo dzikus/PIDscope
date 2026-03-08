@@ -78,37 +78,14 @@ try
     
         n = size(filenameA,2);
         waitbarFid = waitbar(0,'Please wait...');
-        % Work in temp dir (main_directory may be read-only in AppImage)
         workdir = tempname();
         mkdir(workdir);
-        prev_dir = pwd();
-
-        % Copy blackbox_decode into workdir so ./blackbox_decode works
-        if ispc()
-            decoders = {'blackbox_decode.exe', 'blackbox_decode_INAV.exe'};
-        else
-            decoders = {'blackbox_decode', 'blackbox_decode_INAV'};
-        end
-        for dec = decoders
-            src = fullfile(main_directory, dec{1});
-            if exist(src, 'file')
-                copyfile(src, workdir);
-            end
-        end
-
-        cd(workdir);
 
         for ii = 1 : n
-            source = fullfile(logfile_directory, filenameA{ii});
-            try
-                copyfile(source, workdir);
-            catch e
-                warning('PSload: cannot copy %s to workdir: %s', source, e.message);
-                continue;
-            end
+            srcFile = fullfile(logfile_directory, filenameA{ii});
 
             clear subFiles;
-            [filenameA{ii} subFiles] = PSgetcsv(filenameA{ii}, get(guiHandles.Firmware, 'Value'));
+            [filenameA{ii} subFiles] = PSgetcsv(srcFile, get(guiHandles.Firmware, 'Value'), workdir);
             
              
             for jj = 1 : size(subFiles,2)
@@ -120,12 +97,12 @@ try
                 [~, ~, sfext] = fileparts(subFiles{jj});
                 if strcmpi(sfext, '.bin')
                     % ArduPilot DataFlash binary - direct parse
-                    binpath = fullfile(logfile_directory, subFiles{jj});
-                    [ardu_data, ardu_parms] = PSarduRead(binpath);
+                    [ardu_data, ardu_parms] = PSarduRead(subFiles{jj});
                     [T{fcnt}, SetupInfo{fcnt}, A_lograte(fcnt)] = PSarduConvert(ardu_data, ardu_parms);
-                    fnameMaster{fcnt} = subFiles{jj};
+                    [~, sfname, sfx] = fileparts(subFiles{jj});
+                    fnameMaster{fcnt} = [sfname sfx];
                 else
-                    [dataA(fcnt) fnameMaster{fcnt}] = PSimport(subFiles{jj}, char(filenameA{ii}));
+                    [dataA(fcnt) fnameMaster{fcnt}] = PSimport(subFiles{jj}, filenameA{ii});
                     T{fcnt}=dataA(fcnt).T;
                     A_lograte(fcnt)=round((1000/median(diff(T{fcnt}.time_us_-T{fcnt}.time_us_(1)))) * 10) / 10;
                     SetupInfo{fcnt}=dataA(fcnt).SetupInfo;
@@ -253,13 +230,11 @@ try
             end
         end
         % Clean up workdir
-        cd(prev_dir);
         try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     end
 
     try close(waitbarFid), catch, end
 catch  ME
-    try cd(prev_dir); catch, end
     try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     try close(waitbarFid); catch, end
     warning('PSload error: %s', ME.message);

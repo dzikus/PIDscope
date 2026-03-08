@@ -1,6 +1,8 @@
-function [filename csvFnames] = PSgetcsv(filename, firmware_flag)
-%% [filename csvFnames] = PSgetcsv(filename, firmware_flag)
+function [filename csvFnames] = PSgetcsv(filename, firmware_flag, outdir)
+%% [filename csvFnames] = PSgetcsv(filename, firmware_flag, outdir)
 % Converts bbl files to csv using blackbox_decode
+% filename: full path to BBL/BFL/TXT/BTFL/JSON/BIN file
+% outdir: directory for CSV output (default: same as input file)
 
 % ----------------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -11,124 +13,99 @@ function [filename csvFnames] = PSgetcsv(filename, firmware_flag)
 
 
 fnums = 1;
-
-a=strfind(filename, ' ');% had to remove white space  to run in bb decode
-a=fliplr(a);
-if ~isempty((find(isspace(filename))))
-    filename2=filename(find(~isspace(filename)));% have to get rid of spaces to run blackbox_decode using 'system' function
-    movefile(filename,filename2);%rename file without spaces
-    filename=filename2; 
-    clear filename2
-end
-
 filename_nchars = 17;
-if size(filename,2)>20
-     f=[filename(1:filename_nchars) '...'];
- else
-     f=filename;
-end
- 
-mainFname=filename;
+
+mainFname = filename;
 [fdir, fname, fext] = fileparts(filename);
-fbase = fullfile(fdir, fname);
+
+if nargin < 3 || isempty(outdir)
+    outdir = fdir;
+end
+
 if strcmpi(fext, '.bin')
-    % ArduPilot DataFlash binary log - handled directly in PSload
     csvFnames = {filename};
     return;
 elseif strcmpi(fext, '.json')
-    % QuickSilver JSON blackbox export - parse directly
-    [headerFile, csvFile] = PSquicJson2csv(filename);
+    [headerFile, csvFile] = PSquicJson2csv(filename, outdir);
     filename = headerFile;
     files(1).name = csvFile;
     fnums = 1;
 elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
 
-    if ispc()
-        bb_decode = 'blackbox_decode.exe';
-        bb_decode_inav = 'blackbox_decode_INAV.exe';
-    else
-        bb_decode = './blackbox_decode';
-        bb_decode_inav = './blackbox_decode_INAV';
-    end
-    if firmware_flag == 3
-        [status,result]=system([bb_decode_inav ' ' filename ' 2>&1']);
-    else
-        [status,result]=system([bb_decode ' ' filename ' 2>&1']);
-    end
-    files=dir([fbase '*.csv']);
-    
-    % only choose files that don't have .bbl or .bfl extension
-    clear f2;m=1;
-    for k=1:size(files,1)
-        if ~contains(files(k).name,'.bbl','IgnoreCase',true) & ~contains(files(k).name,'.bfl','IgnoreCase',true)  
-            f2(m,:)=files(k);
-            m=m+1;
-        end
-    end
-    % report to user, the most common loading error
-    try 
-        files=f2;clear f2;
-    catch % report blackbox_decode error to user
-        set(gcf, 'pointer', 'arrow')
-    end
-    
-    % get rid of all event files and gps.gpx files 
-    fevt=dir([fbase '*.event']);
-    for k=1:size(fevt,1)
-        delete([fevt(k).name]);
-    end
-    fevt=dir([fbase '*.gps.gpx']);
-    for k=1:size(fevt,1)
-        delete([fevt(k).name]);
-    end    
-    fevt=dir([fbase '*.gps.csv']);
-    for k=1:size(fevt,1)
-        delete([fevt(k).name]);
-    end
-    
-    % get list of files after erasing junk
-    files = dir([fbase '*.csv']);
-    
-    % if more than one file
-    if size(files,1) > 1
-        x=size(files,1);
-        clear f2; m=1;
-        for k=1:x
-            % Check file size instead of parsing entire CSV (much faster for large files)
-            emptysubfiles = (files(k).bytes < 1000);
+    decoder_path = getappdata(0, 'PSdecoderPath');
+    decoder_inav = getappdata(0, 'PSdecoderPathINAV');
 
-            if emptysubfiles
-                delete(files(k).name)
-            else
-                f2(m,:)=files(k);
-                m=m+1;
-            end          
-        end 
-        files=f2;clear f2   
-        a=strfind(result,'duration');
-        logDurStr='';
-        for d=1:length(a)
-            logDurStr{d}=[int2str(d) ') ' result(a(d):a(d)+filename_nchars)];
+    if firmware_flag == 3 && ~isempty(decoder_inav)
+        cmd = ['"' decoder_inav '" --output-dir "' outdir '" "' filename '" 2>&1'];
+    else
+        cmd = ['"' decoder_path '" --output-dir "' outdir '" "' filename '" 2>&1'];
+    end
+    [status, result] = system(cmd);
+
+    fbase = fullfile(outdir, fname);
+    files = dir([fbase '*.csv']);
+
+    % filter out files with .bbl or .bfl in name
+    valid = true(size(files,1), 1);
+    for k = 1:size(files,1)
+        if contains(files(k).name, '.bbl', 'IgnoreCase', true) || contains(files(k).name, '.bfl', 'IgnoreCase', true)
+            valid(k) = false;
         end
-        
-       if size(files,1)>0            
-        x=size(files,1); 
-            if x>1 % if multiple logs exist in BB file 
-                [fnums , tf] = listdlg('ListString',logDurStr, 'ListSize',[250,round(size(logDurStr,2) * 20)], 'Name','Select file(s): ' );   
-                %%%% delete all unused BB decoded csv files
-                for k=1:x
-                    if ~ismember(k, fnums), delete(files(k).name); end
+    end
+    files = files(valid, :);
+
+    if isempty(files)
+        set(gcf, 'pointer', 'arrow');
+        csvFnames = {};
+        return;
+    end
+
+    % clean up junk files in outdir
+    fevt = dir([fbase '*.event']);
+    for k = 1:size(fevt,1), delete(fullfile(outdir, fevt(k).name)); end
+    fevt = dir([fbase '*.gps.gpx']);
+    for k = 1:size(fevt,1), delete(fullfile(outdir, fevt(k).name)); end
+    fevt = dir([fbase '*.gps.csv']);
+    for k = 1:size(fevt,1), delete(fullfile(outdir, fevt(k).name)); end
+
+    % refresh file list after cleanup
+    files = dir([fbase '*.csv']);
+
+    if size(files,1) > 1
+        % remove empty subfiles (<1KB)
+        valid = true(size(files,1), 1);
+        for k = 1:size(files,1)
+            if files(k).bytes < 1000
+                delete(fullfile(outdir, files(k).name));
+                valid(k) = false;
+            end
+        end
+        files = files(valid, :);
+
+        a = strfind(result, 'duration');
+        logDurStr = '';
+        for d = 1:length(a)
+            logDurStr{d} = [int2str(d) ') ' result(a(d):a(d)+filename_nchars)];
+        end
+
+        if size(files,1) > 0
+            x = size(files,1);
+            if x > 1
+                [fnums, tf] = listdlg('ListString', logDurStr, 'ListSize', [250, round(size(logDurStr,2)*20)], 'Name', 'Select file(s): ');
+                for k = 1:x
+                    if ~ismember(k, fnums), delete(fullfile(outdir, files(k).name)); end
                 end
             end
         else
-            validData=0;
-            a=errordlg(['no valid data in ' mainFname]);pause(3);close(a);
-       end
+            validData = 0;
+            a = errordlg(['no valid data in ' mainFname]); pause(3); close(a);
+        end
     end
 end
-csvFnames={};
-for k = 1 : length(fnums)
-    csvFnames{k} = files(fnums(k)).name;
+
+csvFnames = {};
+for k = 1:length(fnums)
+    csvFnames{k} = fullfile(outdir, files(fnums(k)).name);
 end
 
 end

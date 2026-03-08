@@ -337,6 +337,16 @@ if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_dire
         || (~exist(fullfile(main_directory, 'blackbox_decode'), 'file') && ~exist(fullfile(main_directory, 'blackbox_decode.exe'), 'file'))
     main_directory = executableDir;
 end
+
+% Store decoder paths globally so PSgetcsv can use absolute paths
+if ispc()
+    setappdata(0, 'PSdecoderPath', fullfile(main_directory, 'blackbox_decode.exe'));
+    setappdata(0, 'PSdecoderPathINAV', fullfile(main_directory, 'blackbox_decode_INAV.exe'));
+else
+    setappdata(0, 'PSdecoderPath', fullfile(main_directory, 'blackbox_decode'));
+    setappdata(0, 'PSdecoderPathINAV', fullfile(main_directory, 'blackbox_decode_INAV'));
+end
+
 cd(configDir)
 
 try
