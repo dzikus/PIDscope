@@ -99,7 +99,6 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
 
             if emptysubfiles
                 delete(files(k).name)
-                files(k).name;
             else
                 f2(m,:)=files(k);
                 m=m+1;
