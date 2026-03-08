@@ -46,46 +46,52 @@ if ~exist('delayDataReady','var') || ~delayDataReady
         try
             pg = smooth(T{k}.debug_0_(tIND{k}),50);
         catch
-            pg = 0;
+            pg = [];
         end
-        g1 = smooth(T{k}.gyroADC_0_(tIND{k}),50);
-        s1 = smooth(T{k}.setpoint_0_(tIND{k}),50);
-        g2 = smooth(T{k}.gyroADC_1_(tIND{k}),50);
-        s2 = smooth(T{k}.setpoint_1_(tIND{k}),50);
-        g3 = smooth(T{k}.gyroADC_2_(tIND{k}),50);
-        s3 = smooth(T{k}.setpoint_2_(tIND{k}),50);
-
-        [c,lags] = xcorr(g1,pg,maxlag);
-        d = lags(find(c==max(c),1));
-        d = d * (Fs / 1000);
-        if d<.1, Debug01{k} = ' '; else Debug01{k} = num2str(d); end
-
-        [c,lags] = xcorr(s1,pg,maxlag);
-        d = lags(find(c==max(c),1));
-        d = d * (Fs / 1000);
-        if d<.1, Debug02{k} = ' '; else Debug02{k} = num2str(d); end
-
-        [c,lags] = xcorr(g1,s1,maxlag);
-        d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
-        if d<.1, SPGyroDelay(k,1) = 0; else, SPGyroDelay(k,1) = d; end
-
-        [c,lags] = xcorr(g2,s2,maxlag);
-        d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
-        if d<.1, SPGyroDelay(k,2) = 0; else, SPGyroDelay(k,2) = d; end
-
-        [c,lags] = xcorr(g3,s3,maxlag);
-        d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
-        if d<.1, SPGyroDelay(k,3) = 0; else, SPGyroDelay(k,3) = d; end
-
         try
-            d1 = smooth(T{k}.axisDpf_0_(tIND{k}),50);
-            d2 = smooth(T{k}.axisD_0_(tIND{k}),50);
-            [c,lags] = xcorr(d2,d1,maxlag);
-            d = lags(find(c==max(c)));
+            g1 = smooth(T{k}.gyroADC_0_(tIND{k}),50);
+            s1 = smooth(T{k}.setpoint_0_(tIND{k}),50);
+            g2 = smooth(T{k}.gyroADC_1_(tIND{k}),50);
+            s2 = smooth(T{k}.setpoint_1_(tIND{k}),50);
+            g3 = smooth(T{k}.gyroADC_2_(tIND{k}),50);
+            s3 = smooth(T{k}.setpoint_2_(tIND{k}),50);
+
+            if isempty(pg), pg = zeros(size(g1)); end
+
+            [c,lags] = xcorr(g1,pg,maxlag);
+            d = lags(find(c==max(c),1));
             d = d * (Fs / 1000);
-            if d<.1, FilterDelayDterm{k} = ' '; else FilterDelayDterm{k} = num2str(d); end
+            if d<.1, Debug01{k} = ' '; else Debug01{k} = num2str(d); end
+
+            [c,lags] = xcorr(s1,pg,maxlag);
+            d = lags(find(c==max(c),1));
+            d = d * (Fs / 1000);
+            if d<.1, Debug02{k} = ' '; else Debug02{k} = num2str(d); end
+
+            [c,lags] = xcorr(g1,s1,maxlag);
+            d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
+            if d<.1, SPGyroDelay(k,1) = 0; else, SPGyroDelay(k,1) = d; end
+
+            [c,lags] = xcorr(g2,s2,maxlag);
+            d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
+            if d<.1, SPGyroDelay(k,2) = 0; else, SPGyroDelay(k,2) = d; end
+
+            [c,lags] = xcorr(g3,s3,maxlag);
+            d = lags(find(c==max(c),1)); d = d * (Fs / 1000);
+            if d<.1, SPGyroDelay(k,3) = 0; else, SPGyroDelay(k,3) = d; end
+
+            try
+                d1 = smooth(T{k}.axisDpf_0_(tIND{k}),50);
+                d2 = smooth(T{k}.axisD_0_(tIND{k}),50);
+                [c,lags] = xcorr(d2,d1,maxlag);
+                d = lags(find(c==max(c)));
+                d = d * (Fs / 1000);
+                if d<.1, FilterDelayDterm{k} = ' '; else FilterDelayDterm{k} = num2str(d); end
+            catch
+                FilterDelayDterm{k} = ' ';
+            end
         catch
-            FilterDelayDterm{k} = ' ';
+            Debug01{k} = ' '; Debug02{k} = ' '; FilterDelayDterm{k} = ' ';
         end
 
         try
@@ -153,7 +159,13 @@ for k = 1 : length(tmpSpecVal)
                 smat{p}=s;
                 waitbar(min(1, p/(length(tmpSpecVal)*size(tmpFileVal,2)*length(axesOptionsSpec))), hw_fft, ['computing FFT... ' int2str(p)]);
                 ff = ['f' int2str(f)];
-                [freq2d2{p}.(ff) amp2d2{p}.(ff)] = PSSpec2d(dat,lograte, tmpPSDVal);
+                [tmpF tmpA] = PSSpec2d(dat,lograte, tmpPSDVal);
+                if isempty(tmpF)
+                    smat{p}=[]; amp2d2{p}=[]; freq2d2{p}=[];
+                else
+                    freq2d2{p}.(ff) = tmpF;
+                    amp2d2{p}.(ff) = tmpA;
+                end
             end
        end
     end
@@ -345,15 +357,17 @@ for m = 1 : length(tmpSpecListVal)
         end
     end
 end
-if ~isempty(freq2d2) && ~isempty(amp2d2)
-    if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
-        h=legend(legnd);
-        hPos = get(h, 'Position'); set(h, 'Position', [0.35 0.01 hPos(3:4)]);
-    else
-        h=legend(legnd, 'Location','NorthEast')
+try
+    if ~isempty(freq2d2) && ~isempty(amp2d2)
+        if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
+            h=legend(legnd);
+            hPos = get(h, 'Position'); set(h, 'Position', [0.35 0.01 hPos(3:4)]);
+        else
+            h=legend(legnd, 'Location','NorthEast');
+        end
+        try PSstyleLegend(h, th); catch, end
     end
-    try PSstyleLegend(h, th); catch, end
-end
+catch, end
 
 
 allax = findobj(PSspecfig2, 'Type', 'axes');
