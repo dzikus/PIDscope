@@ -186,14 +186,16 @@ function y = applyNotch(x, center_hz, cutoff_hz, Fs)
 end
 
 function fp = parseFilterParams(si)
-    fp.gyro_lpf1_type = hval(si, 'gyro_lpf1_type', 0);
-    fp.gyro_lpf1_hz = hval(si, 'gyro_lpf1_static_hz', 0);
-    fp.gyro_lpf2_type = hval(si, 'gyro_lpf2_type', 0);
-    fp.gyro_lpf2_hz = hval(si, 'gyro_lpf2_static_hz', 0);
-    fp.dterm_lpf1_type = hval(si, 'dterm_lpf1_type', 0);
-    fp.dterm_lpf1_hz = hval(si, 'dterm_lpf1_static_hz', 100);
-    fp.dterm_lpf2_type = hval(si, 'dterm_lpf2_type', 0);
-    fp.dterm_lpf2_hz = hval(si, 'dterm_lpf2_static_hz', 0);
+    % BF 4.3+: gyro_lpf1_type / gyro_lpf1_static_hz
+    % BF 4.2:  gyro_lowpass_type / gyro_lowpass_hz
+    fp.gyro_lpf1_type = hval(si, 'gyro_lpf1_type', hval(si, 'gyro_lowpass_type', 0));
+    fp.gyro_lpf1_hz = hval(si, 'gyro_lpf1_static_hz', hval(si, 'gyro_lowpass_hz', 0));
+    fp.gyro_lpf2_type = hval(si, 'gyro_lpf2_type', hval(si, 'gyro_lowpass2_type', 0));
+    fp.gyro_lpf2_hz = hval(si, 'gyro_lpf2_static_hz', hval(si, 'gyro_lowpass2_hz', 0));
+    fp.dterm_lpf1_type = hval(si, 'dterm_lpf1_type', hval(si, 'dterm_lowpass_type', 0));
+    fp.dterm_lpf1_hz = hval(si, 'dterm_lpf1_static_hz', hval(si, 'dterm_lowpass_hz', 100));
+    fp.dterm_lpf2_type = hval(si, 'dterm_lpf2_type', hval(si, 'dterm_lowpass2_type', 0));
+    fp.dterm_lpf2_hz = hval(si, 'dterm_lpf2_static_hz', hval(si, 'dterm_lowpass2_hz', 0));
     fp.dterm_notch_hz = hval(si, 'dterm_notch_hz', 0);
     fp.dterm_notch_cut = hval(si, 'dterm_notch_cutoff', 0);
     tmp = hstr(si, 'gyro_notch_hz', '0,0'); v = str2num(tmp);
