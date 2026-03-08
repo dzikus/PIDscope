@@ -191,11 +191,11 @@ guiHandlesSpec2.RPYcomboSpec =uicontrol(PSspecfig2,'Style','checkbox','String','
 
 guiHandlesSpec2.climMax1_text = uicontrol(PSspecfig2,'style','text','string','Y min','fontsize',fontsz,'TooltipString',['Y min'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax1_text]);
 guiHandlesSpec2.climMax1_input = uicontrol(PSspecfig2,'style','edit','string',[num2str(climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y min'],'units','normalized','Position',[posInfo.climMax1_input],...
-     'callback','@textinput_call2; climScale1(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec2.climMax1_input, ''String''));PSplotSpec2D;');
+     'callback','@textinput_call2; climScale1(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2double(get(guiHandlesSpec2.climMax1_input, ''String''));PSplotSpec2D;');
 
  guiHandlesSpec2.climMax2_text = uicontrol(PSspecfig2,'style','text','string','Y max','fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax2_text]);
 guiHandlesSpec2.climMax2_input = uicontrol(PSspecfig2,'style','edit','string',[num2str(climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','Position',[posInfo.climMax2_input],...
-     'callback','@textinput_call2; climScale2(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec2.climMax2_input, ''String''));PSplotSpec2D;');
+     'callback','@textinput_call2; climScale2(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2double(get(guiHandlesSpec2.climMax2_input, ''String''));PSplotSpec2D;');
 end % ishandle(spec2Crtlpanel)
 
 % Register CP for fixed-pixel resize
@@ -268,7 +268,7 @@ end
 
 function textinput_call2(src,eventdata)
 str=get(src,'String');
-    if isempty(str2num(str))
+    if isnan(str2double(str))
         set(src,'string','0');
         warndlg('Input must be numerical');  
     end

@@ -198,12 +198,12 @@ function fp = parseFilterParams(si)
     fp.dterm_lpf2_hz = hval(si, 'dterm_lpf2_static_hz', hval(si, 'dterm_lowpass2_hz', 0));
     fp.dterm_notch_hz = hval(si, 'dterm_notch_hz', 0);
     fp.dterm_notch_cut = hval(si, 'dterm_notch_cutoff', 0);
-    tmp = hstr(si, 'gyro_notch_hz', '0,0'); v = str2num(tmp);
-    if isempty(v), v = [0 0]; end
+    tmp = hstr(si, 'gyro_notch_hz', '0,0'); v = str2double(strsplit(tmp, ','));
+    if any(isnan(v)), v = [0 0]; end
     fp.gyro_notch1_hz = v(1);
     fp.gyro_notch2_hz = 0; if numel(v) > 1, fp.gyro_notch2_hz = v(2); end
-    tmp = hstr(si, 'gyro_notch_cutoff', '0,0'); v = str2num(tmp);
-    if isempty(v), v = [0 0]; end
+    tmp = hstr(si, 'gyro_notch_cutoff', '0,0'); v = str2double(strsplit(tmp, ','));
+    if any(isnan(v)), v = [0 0]; end
     fp.gyro_notch1_cut = v(1);
     fp.gyro_notch2_cut = 0; if numel(v) > 1, fp.gyro_notch2_cut = v(2); end
 end
@@ -212,8 +212,8 @@ function v = hval(si, key, default)
     v = default;
     for k = 1:size(si, 1)
         if strcmp(strtrim(si{k,1}), key)
-            tmp = str2num(strtrim(si{k,2}));
-            if ~isempty(tmp), v = tmp(1); end
+            tmp = str2double(strtrim(si{k,2}));
+            if ~isnan(tmp), v = tmp; end
             return;
         end
     end

@@ -179,9 +179,9 @@ guiHandlesSpec.rpmLegend3 = uicontrol(PSspecfig,'style','text','string','... 3rd
 
 guiHandlesSpec.controlFreqCutoff_text = uicontrol(PSspecfig,'style','text','string','freq lims Hz','fontsize',fontsz,'TooltipString',[TooltipString_controlFreqCutoff],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.controlFreqCutoff_text]);
 guiHandlesSpec.controlFreq1Cutoff = uicontrol(PSspecfig,'style','edit','string',[num2str(round(Flim1))],'fontsize',fontsz,'TooltipString',[TooltipString_controlFreqCutoff],'units','normalized','Position',[posInfo.controlFreq1Cutoff],...
-     'callback','@textinput_call2; Flim1=round(str2num(get(guiHandlesSpec.controlFreq1Cutoff, ''String'')));updateSpec=1;PSplotSpec;');
+     'callback','@textinput_call2; Flim1=round(str2double(get(guiHandlesSpec.controlFreq1Cutoff, ''String'')));updateSpec=1;PSplotSpec;');
 guiHandlesSpec.controlFreq2Cutoff = uicontrol(PSspecfig,'style','edit','string',[num2str(round(Flim2))],'fontsize',fontsz,'TooltipString',[TooltipString_controlFreqCutoff],'units','normalized','Position',[posInfo.controlFreq2Cutoff],...
-     'callback','@textinput_call2; Flim2=round(str2num(get(guiHandlesSpec.controlFreq2Cutoff, ''String'')));updateSpec=1;PSplotSpec;');
+     'callback','@textinput_call2; Flim2=round(str2double(get(guiHandlesSpec.controlFreq2Cutoff, ''String'')));updateSpec=1;PSplotSpec;');
 
 guiHandlesSpec.saveFig1 = uicontrol(PSspecfig,'string','Save Fig','fontsize',fontsz,'TooltipString',[TooltipString_saveFig],'units','normalized','ForegroundColor',[saveCol],'Position',[posInfo.saveFig1],...
     'callback','set(guiHandlesSpec.saveFig1, ''FontWeight'', ''bold'');PSsaveFig;set(guiHandlesSpec.saveFig1, ''FontWeight'', ''normal'');'); 
@@ -213,19 +213,19 @@ guiHandlesSpec.smoothFactor_select = uicontrol(PSspecfig,'style','popupmenu','st
 
 guiHandlesSpec.climMax_text = uicontrol(PSspecfig,'style','text','string','scale','fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax_text]);
 guiHandlesSpec.climMax_input = uicontrol(PSspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 1)=str2num(get(guiHandlesSpec.climMax_input, ''String''));updateSpec=1;PSplotSpec;');
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 1)=str2double(get(guiHandlesSpec.climMax_input, ''String''));updateSpec=1;PSplotSpec;');
 
  guiHandlesSpec.climMax_text2 = uicontrol(PSspecfig,'style','text','string','scale','fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax_text2]);
 guiHandlesSpec.climMax_input2 = uicontrol(PSspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 2))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input2],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 2)=str2num(get(guiHandlesSpec.climMax_input2, ''String''));updateSpec=1;PSplotSpec;');
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 2)=str2double(get(guiHandlesSpec.climMax_input2, ''String''));updateSpec=1;PSplotSpec;');
  
  guiHandlesSpec.climMax_text3 = uicontrol(PSspecfig,'style','text','string','scale','fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax_text3]);
 guiHandlesSpec.climMax_input3 = uicontrol(PSspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 3))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input3],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 3)=str2num(get(guiHandlesSpec.climMax_input3, ''String''));updateSpec=1;PSplotSpec;');
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 3)=str2double(get(guiHandlesSpec.climMax_input3, ''String''));updateSpec=1;PSplotSpec;');
  
  guiHandlesSpec.climMax_text4 = uicontrol(PSspecfig,'style','text','string','scale','fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.climMax_text4]);
 guiHandlesSpec.climMax_input4 = uicontrol(PSspecfig,'style','edit','string',[num2str(climScale(get(guiHandlesSpec.checkboxPSD, 'Value')+1, 4))],'fontsize',fontsz,'TooltipString',[TooltipString_scale],'units','normalized','Position',[posInfo.climMax_input4],...
-     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 4)=str2num(get(guiHandlesSpec.climMax_input4, ''String''));updateSpec=1;PSplotSpec;');
+     'callback','@textinput_call2; climScale(get(guiHandlesSpec.checkboxPSD, ''Value'')+1, 4)=str2double(get(guiHandlesSpec.climMax_input4, ''String''));updateSpec=1;PSplotSpec;');
  
  guiHandlesSpec.ColormapSelect = uicontrol(PSspecfig,'Style','popupmenu','string',{'viridis','jet','hot','cool','gray','bone','copper','linear-RED','linear-GREY'},...
     'fontsize',fontsz,'TooltipString', [TooltipString_cmap], 'units','normalized','Position',[posInfo.ColormapSelect],'callback','@selection2;updateSpec=1; PSplotSpec;');
@@ -282,7 +282,7 @@ end
 
 function textinput_call2(src,eventdata)
 str=get(src,'String');
-    if isempty(str2num(str))
+    if isnan(str2double(str))
         set(src,'string','0');
         warndlg('Input must be numerical');  
     end

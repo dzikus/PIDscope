@@ -162,7 +162,7 @@ PSstyleControls(PStunefig);
 % functions
 function textinput_call3(src,eventdata)
 str=get(src,'String');
-    if isempty(str2num(str))
+    if isnan(str2double(str))
         set(src,'string','0');
         warndlg('Input must be numerical');  
     end

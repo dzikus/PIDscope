@@ -113,7 +113,7 @@ guiHandles.maxY_input = uicontrol(PSfig,'style','edit','string',int2str(maxY),'f
 
 guiHandles.nCols_text = uicontrol(PSfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.nCols_text]);
 guiHandles.nCols_input = uicontrol(PSfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','Position',[posInfo.nCols_input],...
-     'callback','if str2num(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2num(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PSlinecmap(str2num(get(guiHandles.nCols_input, ''String''))); ');
+     'callback','if str2double(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2double(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PSlinecmap(str2double(get(guiHandles.nCols_input, ''String''))); ');
 
 subplot('position',[posInfo.YTstick]);
 set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on');

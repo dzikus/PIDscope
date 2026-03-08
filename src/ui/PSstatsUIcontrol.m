@@ -109,11 +109,11 @@ guiHandlesStats.crossAxesStats =uicontrol(PSstatsfig,'Style','popupmenu','String
 
 guiHandlesStats.crossAxesStats_text = uicontrol(PSstatsfig,'style','text','string','scale','fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text]);
 guiHandlesStats.crossAxesStats_input = uicontrol(PSstatsfig,'style','edit','string',[num2str(zScale)],'fontsize',fontsz5,'TooltipString',[TooltipString_statScale],'units','normalized','Position',[posInfo.crossAxesStats_input],...
-     'callback','zScale=str2num(get(guiHandlesStats.crossAxesStats_input, ''String''));updateStats=1;PSplotStats;');
+     'callback','zScale=str2double(get(guiHandlesStats.crossAxesStats_input, ''String''));updateStats=1;PSplotStats;');
  
 guiHandlesStats.crossAxesStats_text2 = uicontrol(PSstatsfig,'style','text','string','alpha','fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text2]);
 guiHandlesStats.crossAxesStats_input2 = uicontrol(PSstatsfig,'style','edit','string',[num2str(zTransparency)],'fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','Position',[posInfo.crossAxesStats_input2],...
-     'callback','zTransparency=str2num(get(guiHandlesStats.crossAxesStats_input2, ''String'')); if (zTransparency>1), zTransparency=1; end; if (zTransparency<0), zTransparency=0; end; updateStats=1;PSplotStats;');
+     'callback','zTransparency=str2double(get(guiHandlesStats.crossAxesStats_input2, ''String'')); if (zTransparency>1), zTransparency=1; end; if (zTransparency<0), zTransparency=0; end; updateStats=1;PSplotStats;');
 
 guiHandlesStats.FileA = uicontrol(PSstatsfig,'Style','popupmenu','string',[fnameMaster],...
     'fontsize',fontsz5,'TooltipString','File A (red)','units','normalized','Position',[posInfo.statsFileA],...

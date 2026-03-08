@@ -120,11 +120,11 @@ set(guiHandlesSpec3.subsampleFactor_select, 'Value', 2);
 
 guiHandlesSpec3.climMax1_text = uicontrol(PSspecfig3,'style','text','string','Z min','fontsize',fontsz,'TooltipString',['adjusts the color limits'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.clim3Max1_text]);
 guiHandlesSpec3.climMax1_input = uicontrol(PSspecfig3,'style','edit','string',[num2str(ClimScale3(1))],'fontsize',fontsz,'TooltipString',['adjusts the color limits'],'units','normalized','Position',[posInfo.clim3Max1_input],...
-     'callback','@textinput_call2; ClimScale3(1)=str2num(get(guiHandlesSpec3.climMax1_input, ''String''));updateSpec=1;PSfreqTime;');
+     'callback','@textinput_call2; ClimScale3(1)=str2double(get(guiHandlesSpec3.climMax1_input, ''String''));updateSpec=1;PSfreqTime;');
 
  guiHandlesSpec3.climMax2_text = uicontrol(PSspecfig3,'style','text','string','Z max','fontsize',fontsz,'TooltipString',['adjusts the color limits'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.clim3Max2_text]);
 guiHandlesSpec3.climMax2_input = uicontrol(PSspecfig3,'style','edit','string',[num2str(ClimScale3(2))],'fontsize',fontsz,'TooltipString',['adjusts the color limits'],'units','normalized','Position',[posInfo.clim3Max2_input],...
-     'callback','@textinput_call2; ClimScale3(2)=str2num(get(guiHandlesSpec3.climMax2_input, ''String''));updateSpec=1;PSfreqTime;');
+     'callback','@textinput_call2; ClimScale3(2)=str2double(get(guiHandlesSpec3.climMax2_input, ''String''));updateSpec=1;PSfreqTime;');
 
  guiHandlesSpec3.sub100HzfreqTime = uicontrol(PSspecfig3,'Style','checkbox','String','sub 100Hz','fontsize',fontsz,'ForegroundColor',panelFg,'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.sub100HzfreqTime],'callback','@selection2;updateSpec=1; PSfreqTime;');
@@ -185,7 +185,7 @@ end
 
 function textinput_call2(src,eventdata)
 str=get(src,'String');
-    if isempty(str2num(str))
+    if isnan(str2double(str))
         set(src,'string','0');
         warndlg('Input must be numerical');  
     end
