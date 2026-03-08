@@ -43,15 +43,17 @@ end
 
 % Top bar layout — pixel-based sizes
 topBtnW = 100/screensz(3); topBtnH = rh; topEdtW = 80/screensz(3);
-topTxtW = 120/screensz(3); topBarL = 0.09;
+topTxtW = 120/screensz(3); topDdW = 160/screensz(3); topBarL = 0.09;
 tbOff = 40/screensz(4);  % toolbar offset
 topBtnY = 1 - tbOff - rh - cpMv;
 topX = topBarL + cpM;
 posInfo.refresh2=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
 posInfo.saveFig3=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
 posInfo.maxStick=    [topX topBtnY topEdtW topBtnH]; topX=topX+topEdtW+cpM;
-posInfo.maxSticktext=[topX topBtnY topTxtW topBtnH];
-topPanelW = topX + topTxtW + cpM - topBarL;
+posInfo.maxSticktext=[topX topBtnY topTxtW topBtnH]; topX=topX+topTxtW+cpM;
+posInfo.errFileA=    [topX topBtnY topDdW ddh]; topX=topX+topDdW+cpM;
+posInfo.errFileB=    [topX topBtnY topDdW ddh];
+topPanelW = topX + topDdW + cpM - topBarL;
 topPanelH = 1 - tbOff - topBtnY + cpMv;
 
 if ~exist('errCrtlpanel','var') || ~ishandle(errCrtlpanel)
@@ -71,6 +73,17 @@ guiHandlesPIDerr.maxStick = uicontrol(PSerrfig,'style','edit','string',[int2str(
 guiHandlesPIDerr.saveFig3 = uicontrol(PSerrfig,'string','Save Fig','fontsize',fontsz3,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig3],...
     'callback','PSsaveFig;');
 set(guiHandlesPIDerr.saveFig3, 'ForegroundColor', saveCol);
+
+guiHandlesPIDerr.FileA = uicontrol(PSerrfig,'Style','popupmenu','string',[fnameMaster],...
+    'fontsize',fontsz3,'TooltipString','File A (red)','units','normalized','Position',[posInfo.errFileA],...
+    'callback','updateErr=0;PSplotPIDerror;');
+set(guiHandlesPIDerr.FileA, 'Value', 1);
+if Nfiles > 1
+    guiHandlesPIDerr.FileB = uicontrol(PSerrfig,'Style','popupmenu','string',[fnameMaster],...
+        'fontsize',fontsz3,'TooltipString','File B (blue)','units','normalized','Position',[posInfo.errFileB],...
+        'callback','updateErr=0;PSplotPIDerror;');
+    set(guiHandlesPIDerr.FileB, 'Value', min(2, Nfiles));
+end
 end % ishandle(errCrtlpanel)
 
 % Register top bar for fixed-pixel resize
@@ -81,6 +94,10 @@ cpI{end+1} = struct('h', guiHandlesPIDerr.refresh, 'type','btn', 'row',0, 'col',
 cpI{end+1} = struct('h', guiHandlesPIDerr.saveFig3, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',100);
 cpI{end+1} = struct('h', guiHandlesPIDerr.maxStick, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',80);
 cpI{end+1} = struct('h', guiHandlesPIDerr.maxSticktext, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',120);
+cpI{end+1} = struct('h', guiHandlesPIDerr.FileA, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
+if Nfiles > 1 && isfield(guiHandlesPIDerr, 'FileB') && ishandle(guiHandlesPIDerr.FileB)
+    cpI{end+1} = struct('h', guiHandlesPIDerr.FileB, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
+end
 cpI{end+1} = struct('h', errCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0, 'wpx',0);
 PSregisterResize(PSerrfig, cpPx, cpI, 'topbar', topBarL);
 

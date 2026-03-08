@@ -264,10 +264,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
             try
                 if ~expandON && ~isempty(LVpanels{ii})
-                    set(LVpanels{ii},'color',[1 1 1],'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',posInfo.(['linepos' int2str(ii)]));
+                    set(LVpanels{ii},'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',posInfo.(['linepos' int2str(ii)]));
                 end
                 if ~expandON
-                    set(LVpanel5,'color',[1 1 1],'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos4]);
+                    set(LVpanel5,'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos4]);
                 end
             catch
             end

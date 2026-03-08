@@ -15,8 +15,12 @@ th = PStheme();
 set(PSstatsfig, 'pointer', 'watch');
 
 
-fA = 1;
-fB = []; if Nfiles >= 2, fB = 2; end
+fA = get(guiHandlesStats.FileA, 'Value');
+fB = [];
+if Nfiles >= 2 && isfield(guiHandlesStats, 'FileB') && ishandle(guiHandlesStats.FileB)
+    fB = get(guiHandlesStats.FileB, 'Value');
+    if fB == fA, fB = []; end
+end
 
 plotMode = get(guiHandlesStats.crossAxesStats, 'Value');
 

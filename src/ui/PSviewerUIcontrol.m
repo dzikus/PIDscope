@@ -25,10 +25,10 @@ posInfo.checkbox6=[chkX chkRow1 chkW chkH];
 posInfo.checkbox7=[chkX chkRow2 chkW chkH];      chkX=chkX+chkW;
 posInfo.checkbox8=[chkX chkRow1 chkW chkH];
 posInfo.checkbox9=[chkX chkRow2 chkW chkH];      chkX=chkX+chkW;
-posInfo.checkbox13=[chkX chkRow1 chkMotW chkH]; %m4
-posInfo.checkbox12=[chkX chkRow2 chkMotW chkH]; %m3  chkX=chkX+chkMotW;
-posInfo.checkbox11=[chkX chkRow1 chkMotW chkH]; %m2
-posInfo.checkbox10=[chkX chkRow2 chkMotW chkH]; %m1  chkX=chkX+chkMotW;
+posInfo.checkbox13=[chkX chkRow1 chkMotW chkH];
+posInfo.checkbox12=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkbox11=[chkX chkRow1 chkMotW chkH];
+posInfo.checkbox10=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 posInfo.checkbox14=[chkX chkRow1 chkMotW chkH];
 posInfo.checkbox15=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 

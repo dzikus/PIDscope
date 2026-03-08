@@ -15,8 +15,12 @@ th = PStheme();
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
 
-    fA = 1;
-    fB = []; if Nfiles >= 2, fB = 2; end
+    fA = get(guiHandlesPIDerr.FileA, 'Value');
+    fB = [];
+    if Nfiles >= 2 && isfield(guiHandlesPIDerr, 'FileB') && ishandle(guiHandlesPIDerr.FileB)
+        fB = get(guiHandlesPIDerr.FileB, 'Value');
+        if fB == fA, fB = []; end
+    end
 
     axPIDerr = {'piderr_0_', 'piderr_1_', 'piderr_2_'};
     axSP = {'setpoint_0_', 'setpoint_1_', 'setpoint_2_'};
@@ -50,7 +54,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         end
         ylabel('normalized freq', 'fontweight', 'bold');
         h = text(-37, .9, ylab2{p});
-        set(h, 'fontsize', fontsz3, 'fontweight', 'bold');
+        set(h, 'fontsize', fontsz3, 'fontweight', 'bold', 'color', th.textPrimary);
         grid on;
         axis([-40 40 0 1]);
         h = text(10, .9, ['[1]s.d.=' num2str(round(std(piderr_A(mask_A))*10)/10)]);
@@ -74,7 +78,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 [~, pval] = kstest2(yA, yB);
                 if pval <= .05, sigflag = '*'; else, sigflag = ''; end
                 h = text(10, .7, ['p=' num2str(pval) sigflag]);
-                set(h, 'fontsize', fontsz3, 'fontweight', 'bold');
+                set(h, 'fontsize', fontsz3, 'fontweight', 'bold', 'color', th.textSecondary);
             catch
             end
         end

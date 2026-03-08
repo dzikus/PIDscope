@@ -81,8 +81,11 @@ posInfo.crossAxesStats=[topX topBtnY topDdW topBtnH]; topX=topX+topDdW+cpM;
 posInfo.crossAxesStats_text =  [topX topLblY topTxtW rhs];
 posInfo.crossAxesStats_input = [topX topBtnY topEdtW topBtnH]; topX=topX+topEdtW+cpM;
 posInfo.crossAxesStats_text2 =  [topX topLblY topTxtW rhs];
-posInfo.crossAxesStats_input2 = [topX topBtnY topEdtW topBtnH];
-topPanelW = topX + topEdtW + cpM - topBarL;
+posInfo.crossAxesStats_input2 = [topX topBtnY topEdtW topBtnH]; topX=topX+topEdtW+cpM;
+topDdW2 = 160/screensz(3);
+posInfo.statsFileA = [topX topBtnY topDdW2 ddh]; topX=topX+topDdW2+cpM;
+posInfo.statsFileB = [topX topBtnY topDdW2 ddh];
+topPanelW = topX + topDdW2 + cpM - topBarL;
 
 if ~exist('statsCrtlpanel','var') || ~ishandle(statsCrtlpanel)
 statsCrtlpanel = uipanel('Title','','FontSize',fontsz5,...
@@ -111,6 +114,17 @@ guiHandlesStats.crossAxesStats_input = uicontrol(PSstatsfig,'style','edit','stri
 guiHandlesStats.crossAxesStats_text2 = uicontrol(PSstatsfig,'style','text','string','alpha','fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.crossAxesStats_text2]);
 guiHandlesStats.crossAxesStats_input2 = uicontrol(PSstatsfig,'style','edit','string',[num2str(zTransparency)],'fontsize',fontsz5,'TooltipString',[TooltipString_statAlpha],'units','normalized','Position',[posInfo.crossAxesStats_input2],...
      'callback','zTransparency=str2num(get(guiHandlesStats.crossAxesStats_input2, ''String'')); if (zTransparency>1), zTransparency=1; end; if (zTransparency<0), zTransparency=0; end; updateStats=1;PSplotStats;');
+
+guiHandlesStats.FileA = uicontrol(PSstatsfig,'Style','popupmenu','string',[fnameMaster],...
+    'fontsize',fontsz5,'TooltipString','File A (red)','units','normalized','Position',[posInfo.statsFileA],...
+    'callback','updateStats=0;PSplotStats;');
+set(guiHandlesStats.FileA, 'Value', 1);
+if Nfiles > 1
+    guiHandlesStats.FileB = uicontrol(PSstatsfig,'Style','popupmenu','string',[fnameMaster],...
+        'fontsize',fontsz5,'TooltipString','File B (blue)','units','normalized','Position',[posInfo.statsFileB],...
+        'callback','updateStats=0;PSplotStats;');
+    set(guiHandlesStats.FileB, 'Value', min(2, Nfiles));
+end
 end % ishandle(statsCrtlpanel)
 
 % Register top bar for fixed-pixel resize
@@ -125,6 +139,10 @@ cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_text, 'type','lbl', 'row
 cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_input, 'type','input', 'row',0, 'col',0, 'hpx',0, 'wpx',50);
 cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_text2, 'type','lbl', 'row',0, 'col',0, 'hpx',0, 'wpx',50);
 cpI{end+1} = struct('h', guiHandlesStats.crossAxesStats_input2, 'type','input', 'row',0, 'col',0, 'hpx',0, 'wpx',50);
+cpI{end+1} = struct('h', guiHandlesStats.FileA, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
+if Nfiles > 1 && isfield(guiHandlesStats, 'FileB') && ishandle(guiHandlesStats.FileB)
+    cpI{end+1} = struct('h', guiHandlesStats.FileB, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
+end
 cpI{end+1} = struct('h', statsCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0, 'wpx',0);
 PSregisterResize(PSstatsfig, cpPx, cpI, 'topbar', topBarL);
 
