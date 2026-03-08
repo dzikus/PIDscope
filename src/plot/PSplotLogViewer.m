@@ -46,7 +46,17 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     end
     plotall_flag=-1;
 
-    expand_sz=[0.05 0.06 0.815 posInfo.slider(2)-0.07];
+    dynCpL = getappdata(PSfig, 'PScpL'); if isempty(dynCpL), dynCpL = 0.875; end
+    plotL = 0.095; plotGap = 0.01;
+    plotW = dynCpL - plotL - plotGap;
+    expandW = dynCpL - 0.05 - 0.01;
+    expand_sz=[0.05 0.06 expandW posInfo.slider(2)-0.07];
+    % Update linepos widths to match current CP position
+    posInfo.linepos1(3) = plotW;
+    posInfo.linepos2(3) = plotW;
+    posInfo.linepos3(3) = plotW;
+    posInfo.linepos4(3) = plotW;
+    fullszPlot(3) = plotW;
 
 
     %% where you want full range of data
@@ -89,8 +99,13 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 %     set(jRangeSlider, 'MajorTickSpacing',50, 'PaintTicks',true, 'PaintLabels',true, 'Background',java.awt.Color.white)
 %     jRangeSlider.LowValue = 20;, jRangeSlider.HighValue = 180;
 
-    guiHandles.slider = uicontrol(PSfig, 'style','slider','SliderStep',[0.001 0.01],'Visible', 'on', 'units','normalized','position',posInfo.slider,...
+    sliderPos = posInfo.slider;
+    sliderPos(3) = dynCpL - sliderPos(1) - 0.005;
+    guiHandles.slider = uicontrol(PSfig, 'style','slider','SliderStep',[0.001 0.01],'Visible', 'on', 'units','normalized','position',sliderPos,...
         'min',0,'max',1, 'callback','PSslider1Actions;');
+    % Update resize data with slider handle
+    chkBarData = getappdata(PSfig, 'PScheckboxBar');
+    if ~isempty(chkBarData), chkBarData.slider = guiHandles.slider; setappdata(PSfig, 'PScheckboxBar', chkBarData); end
 
         
         
@@ -167,6 +182,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 cntLV = cntLV + 1;
                 if get(guiHandles.RPYcomboLV, 'Value')
                     LVpanel4 = subplot('position' ,fullszPlot);
+                    set(LVpanel4, 'Tag', 'PScombo');
                     lnstyle = lineStyle2LV;
                 end
                 if ~get(guiHandles.RPYcomboLV, 'Value') && expandON == 0
@@ -264,10 +280,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
             try
                 if ~expandON && ~isempty(LVpanels{ii})
-                    set(LVpanels{ii},'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',posInfo.(['linepos' int2str(ii)]));
+                    set(LVpanels{ii},'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',posInfo.(['linepos' int2str(ii)]),'Tag','PSrpy');
                 end
                 if ~expandON
-                    set(LVpanel5,'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos4]);
+                    set(LVpanel5,'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','position',[posInfo.linepos4],'Tag','PSmotor');
                 end
             catch
             end
@@ -283,6 +299,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         'end, end']);
 
     PSdatatipSetup(PSfig);
+    try PSresizeCP(PSfig, []); catch, end
 
     set(PSfig, 'pointer', 'arrow')
 else

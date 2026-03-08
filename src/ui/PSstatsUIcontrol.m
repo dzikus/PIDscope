@@ -57,13 +57,15 @@ zTransparency=1;
 fontsz5 = fontsz;
 
 clear posInfo.statsPos
-cols=[0.06 0.54];
+plotR = cpL - 0.04;  plotLs = 0.06;  colGapS = 0.02;
+colWs = (plotR - plotLs - colGapS) / 2;
+cols = [plotLs, plotLs + colWs + colGapS];
 rows=[0.69 0.48 0.27 0.06];
 k=0;
 for c=1:2
     for r=1:4
         k=k+1;
-        posInfo.statsPos(k,:)=[cols(c) rows(r) 0.39 0.18];
+        posInfo.statsPos(k,:)=[cols(c) rows(r) colWs 0.18];
     end
 end
 
@@ -144,6 +146,8 @@ if Nfiles > 1 && isfield(guiHandlesStats, 'FileB') && ishandle(guiHandlesStats.F
     cpI{end+1} = struct('h', guiHandlesStats.FileB, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
 end
 cpI{end+1} = struct('h', statsCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0, 'wpx',0);
+setappdata(PSstatsfig, 'PSplotGrid', struct('plotL',plotLs, 'colGap',colGapS, ...
+    'ncols',2, 'rows',rows, 'rowH',0.18, 'margin',0.04));
 PSregisterResize(PSstatsfig, cpPx, cpI, 'topbar', topBarL);
 
 PSstyleControls(PSstatsfig);

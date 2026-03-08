@@ -21,18 +21,16 @@ TooltipString_sub100=['Zoom data to show sub 100Hz details',...
 
 %%%
 clear posInfo.Spec3Pos
-cols=[0.09 ];
+plotR = cpL - 0.10;  plotL1 = 0.09;
+colW1 = plotR - plotL1;
+cols=[plotL1];
 rows=[0.69 0.395 0.1];
 k=0;
 for c=1 : size(cols,2)
     for r=1 : size(rows,2)
-        k=k+1; 
-        posInfo.Spec3Pos(k,:)=[cols(c) rows(r) 0.77 0.255];
+        k=k+1;
+        posInfo.Spec3Pos(k,:)=[cols(c) rows(r) colW1 0.255];
     end
-end
-
-if exist('isOctave','var') && isOctave
-    posInfo.Spec3Pos(:,3) = 0.74;
 end
 
 updateSpec = 0;
@@ -159,6 +157,8 @@ cpI{end+1} = struct('h', guiHandlesSpec3.climMax1_input, 'type','input_left', 'r
 cpI{end+1} = struct('h', guiHandlesSpec3.climMax2_input, 'type','input_right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec3.sub100HzfreqTime, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec3.playerBtn, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+setappdata(PSspecfig3, 'PSplotGrid', struct('plotL',plotL1, 'colGap',0, ...
+    'ncols',1, 'rows',rows, 'rowH',0.255, 'margin',0.10));
 PSregisterResize(PSspecfig3, cpPx, cpI, 'seq');
 
 try set(guiHandlesSpec3.SpecList, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-Preset')))), catch, set(guiHandlesSpec3.SpecList, 'Value', 1), end

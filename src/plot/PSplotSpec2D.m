@@ -204,7 +204,8 @@ for k = 1 : length(tmpSpecVal)
                     
                     if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
                         
-                        h2=subplot('position',posInfo.Spec2Pos(a,:)); 
+                        h2=subplot('position',posInfo.Spec2Pos(a,:));
+                        set(h2, 'Tag', 'PSgrid');
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
@@ -230,6 +231,7 @@ for k = 1 : length(tmpSpecVal)
                         grid on
 
                         h2=subplot('position',posInfo.Spec2Pos(a+3,:));
+                        set(h2, 'Tag', 'PSgrid');
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
@@ -297,7 +299,8 @@ for k = 1 : length(tmpSpecVal)
                     
                     else
                         % combine R P Y
-                        h2=subplot('position',[0.0500    0.1000    0.800    0.840]); 
+                        h2=subplot('position',[0.0500    0.1000    cpL-0.1    0.840]);
+                        set(h2, 'Tag', 'PSgrid');
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
@@ -373,6 +376,7 @@ catch, end
 allax = findobj(PSspecfig2, 'Type', 'axes');
 for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
 PSdatatipSetup(PSspecfig2);
+try PSresizeCP(PSspecfig2, []); catch, end
 
 set(PSspecfig2, 'pointer', 'arrow')
 updateSpec=0;

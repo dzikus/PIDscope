@@ -40,6 +40,7 @@ for i = 1 : 3
     end
     
     h2=subplot('position',posInfo.Spec3Pos(i,:));
+    set(h2, 'Tag', 'PSgrid');
     h = imagesc(specMat{i});
 
     set(gca,'Clim',[ClimScale3], 'fontsize',fontsz,'fontweight','bold')
@@ -68,7 +69,8 @@ for i = 1 : 3
         set(PSspecfig3, 'Colormap', cm);
     catch, end
     cbar = colorbar('EastOutside');
-    set(get(cbar, 'Label'), 'String', 'Power Spectral density (dB)');
+    set(cbar, 'Tag', 'PScbar', 'UserData', 'east');
+    set(get(cbar, 'Label'), 'String', 'Power Spectral density (dB)', 'Color', th.textPrimary);
     try set(cbar, 'Color', th.axesFg); catch, end
   
     if i == 3 && (strcmp(char(datSelectionString(get(guiHandlesSpec3.SpecList, 'Value'))), 'axisD') || strcmp(char(datSelectionString(get(guiHandlesSpec3.SpecList, 'Value'))), 'axisDpf'))
@@ -114,6 +116,7 @@ updateSpec = 0;
 allax = findobj(PSspecfig3, 'Type', 'axes');
 for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
 PSdatatipSetup(PSspecfig3);
+try PSresizeCP(PSspecfig3, []); catch, end
 
 set(PSspecfig3, 'pointer', 'arrow')
 

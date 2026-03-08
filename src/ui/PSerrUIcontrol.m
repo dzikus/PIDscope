@@ -31,13 +31,15 @@ TooltipString_degsec=['Sets the maximum rate used in the PID error analysis (dis
     newline , 'This cutoff helps to reduce inclusion of data with inflated PID error as a result of snap maneuvers' ];
 
 clear posInfo.PIDerrAnalysis
-cols=[0.1 0.55];
+plotR = cpL - 0.04;  plotLe = 0.08;  colGapE = 0.02;
+colWe = (plotR - plotLe - colGapE) / 2;
+cols = [plotLe, plotLe + colWe + colGapE];
 rows=[0.63 0.36 0.09];
 k=0;
 for c=1:2
     for r=1:3
         k=k+1;
-        posInfo.PIDerrAnalysis(k,:)=[cols(c) rows(r) 0.39 0.24];
+        posInfo.PIDerrAnalysis(k,:)=[cols(c) rows(r) colWe 0.24];
     end
 end
 
@@ -99,6 +101,8 @@ if Nfiles > 1 && isfield(guiHandlesPIDerr, 'FileB') && ishandle(guiHandlesPIDerr
     cpI{end+1} = struct('h', guiHandlesPIDerr.FileB, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
 end
 cpI{end+1} = struct('h', errCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0, 'wpx',0);
+setappdata(PSerrfig, 'PSplotGrid', struct('plotL',plotLe, 'colGap',colGapE, ...
+    'ncols',2, 'rows',rows, 'rowH',0.24, 'margin',0.04));
 PSregisterResize(PSerrfig, cpPx, cpI, 'topbar', topBarL);
 
 PSstyleControls(PSerrfig);

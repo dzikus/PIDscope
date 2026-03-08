@@ -52,6 +52,7 @@ if plotMode == 1
 
     for sp = 1:4
         hhist = subplot('position', posInfo.statsPos(sp,:)); cla;
+        set(hhist, 'Tag', 'PSgrid');
         if sp <= 3
             pctData = Rpct_A{sp};
         else
@@ -84,6 +85,7 @@ if plotMode == 1
 
         for sp = 1:4
             hhist = subplot('position', posInfo.statsPos(sp+4,:)); cla;
+            set(hhist, 'Tag', 'PSgrid');
             if sp <= 3
                 pctData = Rpct_B{sp};
             else
@@ -156,6 +158,7 @@ if plotMode == 2
             useAbs = grp{4};
 
             h1 = subplot('position', posInfo.statsPos2(slots(g),:)); cla;
+            set(h1, 'Tag', 'PSgrid');
 
             vals = zeros(nAx, 1);
             sds = zeros(nAx, 1);
@@ -223,6 +226,7 @@ end
 
 allax = findobj(PSstatsfig, 'Type', 'axes');
 for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
+try PSresizeCP(PSstatsfig, []); catch, end
 set(PSstatsfig, 'pointer', 'arrow');
 
 catch err

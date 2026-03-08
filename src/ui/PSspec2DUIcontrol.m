@@ -28,13 +28,15 @@ freq2d2=[];% freq
   
 
 clear posInfo.Spec2Pos
-cols=[0.05 0.47];
+plotR = cpL - 0.04;  plotL2 = 0.05;  colGap2 = 0.02;
+colW2 = (plotR - plotL2 - colGap2) / 2;
+cols = [plotL2, plotL2 + colW2 + colGap2];
 rows=[0.69 0.395 0.1];
 k=0;
 for c=1 : size(cols,2)
     for r=1 : size(rows,2)
         k=k+1;
-        posInfo.Spec2Pos(k,:)=[cols(c) rows(r) 0.37 0.25];
+        posInfo.Spec2Pos(k,:)=[cols(c) rows(r) colW2 0.25];
     end
 end
 
@@ -226,6 +228,8 @@ cpI{end+1} = struct('h', guiHandlesSpec2.climMax1_text, 'type','text_left', 'row
 cpI{end+1} = struct('h', guiHandlesSpec2.climMax2_text, 'type','text_right', 'row',0, 'col',0, 'hpx',rhs_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.climMax1_input, 'type','input_left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.climMax2_input, 'type','input_right', 'row',0, 'col',0, 'hpx',rh_px);
+setappdata(PSspecfig2, 'PSplotGrid', struct('plotL',plotL2, 'colGap',colGap2, ...
+    'ncols',2, 'rows',rows, 'rowH',0.25, 'margin',0.04));
 PSregisterResize(PSspecfig2, cpPx, cpI, 'seq');
 
 try set(guiHandlesSpec2.SpecList, 'Value', [defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term1'))) defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term2')))]), catch, set(guiHandlesSpec2.SpecList, 'Value', [1 2]), end

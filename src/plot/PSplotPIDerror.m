@@ -31,6 +31,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     for p = 1:3
         delete(subplot('position', posInfo.PIDerrAnalysis(p,:)));
         h1 = subplot('position', posInfo.PIDerrAnalysis(p,:)); cla;
+        set(h1, 'Tag', 'PSgrid');
         hold on;
 
         piderr_A = T{fA}.(axPIDerr{p})(tIND{fA})';
@@ -143,6 +144,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     for p = 1:3
         delete(subplot('position', posInfo.PIDerrAnalysis(p+3,:)));
         h1 = subplot('position', posInfo.PIDerrAnalysis(p+3,:)); cla;
+        set(h1, 'Tag', 'PSgrid');
         posAx = .8:1:9.8;
         posBx = 1.2:1:10.2;
 
@@ -192,6 +194,7 @@ end
 
 allax = findobj(PSerrfig, 'Type', 'axes');
 for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end
+try PSresizeCP(PSerrfig, []); catch, end
 set(PSerrfig, 'pointer', 'arrow');
 
 catch err

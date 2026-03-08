@@ -9,10 +9,12 @@
 % ----------------------------------------------------------------------------------  
     
 
-% Checkbox bar — pixel-based sizes
-chkW = 130/screensz(3); chkH = rh; chkMotW = 100/screensz(3);
-chkEdtW = 45/screensz(3); chkTxtW = 65/screensz(3);
-tbOff = 40/screensz(4);  % toolbar offset
+% Checkbox bar — pixel sizes (constant across resizes)
+chkW_px = 130; chkMotW_px = 100; chkEdtW_px = 45; chkTxtW_px = 65;
+figPos = get(PSfig, 'Position'); figW = figPos(3); figH = figPos(4);
+chkW = chkW_px/figW; chkH = rh; chkMotW = chkMotW_px/figW;
+chkEdtW = chkEdtW_px/figW; chkTxtW = chkTxtW_px/figW;
+tbOff = 40/figH;
 chkRow1 = 1 - tbOff;  chkRow2 = chkRow1 - rs;
 chkX = 0.10;
 posInfo.checkbox0=[chkX chkRow1 chkW chkH];
@@ -40,18 +42,22 @@ posInfo.nCols_input = [chkX+chkTxtW chkRow2 chkEdtW chkH];
 posInfo.YTstick = [cpL+.005 vPos-0.39 .05 .085];
 posInfo.RPstick = [cpL+cpW/2 vPos-0.39 .05 .085];
 
-% Plot positions computed from checkbox bar (dynamic for toolbar offset)
-posInfo.slider = [0.0826 chkRow2-2*cpMv-0.02 0.787 0.02];
+% Plot positions — right edge stops at CP left edge
+plotL = 0.095; plotGap = 0.01;
+dynCpL = getappdata(PSfig, 'PScpL'); if isempty(dynCpL), dynCpL = cpL; end
+plotW = dynCpL - plotL - plotGap;
+sliderW = dynCpL - 0.0826 - 0.005;
+posInfo.slider = [0.0826 chkRow2-2*cpMv-0.02 sliderW 0.02];
 plotTop = posInfo.slider(2) - 0.005;
 gapV = 0.005;
 linepos4H = 0.11;
 plotH = (plotTop - 0.1 - linepos4H - 4*gapV) / 3;
-posInfo.linepos1=[0.095 plotTop-plotH 0.77 plotH];
-posInfo.linepos2=[0.095 plotTop-2*plotH-gapV 0.77 plotH];
-posInfo.linepos3=[0.095 plotTop-3*plotH-2*gapV 0.77 plotH];
-posInfo.linepos4=[0.095 0.1 0.77 linepos4H];
+posInfo.linepos1=[plotL plotTop-plotH plotW plotH];
+posInfo.linepos2=[plotL plotTop-2*plotH-gapV plotW plotH];
+posInfo.linepos3=[plotL plotTop-3*plotH-2*gapV plotW plotH];
+posInfo.linepos4=[plotL 0.1 plotW linepos4H];
 
-fullszPlot = [0.095 posInfo.linepos3(2) 0.77 plotTop-posInfo.linepos3(2)];
+fullszPlot = [plotL posInfo.linepos3(2) plotW plotTop-posInfo.linepos3(2)];
 
 
 if ~exist('checkpanel','var') || ~ishandle(checkpanel)
@@ -114,6 +120,34 @@ guiHandles.maxY_input = uicontrol(PSfig,'style','edit','string',int2str(maxY),'f
 guiHandles.nCols_text = uicontrol(PSfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.nCols_text]);
 guiHandles.nCols_input = uicontrol(PSfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','Position',[posInfo.nCols_input],...
      'callback','if str2double(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2double(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PSlinecmap(str2double(get(guiHandles.nCols_input, ''String''))); ');
+
+% Register checkbox bar for pixel-based resize
+chkBarItems = {};
+chkBarItems{end+1} = struct('h', guiHandles.checkbox0, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox1, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox2, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox3, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox4, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox5, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox6, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox7, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox8, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox9, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox13, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox12, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox11, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox10, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox14, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.maxY_text, 'wpx', chkTxtW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.nCols_text, 'wpx', chkTxtW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.maxY_input, 'wpx', chkEdtW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.nCols_input, 'wpx', chkEdtW_px, 'row', 2, 'advance', true);
+chkBarData = struct('x0', 0.10, 'items', {chkBarItems}, 'panel', checkpanel);
+if exist('guiHandles','var') && isfield(guiHandles, 'slider') && ishandle(guiHandles.slider)
+    chkBarData.slider = guiHandles.slider;
+end
+setappdata(PSfig, 'PScheckboxBar', chkBarData);
 
 subplot('position',[posInfo.YTstick]);
 set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on');
