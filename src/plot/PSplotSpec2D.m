@@ -95,11 +95,11 @@ if ~exist('delayDataReady','var') || ~delayDataReady
         end
 
         try
-            if ~isempty(str2num(Debug01{k})) && SPGyroDelay(k,1) > 0
-                gyro_phase_shift_deg(k,1) = round(PSphaseShiftDeg(str2num(Debug01{k}), 1000/(SPGyroDelay(k,1))));
+            if ~isempty(str2double(Debug01{k})) && ~isnan(str2double(Debug01{k})) && SPGyroDelay(k,1) > 0
+                gyro_phase_shift_deg(k,1) = round(PSphaseShiftDeg(str2double(Debug01{k}), 1000/(SPGyroDelay(k,1))));
             end
-            if ~isempty(str2num(FilterDelayDterm{k})) && SPGyroDelay(k,1) > 0
-                dterm_phase_shift_deg(k,1) = round(PSphaseShiftDeg(str2num(FilterDelayDterm{k}), 1000/(SPGyroDelay(k,1))));
+            if ~isempty(str2double(FilterDelayDterm{k})) && ~isnan(str2double(FilterDelayDterm{k})) && SPGyroDelay(k,1) > 0
+                dterm_phase_shift_deg(k,1) = round(PSphaseShiftDeg(str2double(FilterDelayDterm{k}), 1000/(SPGyroDelay(k,1))));
             end
         catch, end
 

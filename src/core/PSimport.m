@@ -40,7 +40,7 @@ while isempty(find(cellfun(@(a)~isempty(a)&&a>0,a)))
 end
 logEndPoints = find(cellfun(@(a)~isempty(a)&&a>0,a));
 
-relevantLogNum=str2num(csvFname(end-5:end-4));
+relevantLogNum=str2double(csvFname(end-5:end-4));
 s=c{1}(logStartPoints(relevantLogNum):logEndPoints(relevantLogNum));
 n=1;
 for m=1:size(s,1)

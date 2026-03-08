@@ -14,11 +14,11 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     th = PStheme();
 
     global logviewerYscale 
-    logviewerYscale = str2num(get(guiHandles.maxY_input, 'String'));
+    logviewerYscale = str2double(get(guiHandles.maxY_input, 'String'));
 
     figure(PSfig);
 
-    maxY=str2num(get(guiHandles.maxY_input, 'String'));
+    maxY=str2double(get(guiHandles.maxY_input, 'String'));
 
     alpha_red=.8;
     alpha_blue=.8;

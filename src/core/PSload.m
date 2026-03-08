@@ -147,7 +147,7 @@ try
 
                 %%%%%%%%%% collect debug mode info %%%%%%%%%%
                 try
-                    debugmode(fcnt) = str2num(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'debug_mode')),2)));
+                    debugmode(fcnt) = str2double(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'debug_mode')),2)));
                 catch
                     % BF 2025.12+: GYRO_SCALED removed, use GYRO_FILTERED as default
                     if debugIdx{fcnt}.GYRO_SCALED == -1
@@ -159,7 +159,7 @@ try
 
                 %%%%%%%%%% parse gyro_debug_axis (BF 2025.12+, for FFT_FREQ axis) %%%%%%%%%%
                 try
-                    gyro_debug_axis(fcnt) = str2num(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'gyro_debug_axis')),2)));
+                    gyro_debug_axis(fcnt) = str2double(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'gyro_debug_axis')),2)));
                 catch
                     gyro_debug_axis(fcnt) = 0; % default Roll
                 end

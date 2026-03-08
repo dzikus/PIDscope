@@ -48,8 +48,8 @@ function [freq ampMat] = PSthrSpec(X, Y, F, psd)
     
      for i = 1 : Tr 
         clear tmp
-        if ~isempty(find(Thr_sort > i - wnd & Thr_sort <= i + wnd))
-            ind = find(Thr_sort > i - wnd & Thr_sort <= i + wnd);
+        ind = find(Thr_sort > i - wnd & Thr_sort <= i + wnd);
+        if ~isempty(ind)
             for j = 1 : length(ind)
                 try
                 clear Ytmp Ytmp2 Y N Np Fs

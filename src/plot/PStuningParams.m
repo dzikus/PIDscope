@@ -25,7 +25,7 @@ pidlabels = p{get(guiHandles.Firmware, 'Value')};
 %%%%%%%%%%%%% step resp %%%%%%%%%%%%%
 figure(PStunefig)
 
-ymax = str2num(get(guiHandlesTune.maxYStepInput, 'String'));
+ymax = str2double(get(guiHandlesTune.maxYStepInput, 'String'));
 ypos = [(ymax/3)*2.9 (ymax/3)*1.85 (ymax/3)*.8];
 hwarn=[];
 if ~get(guiHandlesTune.clearPlots, 'Value')

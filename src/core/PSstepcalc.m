@@ -32,9 +32,10 @@ switch subsampleFactor
 end
       
 segment_vector = 1 : round(segment_length/subsampleFactor) : length(SP);
-NSegs = max(find((segment_vector+segment_length) < segment_vector(end)));
+tmp = find((segment_vector+segment_length) < segment_vector(end));
+if isempty(tmp), NSegs = 0; else NSegs = max(tmp); end
 if NSegs > 0
-    SPseg = []; GYseg = [];
+    SPseg = zeros(NSegs, segment_length+1); GYseg = zeros(NSegs, segment_length+1);
     j = 0;
     for i = 1 : NSegs
         if max(abs(SP(segment_vector(i):segment_vector(i)+segment_length))) >= minInput 

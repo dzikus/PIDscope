@@ -67,8 +67,8 @@ try
     defaults.Values(5) = get(guiHandles.plotY, 'Value');
     defaults.Values(6) = get(guiHandles.lineSmooth, 'Value');
     defaults.Values(7) = get(guiHandles.linewidth, 'Value');
-    defaults.Values(8) = str2num(get(guiHandles.maxY_input, 'String'));
-    defaults.Values(9) = str2num(get(guiHandles.nCols_input, 'String'));
+    defaults.Values(8) = str2double(get(guiHandles.maxY_input, 'String'));
+    defaults.Values(9) = str2double(get(guiHandles.nCols_input, 'String'));
 catch
 end
 try
@@ -106,7 +106,7 @@ try
     defaults.Values(30) = get(guiHandlesTune.plotP, 'Value');
     defaults.Values(31) = get(guiHandlesTune.plotY, 'Value');
     defaults.Values(32) = get(guiHandlesTune.RPYcombo, 'Value');
-    defaults.Values(33) = str2num(get(guiHandlesTune.maxYStepInput, 'String'));
+    defaults.Values(33) = str2double(get(guiHandlesTune.maxYStepInput, 'String'));
 catch
 end
 
