@@ -41,14 +41,14 @@ row = row - rh - gap*3;
 % Gyro LPF1
 mkSection(fig, '--- Gyro LPF1 ---', cpL, row, cpW, rh, bgc, [.5 .9 1], fontsz);
 row = row - rh - gap;
-[h.glpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf1_type, cb, fontsz);
+[h.glpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf1_type, fp.gyro_lpf1_hz, cb, fontsz);
 [h.glpf1_hz, h.glpf1_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_lpf1_hz, cb, fontsz);
 row = row - gap*2;
 
 % Gyro LPF2
 mkSection(fig, '--- Gyro LPF2 ---', cpL, row, cpW, rh, bgc, [.5 .9 1], fontsz);
 row = row - rh - gap;
-[h.glpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf2_type, cb, fontsz);
+[h.glpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.gyro_lpf2_type, fp.gyro_lpf2_hz, cb, fontsz);
 [h.glpf2_hz, h.glpf2_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 1000, fp.gyro_lpf2_hz, cb, fontsz);
 row = row - gap*2;
 
@@ -69,14 +69,14 @@ row = row - gap*2;
 % D-term LPF1
 mkSection(fig, '--- D-term LPF1 ---', cpL, row, cpW, rh, bgc, [.5 1 .5], fontsz);
 row = row - rh - gap;
-[h.dlpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf1_type, cb, fontsz);
+[h.dlpf1_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf1_type, fp.dterm_lpf1_hz, cb, fontsz);
 [h.dlpf1_hz, h.dlpf1_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 500, fp.dterm_lpf1_hz, cb, fontsz);
 row = row - gap*2;
 
 % D-term LPF2
 mkSection(fig, '--- D-term LPF2 ---', cpL, row, cpW, rh, bgc, [.5 1 .5], fontsz);
 row = row - rh - gap;
-[h.dlpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf2_type, cb, fontsz);
+[h.dlpf2_type, row] = mkType(fig, cpL, row, rh, gap, bgc, fgc, fp.dterm_lpf2_type, fp.dterm_lpf2_hz, cb, fontsz);
 [h.dlpf2_hz, h.dlpf2_lbl, row] = mkSlider(fig, 'Hz:', cpL, row, rh, gap, bgc, fgc, 0, 500, fp.dterm_lpf2_hz, cb, fontsz);
 row = row - gap*2;
 
@@ -241,12 +241,18 @@ function mkSection(fig, txt, cpL, row, cpW, rh, bgc, col, fsz)
         'FontSize', fsz, 'FontWeight', 'bold', 'BackgroundColor', bgc, 'ForegroundColor', col);
 end
 
-function [hType, rowOut] = mkType(fig, cpL, row, rh, gap, bgc, fgc, initVal, cb, fsz)
+function [hType, rowOut] = mkType(fig, cpL, row, rh, gap, bgc, fgc, initVal, initHz, cb, fsz)
     uicontrol(fig, 'Style', 'text', 'String', 'Type:', ...
         'Units', 'normalized', 'Position', [cpL+.01 row .05 rh], ...
         'FontSize', fsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'HorizontalAlignment', 'left');
+    % BF header: 0=PT1, 1=Biquad, 2=PT2, 3=PT3; dropdown[1]=OFF
+    if initHz == 0
+        ddVal = 1;  % OFF
+    else
+        ddVal = min(initVal + 2, 5);
+    end
     hType = uicontrol(fig, 'Style', 'popupmenu', ...
-        'String', {'OFF', 'PT1', 'Biquad', 'PT2', 'PT3'}, 'Value', initVal + 1, ...
+        'String', {'OFF', 'PT1', 'Biquad', 'PT2', 'PT3'}, 'Value', ddVal, ...
         'Units', 'normalized', 'Position', [cpL+.06 row .10 rh], 'FontSize', fsz, 'Callback', cb);
     rowOut = row - rh - gap;
 end
