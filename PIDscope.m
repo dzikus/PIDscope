@@ -91,6 +91,7 @@ set(0,'defaultUicontrolFontName', 'Helvetica')
 
 %%%% assign main figure handle and define some UI variables
 PSfig = figure(1);
+drawnow;  % flush Qt event queue so figure is mapped before setting Position
 set(PSfig, 'InvertHardcopy', 'off');
 th = PStheme();
 bgcolor = th.figBg;
