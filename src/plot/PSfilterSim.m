@@ -421,10 +421,8 @@ doUpdate();
         drawGradientBar(axBarN, fMax, [.8 .3 .2; .9 .7 .2], notchFreqs, notchCols, thm);
         if showBoth
             set(axBarL, 'Position', [plotL barY plotR-plotL barH]);
-            set(axBarN, 'Visible', 'off');
         else
             set(axBarL, 'Position', [colL(1) barY colW barH]);
-            set(axBarN, 'Visible', 'on');
         end
 
         %% TEST SIGNAL PSD (if sigHzHi > sigHzLo)
@@ -468,25 +466,31 @@ doUpdate();
         d2on = dlpf2t > 0 && dlpf2f > 0;
         colNoise = [.9 .25 .25];
 
-        % Show Both: widen left col, hide right col
+        % Show Both: widen left col, move right col offscreen
+        offscreen = [-2 -2 .01 .01];
         if showBoth
             wideW = plotR - plotL;
             set(axLmag, 'Position', [plotL get(axLmag,'Position')*[0;1;0;0] wideW get(axLmag,'Position')*[0;0;0;1]]);
             set(axLdelay, 'Position', [plotL get(axLdelay,'Position')*[0;1;0;0] wideW get(axLdelay,'Position')*[0;0;0;1]]);
             set(axLphase, 'Position', [plotL get(axLphase,'Position')*[0;1;0;0] wideW get(axLphase,'Position')*[0;0;0;1]]);
             set(axLstep, 'Position', [plotL get(axLstep,'Position')*[0;1;0;0] wideW get(axLstep,'Position')*[0;0;0;1]]);
-            set(axNmag, 'Visible', 'off'); set(axNdelay, 'Visible', 'off');
-            set(axNphase, 'Visible', 'off'); set(axNstep, 'Visible', 'off');
+            set(axNmag, 'Position', offscreen); cla(axNmag);
+            set(axNdelay, 'Position', offscreen); cla(axNdelay);
+            set(axNphase, 'Position', offscreen); cla(axNphase);
+            set(axNstep, 'Position', offscreen); cla(axNstep);
             set(hTitleN, 'Visible', 'off');
+            set(axBarN, 'Position', offscreen);
         else
             set(axLmag, 'Position', [colL(1) get(axLmag,'Position')*[0;1;0;0] colW get(axLmag,'Position')*[0;0;0;1]]);
             set(axLdelay, 'Position', [colL(1) get(axLdelay,'Position')*[0;1;0;0] colW get(axLdelay,'Position')*[0;0;0;1]]);
             set(axLphase, 'Position', [colL(1) get(axLphase,'Position')*[0;1;0;0] colW get(axLphase,'Position')*[0;0;0;1]]);
             set(axLstep, 'Position', [colL(1) get(axLstep,'Position')*[0;1;0;0] colW get(axLstep,'Position')*[0;0;0;1]]);
-            set(axNmag, 'Visible', 'on'); set(axNdelay, 'Visible', 'on');
-            set(axNphase, 'Visible', 'on');
-            if showStep, set(axNstep, 'Visible', 'on'); end
+            set(axNmag, 'Position', [colL(2) rowB1 colW rowH]);
+            set(axNdelay, 'Position', [colL(2) rowB2 colW rowH]);
+            set(axNphase, 'Position', [colL(2) rowB3 colW rowH]);
+            set(axNstep, 'Position', [colL(2) rowB4 colW rowH]);
             set(hTitleN, 'Visible', 'on');
+            set(axBarN, 'Position', [colL(2) barY colW barH]);
         end
 
         %% LOWPASS COLUMN (+ notch overlay when showBoth)
