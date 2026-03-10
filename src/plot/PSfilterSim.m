@@ -292,6 +292,10 @@ doUpdate();
 
         allFreqAx = [axLmag axLdelay axLphase axNmag axNdelay axNphase];
 
+        % Suppress "Non-positive limit for logarithmic axis" during redraw
+        wstate = warning('query', 'all');
+        warning('off', 'all');
+
         glpf1t = get(h.glpf1_type, 'Value') - 1;
         glpf1f = readEdit(h.glpf1_hz);
         glpf2t = get(h.glpf2_type, 'Value') - 1;
@@ -734,15 +738,14 @@ doUpdate();
             end
         end
 
-        % Set XScale after all plotting to avoid log-axis warnings
-        if useLog
-            xsc = 'log';
-        else
-            xsc = 'linear';
-        end
+        % Set XScale+XLim atomically
+        xl = xlimF(useLog, fMax);
+        if useLog, xsc = 'log'; else xsc = 'linear'; end
         for axi = 1:numel(allFreqAx)
-            if ishandle(allFreqAx(axi)), set(allFreqAx(axi), 'XScale', xsc); end
+            if ishandle(allFreqAx(axi)), set(allFreqAx(axi), 'XLim', xl, 'XScale', xsc); end
         end
+
+        warning(wstate);
     end
 
 end
