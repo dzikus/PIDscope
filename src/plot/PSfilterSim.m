@@ -218,33 +218,64 @@ doUpdate();
     end
 
     function toggleStepRow()
-        showStep = get(h.showstep, 'Value');
-        if showStep
-            set(axLstep, 'Visible', 'on');
-            set(axNstep, 'Visible', 'on');
-            rH = (plotTop - botMargin - 3*rowGap) / 4;
-            rB1 = plotTop - rH; rB2 = rB1 - rH - rowGap; rB3 = rB2 - rH - rowGap; rB4 = rB3 - rH - rowGap;
-            set(axLmag, 'Position', [colL(1) rB1 colW rH]);
-            set(axLdelay, 'Position', [colL(1) rB2 colW rH]);
-            set(axLphase, 'Position', [colL(1) rB3 colW rH]);
-            set(axLstep, 'Position', [colL(1) rB4 colW rH]);
-            set(axNmag, 'Position', [colL(2) rB1 colW rH]);
-            set(axNdelay, 'Position', [colL(2) rB2 colW rH]);
-            set(axNphase, 'Position', [colL(2) rB3 colW rH]);
-            set(axNstep, 'Position', [colL(2) rB4 colW rH]);
-        else
-            set(axLstep, 'Visible', 'off');
-            set(axNstep, 'Visible', 'off');
-            rH = (plotTop - botMargin - 2*rowGap) / 3;
-            rB1 = plotTop - rH; rB2 = rB1 - rH - rowGap; rB3 = rB2 - rH - rowGap;
-            set(axLmag, 'Position', [colL(1) rB1 colW rH]);
-            set(axLdelay, 'Position', [colL(1) rB2 colW rH]);
-            set(axLphase, 'Position', [colL(1) rB3 colW rH]);
-            set(axNmag, 'Position', [colL(2) rB1 colW rH]);
-            set(axNdelay, 'Position', [colL(2) rB2 colW rH]);
-            set(axNphase, 'Position', [colL(2) rB3 colW rH]);
-        end
+        applyLayout();
         autoUpdate();
+    end
+
+    function applyLayout()
+        sStep = get(h.showstep, 'Value');
+        sBoth = get(h.showboth, 'Value');
+        offscr = [-2 -2 .01 .01];
+
+        if sStep
+            nRows = 4;
+        else
+            nRows = 3;
+        end
+        rH = (plotTop - botMargin - (nRows-1)*rowGap) / nRows;
+        rB1 = plotTop - rH;
+        rB2 = rB1 - rH - rowGap;
+        rB3 = rB2 - rH - rowGap;
+        if nRows == 4
+            rB4 = rB3 - rH - rowGap;
+        end
+
+        if sBoth
+            w = plotR - plotL; xL = plotL;
+        else
+            w = colW; xL = colL(1);
+        end
+
+        set(axLmag,   'Position', [xL rB1 w rH]);
+        set(axLdelay, 'Position', [xL rB2 w rH]);
+        set(axLphase, 'Position', [xL rB3 w rH]);
+        if sStep
+            set(axLstep, 'Position', [xL rB4 w rH], 'Visible', 'on');
+        else
+            set(axLstep, 'Position', offscr, 'Visible', 'off');
+        end
+
+        if sBoth
+            set(axNmag,   'Position', offscr); cla(axNmag);
+            set(axNdelay, 'Position', offscr); cla(axNdelay);
+            set(axNphase, 'Position', offscr); cla(axNphase);
+            set(axNstep,  'Position', offscr); cla(axNstep);
+            set(hTitleN, 'Visible', 'off');
+            set(axBarN, 'Position', offscr);
+            set(axBarL, 'Position', [plotL barY plotR-plotL barH]);
+        else
+            set(axNmag,   'Position', [colL(2) rB1 colW rH]);
+            set(axNdelay, 'Position', [colL(2) rB2 colW rH]);
+            set(axNphase, 'Position', [colL(2) rB3 colW rH]);
+            if sStep
+                set(axNstep, 'Position', [colL(2) rB4 colW rH], 'Visible', 'on');
+            else
+                set(axNstep, 'Position', offscr, 'Visible', 'off');
+            end
+            set(hTitleN, 'Visible', 'on');
+            set(axBarN, 'Position', [colL(2) barY colW barH]);
+            set(axBarL, 'Position', [colL(1) barY colW barH]);
+        end
     end
 
     function toggleAutoUpdate()
@@ -419,11 +450,6 @@ doUpdate();
         if gn2f > 0, notchFreqs{end+1} = gn2f; notchCols{end+1} = colStaticN*0.85; end
         if dnf > 0, notchFreqs{end+1} = dnf; notchCols{end+1} = colD; end
         drawGradientBar(axBarN, fMax, [.8 .3 .2; .9 .7 .2], notchFreqs, notchCols, thm);
-        if showBoth
-            set(axBarL, 'Position', [plotL barY plotR-plotL barH]);
-        else
-            set(axBarL, 'Position', [colL(1) barY colW barH]);
-        end
 
         %% TEST SIGNAL PSD (if sigHzHi > sigHzLo)
         if sigHzHi > sigHzLo && sigDur > 0
@@ -466,32 +492,7 @@ doUpdate();
         d2on = dlpf2t > 0 && dlpf2f > 0;
         colNoise = [.9 .25 .25];
 
-        % Show Both: widen left col, move right col offscreen
-        offscreen = [-2 -2 .01 .01];
-        if showBoth
-            wideW = plotR - plotL;
-            set(axLmag, 'Position', [plotL get(axLmag,'Position')*[0;1;0;0] wideW get(axLmag,'Position')*[0;0;0;1]]);
-            set(axLdelay, 'Position', [plotL get(axLdelay,'Position')*[0;1;0;0] wideW get(axLdelay,'Position')*[0;0;0;1]]);
-            set(axLphase, 'Position', [plotL get(axLphase,'Position')*[0;1;0;0] wideW get(axLphase,'Position')*[0;0;0;1]]);
-            set(axLstep, 'Position', [plotL get(axLstep,'Position')*[0;1;0;0] wideW get(axLstep,'Position')*[0;0;0;1]]);
-            set(axNmag, 'Position', offscreen); cla(axNmag);
-            set(axNdelay, 'Position', offscreen); cla(axNdelay);
-            set(axNphase, 'Position', offscreen); cla(axNphase);
-            set(axNstep, 'Position', offscreen); cla(axNstep);
-            set(hTitleN, 'Visible', 'off');
-            set(axBarN, 'Position', offscreen);
-        else
-            set(axLmag, 'Position', [colL(1) get(axLmag,'Position')*[0;1;0;0] colW get(axLmag,'Position')*[0;0;0;1]]);
-            set(axLdelay, 'Position', [colL(1) get(axLdelay,'Position')*[0;1;0;0] colW get(axLdelay,'Position')*[0;0;0;1]]);
-            set(axLphase, 'Position', [colL(1) get(axLphase,'Position')*[0;1;0;0] colW get(axLphase,'Position')*[0;0;0;1]]);
-            set(axLstep, 'Position', [colL(1) get(axLstep,'Position')*[0;1;0;0] colW get(axLstep,'Position')*[0;0;0;1]]);
-            set(axNmag, 'Position', [colL(2) rowB1 colW rowH]);
-            set(axNdelay, 'Position', [colL(2) rowB2 colW rowH]);
-            set(axNphase, 'Position', [colL(2) rowB3 colW rowH]);
-            set(axNstep, 'Position', [colL(2) rowB4 colW rowH]);
-            set(hTitleN, 'Visible', 'on');
-            set(axBarN, 'Position', [colL(2) barY colW barH]);
-        end
+        applyLayout();
 
         %% LOWPASS COLUMN (+ notch overlay when showBoth)
 
