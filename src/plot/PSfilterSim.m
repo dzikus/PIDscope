@@ -259,6 +259,8 @@ doUpdate();
     function doUpdate()
         if ~ishandle(fig), return; end
 
+        allFreqAx = [axLmag axLdelay axLphase axNmag axNdelay axNphase];
+
         glpf1t = get(h.glpf1_type, 'Value') - 1;
         glpf1f = readEdit(h.glpf1_hz);
         glpf2t = get(h.glpf2_type, 'Value') - 1;
@@ -403,7 +405,6 @@ doUpdate();
         colStaticN = [1 .65 .2];
         colCombN = [.95 .85 .2];
         plotFn = @plot;
-        if useLog, plotFn = @semilogx; end
 
         %% GRADIENT FREQUENCY BARS
         drawGradientBar(axBarL, fMax, [.2 .7 .8; .3 .9 .5], ...
@@ -507,10 +508,11 @@ doUpdate();
                 plotFn(axLmag, fVec(fIdx), magY(H_rpm{ri}(fIdx), usedB), 'Color', rpmCols{ci}, 'LineWidth', 0.7);
             end
         end
+        fLo = xlimF(useLog, fMax);
         if usedB
-            line(axLmag, [0 fMax], [-3 -3], 'Color', [.6 .6 .2], 'LineStyle', ':', 'LineWidth', 0.5);
+            line(axLmag, [fLo(1) fMax], [-3 -3], 'Color', [.6 .6 .2], 'LineStyle', ':', 'LineWidth', 0.5);
         else
-            line(axLmag, [0 fMax], [0.707 0.707], 'Color', [.6 .6 .2], 'LineStyle', ':', 'LineWidth', 0.5);
+            line(axLmag, [fLo(1) fMax], [0.707 0.707], 'Color', [.6 .6 .2], 'LineStyle', ':', 'LineWidth', 0.5);
         end
         hold(axLmag, 'off');
         PSstyleAxes(axLmag, thm);
@@ -725,6 +727,16 @@ doUpdate();
                 xlabel(axNstep, 'Time (ms)', 'Color', thm.textPrimary);
                 set(get(axNstep, 'YLabel'), 'String', 'Step Resp.');
             end
+        end
+
+        % Set XScale after all plotting to avoid log-axis warnings
+        if useLog
+            xsc = 'log';
+        else
+            xsc = 'linear';
+        end
+        for axi = 1:numel(allFreqAx)
+            if ishandle(allFreqAx(axi)), set(allFreqAx(axi), 'XScale', xsc); end
         end
     end
 
