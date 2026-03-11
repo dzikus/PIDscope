@@ -25,9 +25,13 @@ try
     % Example: " Emuflight / STM32F405 0.4.1 ..."
     % Example: "QuickSilver" (from PSquicJson2csv synthetic header)
 
-    % Extract firmware type (first word before ' /' or end of string)
-    parts = strsplit(verStr, '/');
-    fwType = strtrim(parts{1});
+    % Extract firmware type (first word)
+    % Old format: " Betaflight / STM32F405 4.5.3 ..."  (with /)
+    % New format: "Betaflight 2025.12.0-beta (hash) STM32F405" (no /)
+    words = strsplit(strtrim(verStr));
+    if ~isempty(words)
+        fwType = words{1};
+    end
 
     % Extract version: find pattern X.Y.Z or X.Y anywhere in string
     tok = regexp(verStr, '(\d+)\.(\d+)\.(\d+)', 'tokens');

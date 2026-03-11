@@ -52,6 +52,10 @@ if strcmp(mode, 'seq')
                 case 'text_right', pos = [cpL+cpW/2 yTop-h cpW/4 h];  yTop = yTop-h-gap;
                 case 'input_left', pos = [cpL+cpM yTop-h cpW/4 h];
                 case 'input_right',pos = [cpL+cpW/2 yTop-h cpW/4 h];  yTop = yTop-h-gap;
+                case 'quarter1', pos = [cpL+cpM          yTop-h fw/4 h];
+                case 'quarter2', pos = [cpL+cpM+fw/4     yTop-h fw/4 h];
+                case 'quarter3', pos = [cpL+cpM+fw/2     yTop-h fw/4 h];
+                case 'quarter4', pos = [cpL+cpM+3*fw/4   yTop-h fw/4 h]; yTop = yTop-h-gap;
                 case 'panel'
                     continue;
                 otherwise, continue;

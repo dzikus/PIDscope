@@ -45,3 +45,11 @@
 %! assert(strcmp(t, 'Betaflight'));
 %! assert(maj, 4);
 %! assert(mnr, 4);
+
+%!test
+%! % BF 2025.12 new header format (no slash, from real BBL)
+%! si = {'Firmware revision', 'Betaflight 2025.12.0-beta (080b2f5da) STM32F405'};
+%! [t, maj, mnr] = PSparseBFversion(si);
+%! assert(strcmp(t, 'Betaflight'), true, 'fwType should be Betaflight');
+%! assert(maj, 2025);
+%! assert(mnr, 12);
