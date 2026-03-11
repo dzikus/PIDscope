@@ -197,6 +197,7 @@ posInfo.lineSmooth =    [cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
 posInfo.linewidth =     [cpL+cpW/2 vPos-rs*row  cpW/2-cpM  rh]; row=row+1;
 posInfo.spectrogramButton = [cpL+cpM vPos-rs*row cpW-2*cpM rh]; row=row+1;
 posInfo.TuningButton =  [cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
+posInfo.PIDsliderButton=[cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
 posInfo.filterSimButton=[cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
 posInfo.PIDErrorButton = [cpL+cpM  vPos-rs*row  cpW/2-cpM  rh];
 posInfo.FlightStatsButton=[cpL+cpW/2 vPos-rs*row cpW/2-cpM rh]; row=row+1;
@@ -292,6 +293,18 @@ set(guiHandles.spectrogramButton, 'ForegroundColor', colorA);
 guiHandles.TuningButton = uicontrol(PSfig,'string','Step Resp Tool','fontsize',fontsz,'TooltipString', [TooltipString_step],'units','normalized','Position',[posInfo.TuningButton],...
     'callback','PStuneUIcontrol');
 set(guiHandles.TuningButton, 'ForegroundColor', colorB);
+
+guiHandles.PIDsliderButton = uicontrol(PSfig,'string','PID Slider Tool','fontsize',fontsz,...
+    'TooltipString','Interactive PID ratio calculator','units','normalized',...
+    'Position',[posInfo.PIDsliderButton],...
+    'callback',['try,' ...
+        'tmpFcnt=get(guiHandles.FileNum,''Value'');tmpFcnt=tmpFcnt(1);' ...
+        'PSsliderTool(rollPIDF{tmpFcnt},pitchPIDF{tmpFcnt},yawPIDF{tmpFcnt});' ...
+        'clear tmpFcnt;' ...
+    'catch,' ...
+        'PSsliderTool();' ...
+    'end']);
+set(guiHandles.PIDsliderButton, 'ForegroundColor', [.40 .80 1.0]);
 
 guiHandles.filterSimButton = uicontrol(PSfig,'string','Filter Sim','fontsize',fontsz,...
     'TooltipString','Simulate BF filter chain (theoretical response)','units','normalized',...
@@ -418,14 +431,15 @@ cpItems{end+1} = struct('h', guiHandles.lineSmooth, 'type','left', 'row',6, 'col
 cpItems{end+1} = struct('h', guiHandles.linewidth, 'type','right', 'row',6, 'col',0, 'nrows',0);
 cpItems{end+1} = struct('h', guiHandles.spectrogramButton, 'type','full', 'row',7, 'col',0, 'nrows',0);
 cpItems{end+1} = struct('h', guiHandles.TuningButton, 'type','full', 'row',8, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.filterSimButton, 'type','full', 'row',9, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.PIDErrorButton, 'type','left', 'row',10, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.FlightStatsButton, 'type','right', 'row',10, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.period2Hz, 'type','left', 'row',11, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.DispInfoButton, 'type','right', 'row',11, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.saveFig, 'type','left', 'row',12, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.saveSettings, 'type','right', 'row',12, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.PIDtuningService, 'type','full', 'row',13, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.PIDsliderButton, 'type','full', 'row',9, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.filterSimButton, 'type','full', 'row',10, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.PIDErrorButton, 'type','left', 'row',11, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.FlightStatsButton, 'type','right', 'row',11, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.period2Hz, 'type','left', 'row',12, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.DispInfoButton, 'type','right', 'row',12, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.saveFig, 'type','left', 'row',13, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.saveSettings, 'type','right', 'row',13, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.PIDtuningService, 'type','full', 'row',14, 'col',0, 'nrows',0);
 nrows = max(cellfun(@(x) x.row, cpItems));
 cpItems = [{struct('h', controlpanel, 'type','panel', 'row',0, 'col',0, 'nrows',nrows)}, cpItems];
 PSregisterResize(PSfig, cpPx, cpItems, 'rows');
