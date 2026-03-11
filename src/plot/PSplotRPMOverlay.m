@@ -1,4 +1,4 @@
-function PSplotRPMOverlay(ax, rpmMat, xData, imgHeight, freqMax, mode, nHarmonics)
+function PSplotRPMOverlay(ax, rpmMat, xData, imgHeight, freqMax, mode, nHarmonics, motors, harmonics, lw)
 %% PSplotRPMOverlay - overlay RPM filter motor frequencies on spectrogram
 %  ax          - axes handle
 %  rpmMat      - Nx4 matrix [motor1_Hz, motor2_Hz, motor3_Hz, motor4_Hz]
@@ -6,22 +6,31 @@ function PSplotRPMOverlay(ax, rpmMat, xData, imgHeight, freqMax, mode, nHarmonic
 %  imgHeight   - number of pixel rows in image
 %  freqMax     - max frequency in Hz
 %  mode        - 'throttle' or 'time'
-%  nHarmonics  - number of harmonics to draw (default 3)
+%  nHarmonics  - max harmonics (default 3)
+%  motors      - vector of motor indices to draw, e.g. [1 3] (default all)
+%  harmonics   - vector of harmonic indices to draw, e.g. [1 3] (default 1:nHarmonics)
+%  lw          - line width (default 1)
 
-if nargin < 7, nHarmonics = 3; end
+if nargin < 7 || isempty(nHarmonics), nHarmonics = 3; end
+if nargin < 8 || isempty(motors), motors = 1:min(4, size(rpmMat, 2)); end
+if nargin < 9 || isempty(harmonics), harmonics = 1:nHarmonics; end
+if nargin < 10 || isempty(lw), lw = 1; end
 if isempty(rpmMat) || imgHeight < 2 || freqMax <= 0
     return;
 end
 
 hold(ax, 'on');
-motorCol = [0 .9 0; .9 .9 0; .9 0 0; .3 .5 1]; % green yellow red blue
+motorCol = [.9 0 0; .9 .6 0; 0 .8 .8; 0 .9 0]; % M1=red M2=orange M3=cyan M4=green
 lineStyles = {'-'; '--'; ':'};
 hz_per_pixel = freqMax / imgHeight;
-nMotors = min(4, size(rpmMat, 2));
 
 if strcmp(mode, 'throttle')
-    for m = 1:nMotors
-        for harm = 1:nHarmonics
+    for mi = 1:numel(motors)
+        m = motors(mi);
+        if m > size(rpmMat, 2), continue; end
+        ci = min(m, size(motorCol, 1));
+        for hi = 1:numel(harmonics)
+            harm = harmonics(hi);
             xPts = [];
             yPts = [];
             for bin = 1:100
@@ -39,10 +48,11 @@ if strcmp(mode, 'throttle')
                     end
                 end
             end
+            if numel(yPts) >= 5, yPts = round(smooth(yPts(:), 5))'; end
             if ~isempty(xPts)
                 lstyle = lineStyles{min(harm, numel(lineStyles))};
-                h = plot(ax, xPts, yPts, lstyle, 'LineWidth', 1);
-                set(h, 'Color', motorCol(m,:), 'HitTest', 'off');
+                plot(ax, xPts, yPts, lstyle, 'LineWidth', lw, ...
+                    'Color', motorCol(ci,:), 'HitTest', 'off');
             end
         end
     end
@@ -53,14 +63,18 @@ elseif strcmp(mode, 'time')
     if numSamples == 0 || numWindows == 0, return; end
     samplesPerWindow = max(1, round(numSamples / numWindows));
 
-    for m = 1:nMotors
-        for harm = 1:nHarmonics
+    for mi = 1:numel(motors)
+        m = motors(mi);
+        if m > size(rpmMat, 2), continue; end
+        ci = min(m, size(motorCol, 1));
+        for hi = 1:numel(harmonics)
+            harm = harmonics(hi);
             xPts = [];
             yPts = [];
             for w = 1:numWindows
                 lo = max(1, round((w-1) * samplesPerWindow) + 1);
-                hi = min(numSamples, round(w * samplesPerWindow));
-                vals = rpmMat(lo:hi, m) * harm;
+                hi2 = min(numSamples, round(w * samplesPerWindow));
+                vals = rpmMat(lo:hi2, m) * harm;
                 vals = vals(vals > 0 & vals < freqMax);
                 if ~isempty(vals)
                     avgHz = nanmean(vals);
@@ -71,10 +85,11 @@ elseif strcmp(mode, 'time')
                     end
                 end
             end
+            if numel(yPts) >= 5, yPts = round(smooth(yPts(:), 5))'; end
             if ~isempty(xPts)
                 lstyle = lineStyles{min(harm, numel(lineStyles))};
-                h = plot(ax, xPts, yPts, lstyle, 'LineWidth', 1);
-                set(h, 'Color', motorCol(m,:), 'HitTest', 'off');
+                plot(ax, xPts, yPts, lstyle, 'LineWidth', lw, ...
+                    'Color', motorCol(ci,:), 'HitTest', 'off');
             end
         end
     end

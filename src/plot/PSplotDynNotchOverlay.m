@@ -1,4 +1,4 @@
-function PSplotDynNotchOverlay(ax, notchMat, xData, imgHeight, freqMax, mode)
+function PSplotDynNotchOverlay(ax, notchMat, xData, imgHeight, freqMax, mode, lw)
 %% PSplotDynNotchOverlay - overlay dynamic notch frequencies on spectrogram
 %  ax        - axes handle
 %  notchMat  - Nx3 matrix [notch1_Hz, notch2_Hz, notch3_Hz] (same length as xData)
@@ -6,7 +6,9 @@ function PSplotDynNotchOverlay(ax, notchMat, xData, imgHeight, freqMax, mode)
 %  imgHeight - number of pixel rows in image (size(img,1))
 %  freqMax   - max frequency in Hz (Nyquist)
 %  mode      - 'throttle' or 'time'
+%  lw        - line width (default 1.5)
 
+if nargin < 7 || isempty(lw), lw = 1.5; end
 if isempty(notchMat) || imgHeight < 2 || freqMax <= 0
     return;
 end
@@ -36,8 +38,11 @@ if strcmp(mode, 'throttle')
                 end
             end
         end
+        if numel(yPts) >= 5
+            yPts = round(smooth(yPts(:), 5))';
+        end
         if ~isempty(xPts)
-            h = plot(ax, xPts, yPts, '.', 'MarkerSize', 4);
+            h = plot(ax, xPts, yPts, '-', 'LineWidth', lw);
             set(h, 'Color', colors(n,:), 'HitTest', 'off');
         end
     end
@@ -68,8 +73,11 @@ elseif strcmp(mode, 'time')
                 end
             end
         end
+        if numel(yPts) >= 5
+            yPts = round(smooth(yPts(:), 5))';
+        end
         if ~isempty(xPts)
-            h = plot(ax, xPts, yPts, '.', 'MarkerSize', 3);
+            h = plot(ax, xPts, yPts, '-', 'LineWidth', lw);
             set(h, 'Color', colors(n,:), 'HitTest', 'off');
         end
     end

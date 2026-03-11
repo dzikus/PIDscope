@@ -56,6 +56,16 @@ posInfo.clim3Max1_input =    [cpL+cpM yTop-rh cpW/4 rh];
 posInfo.clim3Max2_input =    [cpL+cpW/2 yTop-rh cpW/4 rh]; yTop=yTop-rh-gap;
 ClimScale3 = [-30 10];
 posInfo.sub100HzfreqTime  =  [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+% RPM overlay controls
+qw = fw/4;
+posInfo.rpmMotor1 =          [cpL+cpM       yTop-rh qw rh];
+posInfo.rpmMotor2 =          [cpL+cpM+qw    yTop-rh qw rh];
+posInfo.rpmMotor3 =          [cpL+cpM+2*qw  yTop-rh qw rh];
+posInfo.rpmMotor4 =          [cpL+cpM+3*qw  yTop-rh qw rh]; yTop=yTop-rh-gap;
+posInfo.rpmHarmDd =          [cpL+cpM yTop-ddh hw ddh];
+posInfo.rpmLwDd   =          [cpL+cpW/2 yTop-ddh hw ddh]; yTop=yTop-ddh-gap;
+posInfo.rpmDynNotch =        [cpL+cpM yTop-rh hw rh];
+posInfo.rpmEstChk =          [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 posInfo.playerBtn3        =  [cpL+cpM yTop-rh fw rh];
 
 if exist('PSspecfig3','var') && ishandle(PSspecfig3)
@@ -127,6 +137,38 @@ guiHandlesSpec3.climMax2_input = uicontrol(PSspecfig3,'style','edit','string',[n
  guiHandlesSpec3.sub100HzfreqTime = uicontrol(PSspecfig3,'Style','checkbox','String','sub 100Hz','fontsize',fontsz,'ForegroundColor',panelFg,'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.sub100HzfreqTime],'callback','@selection2;updateSpec=1; PSfreqTime;');
 
+% RPM overlay motor checkboxes
+motorCols = {[.9 0 0], [.9 .6 0], [0 .8 .8], [0 .9 0]};
+motorNames = {'M1','M2','M3','M4'};
+rpmCb = 'updateSpec=1; PSfreqTime;';
+for mi = 1:4
+    fld = sprintf('rpmMotor%d', mi);
+    guiHandlesSpec3.(fld) = uicontrol(PSspecfig3, 'Style','checkbox', 'String', motorNames{mi}, ...
+        'fontsize', fontsz-1, 'Value', 0, ...
+        'ForegroundColor', motorCols{mi}, 'BackgroundColor', bgcolor, ...
+        'units','normalized', 'Position', posInfo.(fld), 'callback', rpmCb);
+end
+
+guiHandlesSpec3.rpmHarmDd = uicontrol(PSspecfig3, 'Style','popupmenu', ...
+    'String', {'RPM off','1st','2nd','3rd','1st & 2nd','1st & 3rd','2nd & 3rd','All harm.'}, ...
+    'fontsize', fontsz, 'Value', 2, ...
+    'units','normalized', 'Position', posInfo.rpmHarmDd, 'callback', rpmCb);
+
+guiHandlesSpec3.rpmLwDd = uicontrol(PSspecfig3, 'Style','popupmenu', ...
+    'String', {'lw 0.5','lw 1','lw 1.5','lw 2'}, ...
+    'fontsize', fontsz, 'Value', 2, ...
+    'units','normalized', 'Position', posInfo.rpmLwDd, 'callback', rpmCb);
+
+guiHandlesSpec3.rpmDynNotch = uicontrol(PSspecfig3, 'Style','checkbox', 'String','Dyn Notch', ...
+    'fontsize', fontsz, 'Value', 0, ...
+    'ForegroundColor', [0 .8 .8], 'BackgroundColor', bgcolor, ...
+    'units','normalized', 'Position', posInfo.rpmDynNotch, 'callback', rpmCb);
+
+guiHandlesSpec3.rpmEstChk = uicontrol(PSspecfig3, 'Style','checkbox', 'String','RPM est.', ...
+    'fontsize', fontsz, 'Value', 0, ...
+    'ForegroundColor', [.6 .9 .6], 'BackgroundColor', bgcolor, ...
+    'units','normalized', 'Position', posInfo.rpmEstChk, 'callback', rpmCb);
+
 guiHandlesSpec3.playerBtn = uicontrol(PSspecfig3,'string','Player','fontsize',fontsz,...
     'TooltipString','Animated spectrum playback over time','units','normalized',...
     'Position',[posInfo.playerBtn3],...
@@ -156,6 +198,14 @@ cpI{end+1} = struct('h', guiHandlesSpec3.climMax2_text, 'type','text_right', 'ro
 cpI{end+1} = struct('h', guiHandlesSpec3.climMax1_input, 'type','input_left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec3.climMax2_input, 'type','input_right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec3.sub100HzfreqTime, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmMotor1, 'type','quarter1', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmMotor2, 'type','quarter2', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmMotor3, 'type','quarter3', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmMotor4, 'type','quarter4', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmHarmDd, 'type','dd_left', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmLwDd, 'type','dd_right', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmDynNotch, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec3.rpmEstChk, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec3.playerBtn, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 setappdata(PSspecfig3, 'PSplotGrid', struct('plotL',plotL1, 'colGap',0, ...
     'ncols',1, 'rows',rows, 'rowH',0.255, 'margin',0.10));

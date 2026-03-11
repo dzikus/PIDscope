@@ -78,10 +78,15 @@ posInfo.controlFreq1Cutoff =    [cpL+cpM yTop-rh hw rh];
 posInfo.controlFreq2Cutoff =    [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 posInfo.checkbox2d=             [cpL+cpM yTop-rh hw rh];
 posInfo.checkboxPSD=            [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
-posInfo.checkboxEstRPM=         [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
-posInfo.rpmLegend1=             [cpL+cpM yTop-rhs fw rhs]; yTop=yTop-rhs-cpMv;
-posInfo.rpmLegend2=             [cpL+cpM yTop-rhs fw rhs]; yTop=yTop-rhs-cpMv;
-posInfo.rpmLegend3=             [cpL+cpM yTop-rhs fw rhs];
+qw = fw/4;
+posInfo.rpmMotor1 =             [cpL+cpM       yTop-rh qw rh];
+posInfo.rpmMotor2 =             [cpL+cpM+qw    yTop-rh qw rh];
+posInfo.rpmMotor3 =             [cpL+cpM+2*qw  yTop-rh qw rh];
+posInfo.rpmMotor4 =             [cpL+cpM+3*qw  yTop-rh qw rh]; yTop=yTop-rh-gap;
+posInfo.rpmHarmDd =             [cpL+cpM yTop-ddh hw ddh];
+posInfo.rpmLwDd   =             [cpL+cpW/2 yTop-ddh hw ddh]; yTop=yTop-ddh-gap;
+posInfo.rpmDynNotch =           [cpL+cpM yTop-rh hw rh];
+posInfo.rpmEstChk =             [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 
 posInfo.AphasedelayText1=[cols(1)+0.02 .984-tbOff_spec colW4*0.7 .02];
 posInfo.AphasedelayText2=[cols(2)+0.02 .984-tbOff_spec colW4*0.7 .02];
@@ -173,13 +178,36 @@ guiHandlesSpec.checkboxPSD =uicontrol(PSspecfig,'Style','checkbox','String','PSD
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxPSD],'callback', 'PSplotSpec;');
 set(guiHandlesSpec.checkboxPSD, 'Value', 0);
 
-guiHandlesSpec.checkboxEstRPM =uicontrol(PSspecfig,'Style','checkbox','String','Est. RPM','fontsize',fontsz,'TooltipString', ['Estimate motor RPM from spectrum (2D heatmap only)'],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxEstRPM],'callback','updateSpec=1;PSplotSpec;');
-set(guiHandlesSpec.checkboxEstRPM, 'Value', 0);
+motorCols = {[.9 0 0], [.9 .6 0], [0 .8 .8], [0 .9 0]};
+motorNames = {'M1','M2','M3','M4'};
+rpmCb = 'updateSpec=1;PSplotSpec;';
+for mi = 1:4
+    fld = sprintf('rpmMotor%d', mi);
+    guiHandlesSpec.(fld) = uicontrol(PSspecfig, 'Style','checkbox', 'String', motorNames{mi}, ...
+        'fontsize', fontsz-1, 'Value', 0, ...
+        'ForegroundColor', motorCols{mi}, 'BackgroundColor', bgcolor, ...
+        'units','normalized', 'Position', posInfo.(fld), 'callback', rpmCb);
+end
 
-guiHandlesSpec.rpmLegend1 = uicontrol(PSspecfig,'style','text','string','--- 1st (fund)','fontsize',fontsz-1,'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',[0 .7 .15],'FontWeight','bold','Position',[posInfo.rpmLegend1]);
-guiHandlesSpec.rpmLegend2 = uicontrol(PSspecfig,'style','text','string','-- 2nd harm','fontsize',fontsz-1,'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',[.9 .7 0],'FontWeight','bold','Position',[posInfo.rpmLegend2]);
-guiHandlesSpec.rpmLegend3 = uicontrol(PSspecfig,'style','text','string','... 3rd harm','fontsize',fontsz-1,'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',[.9 .2 0],'FontWeight','bold','Position',[posInfo.rpmLegend3]);
+guiHandlesSpec.rpmHarmDd = uicontrol(PSspecfig, 'Style','popupmenu', ...
+    'String', {'RPM off','1st','2nd','3rd','1st & 2nd','1st & 3rd','2nd & 3rd','All harm.'}, ...
+    'fontsize', fontsz, 'Value', 2, ...
+    'units','normalized', 'Position', posInfo.rpmHarmDd, 'callback', rpmCb);
+
+guiHandlesSpec.rpmLwDd = uicontrol(PSspecfig, 'Style','popupmenu', ...
+    'String', {'lw 0.5','lw 1','lw 1.5','lw 2'}, ...
+    'fontsize', fontsz, 'Value', 2, ...
+    'units','normalized', 'Position', posInfo.rpmLwDd, 'callback', rpmCb);
+
+guiHandlesSpec.rpmDynNotch = uicontrol(PSspecfig, 'Style','checkbox', 'String','Dyn Notch', ...
+    'fontsize', fontsz, 'Value', 0, ...
+    'ForegroundColor', [0 .8 .8], 'BackgroundColor', bgcolor, ...
+    'units','normalized', 'Position', posInfo.rpmDynNotch, 'callback', rpmCb);
+
+guiHandlesSpec.rpmEstChk = uicontrol(PSspecfig, 'Style','checkbox', 'String','RPM est.', ...
+    'fontsize', fontsz, 'Value', 0, ...
+    'ForegroundColor', [.6 .9 .6], 'BackgroundColor', bgcolor, ...
+    'units','normalized', 'Position', posInfo.rpmEstChk, 'callback', rpmCb);
 
 guiHandlesSpec.controlFreqCutoff_text = uicontrol(PSspecfig,'style','text','string','freq lims Hz','fontsize',fontsz,'TooltipString',[TooltipString_controlFreqCutoff],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.controlFreqCutoff_text]);
 guiHandlesSpec.controlFreq1Cutoff = uicontrol(PSspecfig,'style','edit','string',[num2str(round(Flim1))],'fontsize',fontsz,'TooltipString',[TooltipString_controlFreqCutoff],'units','normalized','Position',[posInfo.controlFreq1Cutoff],...
@@ -253,10 +281,14 @@ cpI{end+1} = struct('h', guiHandlesSpec.controlFreq1Cutoff, 'type','input_left',
 cpI{end+1} = struct('h', guiHandlesSpec.controlFreq2Cutoff, 'type','input_right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec.checkbox2d, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec.checkboxPSD, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
-cpI{end+1} = struct('h', guiHandlesSpec.checkboxEstRPM, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
-cpI{end+1} = struct('h', guiHandlesSpec.rpmLegend1, 'type','full', 'row',0, 'col',0, 'hpx',rhs_px);
-cpI{end+1} = struct('h', guiHandlesSpec.rpmLegend2, 'type','full', 'row',0, 'col',0, 'hpx',rhs_px);
-cpI{end+1} = struct('h', guiHandlesSpec.rpmLegend3, 'type','full', 'row',0, 'col',0, 'hpx',rhs_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmMotor1, 'type','quarter1', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmMotor2, 'type','quarter2', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmMotor3, 'type','quarter3', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmMotor4, 'type','quarter4', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmHarmDd, 'type','dd_left', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmLwDd, 'type','dd_right', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmDynNotch, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec.rpmEstChk, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 setappdata(PSspecfig, 'PSplotGrid', struct('plotL',plotL4, 'colGap',colGap4, ...
     'ncols',4, 'rows',rows, 'rowH',0.21, 'margin',0.04));
 % Per-column top-bar widgets: {handle, col_index, xOffset_from_col_start}
