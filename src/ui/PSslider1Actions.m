@@ -62,8 +62,14 @@ if ~isempty(x2) && isfield(guiHandles, 'stickDotYT')
     T_f = T{fileIdx};
 
     if isfield(T_f, 'rcCommand_0_')
+        fwSel = get(guiHandles.Firmware, 'Value');
+        if fwSel == 6  % Rotorflight: collective is -500..500
+            thrPct = (T_f.rcCommand_3_(x2) + 500) / 10;
+        else
+            thrPct = (T_f.rcCommand_3_(x2) - 1000) / 10;
+        end
         try set(guiHandles.stickDotYT, 'XData', -T_f.rcCommand_2_(x2), ...
-                'YData', (T_f.rcCommand_3_(x2)-1000)/10); catch, end
+                'YData', thrPct); catch, end
         try set(guiHandles.stickDotRP, 'XData', T_f.rcCommand_0_(x2), ...
                 'YData', T_f.rcCommand_1_(x2)); catch, end
     elseif isfield(T_f, 'setpoint_0_')
