@@ -18,7 +18,7 @@ try set(fig, 'WindowState', 'maximized'); catch, end
 F_kHz = Fs / 1000;
 motorCol = {'motor_0_', 'motor_1_', 'motor_2_', 'motor_3_'};
 motorLbl = {'Motor 1', 'Motor 2', 'Motor 3', 'Motor 4'};
-mCol = {[0 .85 .3], [.85 .85 0], [.85 .2 .2], [.3 .5 1]};
+mCol = th.sigMotor;
 gyroAxLbl = {'Roll', 'Pitch', 'Yaw'};
 gyroCol = {'gyroADC_0_', 'gyroADC_1_', 'gyroADC_2_'};
 

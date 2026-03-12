@@ -178,7 +178,7 @@ guiHandlesSpec.checkboxPSD =uicontrol(PSspecfig,'Style','checkbox','String','PSD
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxPSD],'callback', 'PSplotSpec;');
 set(guiHandlesSpec.checkboxPSD, 'Value', 0);
 
-motorCols = {[.9 0 0], [.9 .6 0], [0 .8 .8], [0 .9 0]};
+motorCols = PStheme().sigMotor;
 motorNames = {'M1','M2','M3','M4'};
 rpmCb = 'updateSpec=1;PSplotSpec;';
 for mi = 1:4

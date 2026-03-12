@@ -20,7 +20,8 @@ if isempty(rpmMat) || imgHeight < 2 || freqMax <= 0
 end
 
 hold(ax, 'on');
-motorCol = [.9 0 0; .9 .6 0; 0 .8 .8; 0 .9 0]; % M1=red M2=orange M3=cyan M4=green
+th = PStheme();
+motorCol = cell2mat(th.sigMotor(:));
 lineStyles = {'-'; '--'; ':'};
 hz_per_pixel = freqMax / imgHeight;
 

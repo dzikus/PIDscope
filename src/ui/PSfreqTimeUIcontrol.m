@@ -138,7 +138,7 @@ guiHandlesSpec3.climMax2_input = uicontrol(PSspecfig3,'style','edit','string',[n
     'units','normalized','Position',[posInfo.sub100HzfreqTime],'callback','@selection2;updateSpec=1; PSfreqTime;');
 
 % RPM overlay motor checkboxes
-motorCols = {[.9 0 0], [.9 .6 0], [0 .8 .8], [0 .9 0]};
+motorCols = PStheme().sigMotor;
 motorNames = {'M1','M2','M3','M4'};
 rpmCb = 'updateSpec=1; PSfreqTime;';
 for mi = 1:4
