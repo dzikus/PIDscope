@@ -13,12 +13,16 @@ fcnt = 0; filenameA = {}; fnameMaster = {}; Nfiles = 0; expandON = 0;
 try setappdata(PSfig, 'smoothCacheLV', struct()); catch, end
 
 try, delete(checkpanel); clear checkpanel; catch, end
-try
-    delete(subplot('position', posInfo.linepos1));
-    delete(subplot('position', posInfo.linepos2));
-    delete(subplot('position', posInfo.linepos3));
-    delete(subplot('position', posInfo.linepos4));
-catch, end
+try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
+try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
+try delete(findobj(PSfig,'Tag','PScombo')); catch, end
+% Delete overlay widgets
+ov = getappdata(PSfig, 'PSoverlay');
+if ~isempty(ov)
+    flds = fieldnames(ov);
+    for fi=1:numel(flds), try delete(ov.(flds{fi})); catch, end; end
+    setappdata(PSfig, 'PSoverlay', []);
+end
 
 % close all secondary figures
 figs = findobj('Type', 'figure');

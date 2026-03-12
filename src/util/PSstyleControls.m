@@ -8,6 +8,9 @@ for i = 1:numel(controls)
         set(controls(i), 'BackgroundColor', th.btnBg);
         continue;
     end
+    if strcmp(style, 'checkbox') || strcmp(style, 'radiobutton')
+        try set(controls(i), 'BackgroundColor', th.figBg); catch, end
+    end
     fg = get(controls(i), 'ForegroundColor');
     % fix controls still at default black [0 0 0]
     if all(abs(fg) < 0.01)

@@ -158,6 +158,37 @@ else
         end
     end
 
+% Reposition stick overlay below CP panel
+ov = getappdata(fig, 'PSoverlay');
+if ~isempty(ov)
+    stickGap = cpM;
+    stickW = (cpW - stickGap) / 2; stickH = stickW * 1.3;
+    cpPanel = findobj(fig, 'Type', 'uipanel', 'Title', 'Control Panel');
+    if ~isempty(cpPanel)
+        pp = get(cpPanel(1), 'Position'); cpBot = pp(2);
+    else
+        cpBot = vPos - rs*14 - cpMv;
+    end
+    stickY = max(0.01, cpBot - stickH - cpMv);
+    oH = rhs;
+    try set(ov.axYT, 'Position', [cpL stickY stickW stickH]); catch, end
+    try set(ov.axRP, 'Position', [cpL+stickW+stickGap stickY stickW stickH]); catch, end
+    oY = max(0.001, stickY - oH - 2*cpMv); halfW = cpW/2; fullW = cpW;
+    try set(ov.time, 'Position', [cpL oY fullW oH]); catch, end
+    oY = oY - oH;
+    try set(ov.M4, 'Position', [cpL oY halfW oH]); catch, end
+    try set(ov.M1, 'Position', [cpL+halfW oY halfW oH]); catch, end
+    oY = oY - oH;
+    try set(ov.M3, 'Position', [cpL oY halfW oH]); catch, end
+    try set(ov.M2, 'Position', [cpL+halfW oY halfW oH]); catch, end
+    oY = oY - oH;
+    try set(ov.GR, 'Position', [cpL oY fullW oH]); catch, end
+    oY = oY - oH;
+    try set(ov.GP, 'Position', [cpL oY fullW oH]); catch, end
+    oY = oY - oH;
+    try set(ov.GY, 'Position', [cpL oY fullW oH]); catch, end
+end
+
 % Reposition Log Viewer checkbox bar (fixed pixel sizes)
 chkBar = getappdata(fig, 'PScheckboxBar');
 if ~isempty(chkBar)

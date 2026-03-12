@@ -16,7 +16,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     global logviewerYscale 
     logviewerYscale = str2double(get(guiHandles.maxY_input, 'String'));
 
-    figure(PSfig);
+    set(0, 'CurrentFigure', PSfig);
 
     maxY=str2double(get(guiHandles.maxY_input, 'String'));
 
@@ -132,12 +132,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     PSfig;
     
     try zoomOn = strcmp(get(zoom(PSfig), 'Enable'),'on'); catch, zoomOn = 0; end
-    if ~zoomOn && ~expandON %
-         delete(subplot('position' ,fullszPlot));
-         delete(subplot('position',posInfo.linepos1));
-         delete(subplot('position',posInfo.linepos2));
-         delete(subplot('position',posInfo.linepos3));
-         delete(subplot('position',posInfo.linepos4));
+    if ~zoomOn && ~expandON
+         try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
+         try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
+         try delete(findobj(PSfig,'Tag','PScombo')); catch, end
     end
     
     try delete(hch1); catch, end, try delete(hch2); catch, end

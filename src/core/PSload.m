@@ -28,10 +28,17 @@ try
                 clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData rpmFilterData ampmat freq2d2 amp2d2 specMat delayDataReady FilterDelayDterm SPGyroDelay Debug01 Debug02 gyro_phase_shift_deg dterm_phase_shift_deg tuneCrtlpanel_init setupInfoWidgets_init;
                 fcnt = 0; fnameMaster = {}; Nfiles = 0;
                 try, delete(checkpanel); clear checkpanel; catch, end
-                try, delete(subplot('position',posInfo.linepos1)); catch, end
-                try, delete(subplot('position',posInfo.linepos2)); catch, end
-                try, delete(subplot('position',posInfo.linepos3)); catch, end
-                try, delete(subplot('position',posInfo.linepos4)); catch, end
+                % Delete tagged plot axes (never use subplot — creates blank axes)
+                try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
+                try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
+                try delete(findobj(PSfig,'Tag','PScombo')); catch, end
+                % Delete overlay widgets
+                ov = getappdata(PSfig, 'PSoverlay');
+                if ~isempty(ov)
+                    flds = fieldnames(ov);
+                    for fi=1:numel(flds), try delete(ov.(flds{fi})); catch, end; end
+                    setappdata(PSfig, 'PSoverlay', []);
+                end
                 figs=findobj('Type','figure'); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end
                 clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel freqTimeCrtlpanel tuneCrtlpanel;
                 set(guiHandles.FileNum, 'String', ' ');
@@ -114,9 +121,6 @@ try
                 epoch2_A(fcnt)=round(((tta{fcnt}(end)/us2sec)-LogNdDefault)*10) / 10;
 
                 clear a b r p y dm ff
-                r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));
-                p = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'pitchPID')),2));
-                y = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'yawPID')),2));
 
                 %%%%%%%%%% parse firmware version for per-file debug mode indices %%%%%%%%%%
                 [fwType{fcnt}, fwMajor(fcnt), fwMinor(fcnt)] = PSparseBFversion(SetupInfo{fcnt});
@@ -126,50 +130,64 @@ try
                 try
                     debugmode(fcnt) = str2double(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'debug_mode')),2)));
                 catch
-                    % BF 2025.12+: GYRO_SCALED removed, use GYRO_FILTERED as default
                     if debugIdx{fcnt}.GYRO_SCALED == -1
                         debugmode(fcnt) = debugIdx{fcnt}.GYRO_FILTERED;
                     else
-                        debugmode(fcnt) = 6;% default to gyro_scaled
+                        debugmode(fcnt) = 6;
                     end
                 end
 
-                %%%%%%%%%% parse gyro_debug_axis (BF 2025.12+, for FFT_FREQ axis) %%%%%%%%%%
                 try
                     gyro_debug_axis(fcnt) = str2double(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'gyro_debug_axis')),2)));
                 catch
-                    gyro_debug_axis(fcnt) = 0; % default Roll
+                    gyro_debug_axis(fcnt) = 0;
                 end
 
-                dm = {};
-                % Try d_max first (BF 2025.12+), fallback to d_min (older)
-                dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_max'));
-                if isempty(dm_idx)
-                    dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_min'));
-                end
-                if ~isempty(dm_idx) && ~isempty(SetupInfo{fcnt}(dm_idx,2))
-                    dm = SetupInfo{fcnt}(dm_idx, 2);
-                else
-                    dm = {' , , '};
-                end
-                ff = {};
-                if ~isempty(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'feedforward_weight') | strcmp(SetupInfo{fcnt}(:,1), 'ff_weight')),2))
-                    ff = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'feedforward_weight') | strcmp(SetupInfo{fcnt}(:,1), 'ff_weight')),2));
-                else 
-                    ff = {' , , '};
+                try
+                    r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));
+                    p = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'pitchPID')),2));
+                    y = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'yawPID')),2));
+                    dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_max'));
+                    if isempty(dm_idx), dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_min')); end
+                    if ~isempty(dm_idx) && ~isempty(SetupInfo{fcnt}(dm_idx,2))
+                        dm = SetupInfo{fcnt}(dm_idx, 2);
+                    else
+                        dm = {' , , '};
+                    end
+                    ff_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'feedforward_weight') | strcmp(SetupInfo{fcnt}(:,1), 'ff_weight'));
+                    if ~isempty(ff_idx) && ~isempty(SetupInfo{fcnt}(ff_idx,2))
+                        ff = SetupInfo{fcnt}(ff_idx, 2);
+                    else
+                        ff = {' , , '};
+                    end
+                    a=strfind(char(dm),',');
+                    b=strfind(char(ff),',');
+                    rollPIDF{fcnt} = [char(r) ',' dm{1}(1:a(1)-1) ',' ff{1}(1:b(1)-1)];
+                    pitchPIDF{fcnt} = [char(p) ',' dm{1}(a(1)+1:a(2)-1) ',' ff{1}(b(1)+1:b(2)-1)];
+                    yawPIDF{fcnt} = [char(y) ',' dm{1}(a(2)+1:end) ',' ff{1}(b(2)+1:end)];
+                catch
+                    rollPIDF{fcnt} = '0,0,0,0,0';
+                    pitchPIDF{fcnt} = '0,0,0,0,0';
+                    yawPIDF{fcnt} = '0,0,0,0,0';
                 end
 
-                a=strfind(char(dm),',');
-                b=strfind(char(ff),',');
-                rollPIDF{fcnt} = [char(r) ',' dm{1}(1:a(1)-1) ',' ff{1}(1:b(1)-1)];
-                pitchPIDF{fcnt} = [char(p) ',' dm{1}(a(1)+1:a(2)-1) ',' ff{1}(b(1)+1:b(2)-1)];
-                yawPIDF{fcnt} = [char(y) ',' dm{1}(a(2)+1:end) ',' ff{1}(b(2)+1:end)];
-
-                if get(guiHandles.Firmware, 'Value') == 3 % INAV
+                fwSel = get(guiHandles.Firmware, 'Value');
+                if fwSel == 3 % INAV
                     T{fcnt}.setpoint_0_ = T{fcnt}.axisRate_0_;
                     T{fcnt}.setpoint_1_ = T{fcnt}.axisRate_1_;
                     T{fcnt}.setpoint_2_ = T{fcnt}.axisRate_2_;
                     T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
+                end
+                % KISS/FETTEC: synthesize setpoint from rcCommand if missing
+                if ~isfield(T{fcnt}, 'setpoint_0_') && isfield(T{fcnt}, 'rcCommand_0_')
+                    for ax = 0:2
+                        T{fcnt}.(['setpoint_' int2str(ax) '_']) = T{fcnt}.(['rcCommand_' int2str(ax) '_']);
+                    end
+                    T{fcnt}.setpoint_3_ = (T{fcnt}.rcCommand_3_ - 1000) / 10;
+                elseif ~isfield(T{fcnt}, 'setpoint_0_')
+                    for ax = 0:3
+                        T{fcnt}.(['setpoint_' int2str(ax) '_']) = zeros(length(T{fcnt}.loopIteration), 1);
+                    end
                 end
 
                 isArduPilot = strcmpi(sfext, '.bin');
@@ -219,11 +237,19 @@ try
                           catch, end
                         end
 
-                        T{fcnt}.(['piderr_' ks '_']) = T{fcnt}.(['gyroADC_' ks '_']) - T{fcnt}.(['setpoint_' ks '_']);
+                        try
+                            T{fcnt}.(['piderr_' ks '_']) = T{fcnt}.(['gyroADC_' ks '_']) - T{fcnt}.(['setpoint_' ks '_']);
+                        catch
+                            T{fcnt}.(['piderr_' ks '_']) = zeros(Nsamples, 1);
+                        end
                         try
                             T{fcnt}.(['pidsum_' ks '_']) = T{fcnt}.(['axisP_' ks '_']) + T{fcnt}.(['axisI_' ks '_']) + T{fcnt}.(['axisD_' ks '_']) + T{fcnt}.(['axisF_' ks '_']);
                         catch
-                            T{fcnt}.(['pidsum_' ks '_']) = T{fcnt}.(['axisP_' ks '_']) + T{fcnt}.(['axisI_' ks '_']) + T{fcnt}.(['axisF_' ks '_']);
+                            try
+                                T{fcnt}.(['pidsum_' ks '_']) = T{fcnt}.(['axisP_' ks '_']) + T{fcnt}.(['axisI_' ks '_']) + T{fcnt}.(['axisF_' ks '_']);
+                            catch
+                                T{fcnt}.(['pidsum_' ks '_']) = zeros(Nsamples, 1);
+                            end
                         end
                     end
                 end

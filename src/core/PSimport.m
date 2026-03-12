@@ -33,13 +33,23 @@ else
     logStartPoints=find(cellfun(@(a)~isempty(a)&&a>0,a));   
 end
 
-endStr={'throttle_boost_cutoff'; 'debug_mode' ; 'motor_pwm_rate' ; 'use_unsynced_pwm' ; 'gyro_32khz_hardware_lpf' ; 'gyro_hardware_lpf' ; 'yaw_deadband' ; 'deadband' ; 'pidsum_limit_yaw' ; 'pidsum_limit' ; 'energyCumulative (mAh)'; 'looptime'};% strings not in all revisions, try a few 
-m=1; a=strfind(c{1},endStr{m});
-while isempty(find(cellfun(@(a)~isempty(a)&&a>0,a)))         
-    a=strfind(c{1},endStr{m});
-    m=m+1;
+endStr={'throttle_boost_cutoff'; 'debug_mode' ; 'motor_pwm_rate' ; 'use_unsynced_pwm' ; 'gyro_32khz_hardware_lpf' ; 'gyro_hardware_lpf' ; 'yaw_deadband' ; 'deadband' ; 'pidsum_limit_yaw' ; 'pidsum_limit' ; 'energyCumulative (mAh)'; 'looptime'};
+logEndPoints = [];
+for m = 1:numel(endStr)
+    a = strfind(c{1}, endStr{m});
+    hits = find(cellfun(@(a) ~isempty(a) && a > 0, a));
+    if ~isempty(hits), logEndPoints = hits; break; end
 end
-logEndPoints = find(cellfun(@(a)~isempty(a)&&a>0,a));
+if isempty(logEndPoints)
+    % fallback: last "H " line per log section (KISS, etc.)
+    hLines = find(strncmp(c{1}, 'H ', 2));
+    if ~isempty(hLines)
+        logEndPoints = zeros(size(logStartPoints));
+        for k = 1:numel(logStartPoints)
+            logEndPoints(k) = max(hLines(hLines >= logStartPoints(k)));
+        end
+    end
+end
 
 relevantLogNum=str2double(csvFname(end-5:end-4));
 s=c{1}(logStartPoints(relevantLogNum):logEndPoints(relevantLogNum));

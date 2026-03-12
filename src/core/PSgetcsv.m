@@ -36,7 +36,10 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
     decoder_inav = getappdata(0, 'PSdecoderPathINAV');
 
     if firmware_flag == 3 && ~isempty(decoder_inav)
-        cmd = ['"' decoder_inav '" --output-dir "' outdir '" "' filename '" 2>&1'];
+        % INAV decoder has no --output-dir; copy input to workdir first
+        tmpSrc = fullfile(outdir, [fname fext]);
+        copyfile(filename, tmpSrc);
+        cmd = ['"' decoder_inav '" "' tmpSrc '" 2>&1'];
     else
         cmd = ['"' decoder_path '" --output-dir "' outdir '" "' filename '" 2>&1'];
     end

@@ -7,69 +7,78 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
 
- 
-try 
-     a1 = axis(LVpanel4); a = [a1(1) a1(2)]; 
- catch 
-     a = [0 tta{get(guiHandles.FileNum, 'Value')}(end) / us2sec]; 
- end 
- adiff = a(2)-a(1); 
-        
- x1 = a(1) + (get(guiHandles.slider, 'Value')*adiff) ; 
- try 
-     delete(hslider1); 
-     delete(hslider2); 
-     delete(hslider3); 
-     delete(hslider5);
- catch 
- end 
- try 
-     delete(hslider4);,
- catch 
- end
- 
-if ~get(guiHandles.RPYcomboLV, 'Value')
-        if get(guiHandles.plotR, 'Value'), 
-            LVpanel1=subplot('position',posInfo.linepos1); 
-            hslider1=plot([x1 x1],[-(maxY) maxY],'-k','linewidth',get(guiHandles.linewidth, 'Value')/2);  
-        end
-        if get(guiHandles.plotP, 'Value'), LVpanel2=subplot('position',posInfo.linepos2); 
-            hslider2=plot([x1 x1],[-(maxY) maxY],'-k','linewidth',get(guiHandles.linewidth, 'Value')/2);
-        end
-        if get(guiHandles.plotY, 'Value')
-            LVpanel3=subplot('position',posInfo.linepos3);
-            hslider3=plot([x1 x1],[-(maxY) maxY],'-k','linewidth',get(guiHandles.linewidth, 'Value')/2);
-        end
-        if get(guiHandles.plotR, 'Value') || get(guiHandles.plotP, 'Value') || get(guiHandles.plotY, 'Value') 
-            LVpanel5=subplot('position',posInfo.linepos4);
-            hslider5=plot([x1 x1],[0 100],'-k','linewidth',get(guiHandles.linewidth, 'Value')/2); 
-            axis([0 xmax 0 100]), 
-            grid on
-        end     
+th = PStheme();
+fileIdx = get(guiHandles.FileNum, 'Value');
+
+% Get time range from visible axes (by Tag, not position)
+motorAx = findobj(PSfig, 'Type', 'axes', 'Tag', 'PSmotor');
+comboAx = findobj(PSfig, 'Type', 'axes', 'Tag', 'PScombo');
+try
+    if ~isempty(comboAx), a = xlim(comboAx(1));
+    elseif ~isempty(motorAx), a = xlim(motorAx(1));
+    else a = [0 tta{fileIdx}(end) / us2sec];
+    end
+catch
+    a = [0 tta{fileIdx}(end) / us2sec];
+end
+adiff = a(2) - a(1);
+x1 = a(1) + get(guiHandles.slider, 'Value') * adiff;
+
+% Delete old cursor lines
+try delete(hslider1); catch, end
+try delete(hslider2); catch, end
+try delete(hslider3); catch, end
+try delete(hslider4); catch, end
+try delete(hslider5); catch, end
+hslider1=[]; hslider2=[]; hslider3=[]; hslider4=[]; hslider5=[];
+
+lwVal = get(guiHandles.linewidth, 'Value') / 2;
+
+% Draw cursor lines on TAGGED axes (never subplot — avoids position mismatch)
+rpyAxes = findobj(PSfig, 'Type', 'axes', 'Tag', 'PSrpy');
+if ~isempty(comboAx) && ishandle(comboAx(1))
+    set(PSfig, 'CurrentAxes', comboAx(1)); hold on;
+    hslider4 = plot([x1 x1], [-maxY maxY], '-', 'color', th.textPrimary, 'linewidth', lwVal);
 else
-    LVpanel4=subplot('position' ,[fullszPlot]); 
-    hslider4=plot([x1 x1],[-(maxY) maxY],'-k','linewidth',get(guiHandles.linewidth, 'Value')/2); 
-    LVpanel5=subplot('position',posInfo.linepos4); 
-    hslider5=plot([x1 x1],[0 100],'-k','linewidth',get(guiHandles.linewidth, 'Value')/2); 
-    axis([0 xmax 0 100])
-    grid on 
+    if numel(rpyAxes) > 1
+        yy = zeros(numel(rpyAxes),1);
+        for k=1:numel(rpyAxes), p=get(rpyAxes(k),'Position'); yy(k)=p(2); end
+        [~,si] = sort(yy,'descend'); rpyAxes = rpyAxes(si);
+    end
+    for k = 1:min(3, numel(rpyAxes))
+        set(PSfig, 'CurrentAxes', rpyAxes(k)); hold on;
+        h = plot([x1 x1], [-maxY maxY], '-', 'color', th.textPrimary, 'linewidth', lwVal);
+        if k==1, hslider1=h; elseif k==2, hslider2=h; else hslider3=h; end
+    end
+end
+if ~isempty(motorAx) && ishandle(motorAx(1))
+    set(PSfig, 'CurrentAxes', motorAx(1)); hold on;
+    hslider5 = plot([x1 x1], [0 100], '-', 'color', th.textPrimary, 'linewidth', lwVal);
 end
 
-h=subplot('position',[posInfo.YTstick]); 
-x2=find(tta{get(guiHandles.FileNum, 'Value')}/us2sec>=x1,1);
-plot(-T{get(guiHandles.FileNum, 'Value')}.rcCommand_2_(x2) , (T{get(guiHandles.FileNum, 'Value')}.rcCommand_3_(x2) - 1000)/10,'ko');
-set(h, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',['Y'], 'yticklabel',['T'],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on', 'fontweight','bold','FontSize', fontsz);
-h=subplot('position',[posInfo.RPstick]); 
-plot(T{get(guiHandles.FileNum, 'Value')}.rcCommand_0_(x2) , T{get(guiHandles.FileNum, 'Value')}.rcCommand_1_(x2),'ko');
-set(h, 'xlim', [-500 500], 'ylim', [-500 500], 'xticklabel',['R'], 'yticklabel',['P'],'xtick',[0], 'ytick',[0], 'xgrid', 'on', 'ygrid', 'on', 'fontweight','bold','FontSize', fontsz);
-subplot('position',[posInfo.YTstick]); h=text(0,110, ['time: ' num2str(tta{(get(guiHandles.FileNum, 'Value'))}(x2) / us2sec) ' sec']); set(h,'FontSize', fontsz);
-try h=text(-450,-60, ['M3:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_2_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(13,:)]); catch, end
-try h=text(-450,-40, ['M4:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_3_(x2))  '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(14,:)]); catch, end
-subplot('position',[posInfo.RPstick]);
-try h=text(-450,-1100, ['M1:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_0_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(11,:)]); catch, end
-try h=text(-450,-900, ['M2:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.motor_1_(x2)) '%']); set(h,'FontSize', fontsz, 'color', [ColorSet(12,:)]); catch, end
-subplot('position',[posInfo.YTstick]);
-h=text(-450,-80, ['gyro R:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.gyroADC_0_(x2)) ' deg/s']); set(h,'FontSize', fontsz, 'color', [ColorSet(2,:)]);
-h=text(-450,-100, ['gyro P:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.gyroADC_1_(x2)) ' deg/s']); set(h,'FontSize', fontsz, 'color', [ColorSet(2,:)]);
-h=text(-450,-120, ['gyro Y:   ' int2str(T{get(guiHandles.FileNum, 'Value')}.gyroADC_2_(x2)) ' deg/s']); set(h,'FontSize', fontsz, 'color', [ColorSet(2,:)]);
+% Stick overlay — update persistent handles (created by PSviewerUIcontrol)
+x2 = find(tta{fileIdx}/us2sec >= x1, 1);
+if ~isempty(x2) && isfield(guiHandles, 'stickDotYT')
+    T_f = T{fileIdx};
 
+    if isfield(T_f, 'rcCommand_0_')
+        try set(guiHandles.stickDotYT, 'XData', -T_f.rcCommand_2_(x2), ...
+                'YData', (T_f.rcCommand_3_(x2)-1000)/10); catch, end
+        try set(guiHandles.stickDotRP, 'XData', T_f.rcCommand_0_(x2), ...
+                'YData', T_f.rcCommand_1_(x2)); catch, end
+    elseif isfield(T_f, 'setpoint_0_')
+        try set(guiHandles.stickDotYT, 'XData', -T_f.setpoint_2_(x2), ...
+                'YData', T_f.setpoint_3_(x2)); catch, end
+        try set(guiHandles.stickDotRP, 'XData', T_f.setpoint_0_(x2), ...
+                'YData', T_f.setpoint_1_(x2)); catch, end
+    end
+
+    set(guiHandles.overlayTime, 'String', sprintf('time: %.4f sec', tta{fileIdx}(x2)/us2sec));
+    try set(guiHandles.overlayM1, 'String', sprintf('M1: %.0f%%', T_f.motor_0_(x2))); catch, end
+    try set(guiHandles.overlayM2, 'String', sprintf('M2: %.0f%%', T_f.motor_1_(x2))); catch, end
+    try set(guiHandles.overlayM3, 'String', sprintf('M3: %.0f%%', T_f.motor_2_(x2))); catch, end
+    try set(guiHandles.overlayM4, 'String', sprintf('M4: %.0f%%', T_f.motor_3_(x2))); catch, end
+    try set(guiHandles.overlayGR, 'String', sprintf('gyro R: %.0f deg/s', T_f.gyroADC_0_(x2))); catch, end
+    try set(guiHandles.overlayGP, 'String', sprintf('gyro P: %.0f deg/s', T_f.gyroADC_1_(x2))); catch, end
+    try set(guiHandles.overlayGY, 'String', sprintf('gyro Y: %.0f deg/s', T_f.gyroADC_2_(x2))); catch, end
+end

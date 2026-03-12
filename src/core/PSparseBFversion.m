@@ -19,22 +19,23 @@ try
     end
 
     verStr = strtrim(char(setupInfo(idx(1), 2)));
-    % Example: " Betaflight / STM32F405 4.5.3 Dec 14 2024 / 11:27:01"
-    % Example: " Betaflight / STM32F405 2025.12.2 Jan 5 2026 / 09:15:00"
-    % Example: " INAV / STM32F405 7.1.0 ..."
-    % Example: " Emuflight / STM32F405 0.4.1 ..."
-    % Example: "QuickSilver" (from PSquicJson2csv synthetic header)
 
-    % Extract firmware type (first word)
-    % Old format: " Betaflight / STM32F405 4.5.3 ..."  (with /)
-    % New format: "Betaflight 2025.12.0-beta (hash) STM32F405" (no /)
-    words = strsplit(strtrim(verStr));
-    if ~isempty(words)
-        fwType = words{1};
+    % Check for separate 'Firmware type' header (KISS, etc.)
+    ftIdx = find(strcmp(setupInfo(:,1), 'Firmware type'));
+    if ~isempty(ftIdx)
+        fwType = strtrim(char(setupInfo(ftIdx(1), 2)));
+    else
+        words = strsplit(strtrim(verStr));
+        if ~isempty(words)
+            fwType = words{1};
+        end
     end
 
     % Extract version: find pattern X.Y.Z or X.Y anywhere in string
     tok = regexp(verStr, '(\d+)\.(\d+)\.(\d+)', 'tokens');
+    if isempty(tok)
+        tok = regexp(verStr, '(\d+)\.(\d+)', 'tokens');
+    end
     if ~isempty(tok)
         % Could have multiple matches (e.g. board name with numbers) - use last one
         % Actually first match after '/' is the version
