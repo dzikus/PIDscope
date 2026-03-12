@@ -12,7 +12,8 @@ end
 cacheKey = [fieldName '_s' int2str(sFactor)];
 if isfield(sc, cacheKey)
     y = sc.(cacheKey);
-    return;
+    if numel(y) == numel(Tfile.(fieldName)), return; end
+    sc = struct('fIdx', fileIdx);  % stale cache — different data length
 end
 
 raw = Tfile.(fieldName);

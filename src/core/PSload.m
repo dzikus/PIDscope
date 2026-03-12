@@ -43,6 +43,7 @@ try
                 clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel freqTimeCrtlpanel tuneCrtlpanel;
                 set(guiHandles.FileNum, 'String', ' ');
                 try, set(guiHandles.Epoch1_A_Input, 'String', ' '); set(guiHandles.Epoch2_A_Input, 'String', ' '); catch, end
+                try setappdata(PSfig, 'smoothCacheLV', struct()); catch, end
             else
                 return;
             end
