@@ -179,6 +179,11 @@ try
                     T{fcnt}.setpoint_2_ = T{fcnt}.axisRate_2_;
                     T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
                 end
+                if fwSel == 6 % Rotorflight: setpoint_3_ is collective, use rcCommand[4] as throttle
+                    if isfield(T{fcnt}, 'rcCommand_4_')
+                        T{fcnt}.setpoint_3_ = T{fcnt}.rcCommand_4_;
+                    end
+                end
                 % KISS/FETTEC: synthesize setpoint from rcCommand if missing
                 if ~isfield(T{fcnt}, 'setpoint_0_') && isfield(T{fcnt}, 'rcCommand_0_')
                     for ax = 0:2
