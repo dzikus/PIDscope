@@ -19,8 +19,10 @@ ylab2={'roll';'pitch';'yaw'};
 axesOptions = find([get(guiHandlesTune.plotR, 'Value') get(guiHandlesTune.plotP, 'Value') get(guiHandlesTune.plotY, 'Value')]);
 lineStyle = {'-' ; '--' ; ':'};
 lnLabels = {'solid' ; 'dashed'; 'dotted'};
-p = {'    P, I, D, Dm, F'; '    P, I, D, Dm, F'; '    P, I, D, cD'};
-pidlabels = p{get(guiHandles.Firmware, 'Value')};
+p = {'    P, I, D, Dm, F'; '    P, I, D, Dm, F'; '    P, I, D, cD'; ...
+     '    P, I, D'; '    P, I, D'; '    P, I, D, F'; '    P, I, D'; '    P, I, D'};
+fwIdx = min(get(guiHandles.Firmware, 'Value'), numel(p));
+pidlabels = p{fwIdx};
 
 %%%%%%%%%%%%% step resp %%%%%%%%%%%%%
 figure(PStunefig)

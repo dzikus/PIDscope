@@ -44,8 +44,11 @@ if plotMode == 1
     % File 1
     if ~updateStats
         for q = 1:3
-            rcRaw = T{fA}.(rcFields{q})(tIND{fA});
-            Rpct_A{q} = PSPercent(rcRaw);
+            if isfield(T{fA}, rcFields{q})
+                Rpct_A{q} = PSPercent(T{fA}.(rcFields{q})(tIND{fA}));
+            else
+                Rpct_A{q} = [];
+            end
         end
         Tpct_A = T{fA}.setpoint_3_(tIND{fA}) / 10;
     end
@@ -58,10 +61,12 @@ if plotMode == 1
         else
             pctData = Tpct_A;
         end
-        [nn, xx] = hist(pctData, 0:1:100);
-        nn = nn / sum(nn);
-        hb = bar(xx, nn, 1);
-        set(hb, 'FaceColor', colorA, 'EdgeColor', colorA);
+        if ~isempty(pctData)
+            [nn, xx] = hist(pctData, 0:1:100);
+            nn = nn / sum(nn);
+            hb = bar(xx, nn, 1);
+            set(hb, 'FaceColor', colorA, 'EdgeColor', colorA);
+        end
         y = xlabel(axLbl{sp}, 'fontweight', 'bold');
         set(y, 'Units', 'normalized', 'position', [.5 -.1 1], 'color', th.textPrimary);
         ylabel('% of flight', 'fontweight', 'bold');
@@ -77,8 +82,11 @@ if plotMode == 1
     if ~isempty(fB)
         if ~updateStats
             for q = 1:3
-                rcRaw = T{fB}.(rcFields{q})(tIND{fB});
-                Rpct_B{q} = PSPercent(rcRaw);
+                if isfield(T{fB}, rcFields{q})
+                    Rpct_B{q} = PSPercent(T{fB}.(rcFields{q})(tIND{fB}));
+                else
+                    Rpct_B{q} = [];
+                end
             end
             Tpct_B = T{fB}.setpoint_3_(tIND{fB}) / 10;
         end
@@ -91,10 +99,12 @@ if plotMode == 1
             else
                 pctData = Tpct_B;
             end
-            [nn, xx] = hist(pctData, 0:1:100);
-            nn = nn / sum(nn);
-            hb = bar(xx, nn, 1);
-            set(hb, 'FaceColor', colorB, 'EdgeColor', colorB);
+            if ~isempty(pctData)
+                [nn, xx] = hist(pctData, 0:1:100);
+                nn = nn / sum(nn);
+                hb = bar(xx, nn, 1);
+                set(hb, 'FaceColor', colorB, 'EdgeColor', colorB);
+            end
             y = xlabel(axLbl{sp}, 'fontweight', 'bold');
             set(y, 'Units', 'normalized', 'position', [.5 -.1 1], 'color', th.textPrimary);
             ylabel('% of flight', 'fontweight', 'bold');
