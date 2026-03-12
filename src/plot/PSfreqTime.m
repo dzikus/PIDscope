@@ -83,6 +83,7 @@ if exist('debugmode','var') && exist('debugIdx','var') && exist('T','var') && ex
     end
 end
 
+try delete(findobj(PSspecfig3, 'Tag', 'PScbar')); catch, end
 for i = 1 : 3
     delete(subplot('position',posInfo.Spec3Pos(i,:)));
     try

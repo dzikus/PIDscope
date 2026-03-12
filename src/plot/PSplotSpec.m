@@ -125,12 +125,7 @@ if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 || get(guiHandlesSpec.SpecSelect
         close(hw)
     end
 else
-    hwarn=warndlg({'Dropdowns set to ''NONE''.'; 'Please select a preset or specific variables to analyze.'});
-    pause(3);
-    try
-        close(hwarn);
-    catch
-    end
+    warndlg({'Dropdowns set to ''NONE''.'; 'Please select a preset or specific variables to analyze.'});
 end
 
 if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
