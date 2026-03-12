@@ -81,9 +81,23 @@ if ~isempty(x2) && isfield(guiHandles, 'stickDotYT')
 
     set(guiHandles.overlayTime, 'String', sprintf('time: %.4f sec', tta{fileIdx}(x2)/us2sec));
     try set(guiHandles.overlayM1, 'String', sprintf('M1: %.0f%%', T_f.motor_0_(x2))); catch, end
-    try set(guiHandles.overlayM2, 'String', sprintf('M2: %.0f%%', T_f.motor_1_(x2))); catch, end
-    try set(guiHandles.overlayM3, 'String', sprintf('M3: %.0f%%', T_f.motor_2_(x2))); catch, end
-    try set(guiHandles.overlayM4, 'String', sprintf('M4: %.0f%%', T_f.motor_3_(x2))); catch, end
+    rfMot = getappdata(PSfig, 'rfMotorCount');
+    if ~isempty(rfMot)
+        si = 1;
+        if rfMot >= 2
+            try set(guiHandles.overlayM2, 'String', sprintf('M2: %.0f%%', T_f.motor_1_(x2))); catch, end
+        else
+            try set(guiHandles.overlayM2, 'String', sprintf('S%d: %.0f%%', si, T_f.motor_1_(x2))); catch, end
+            si = si+1;
+        end
+        try set(guiHandles.overlayM3, 'String', sprintf('S%d: %.0f%%', si, T_f.motor_2_(x2))); catch, end
+        si = si+1;
+        try set(guiHandles.overlayM4, 'String', sprintf('S%d: %.0f%%', si, T_f.motor_3_(x2))); catch, end
+    else
+        try set(guiHandles.overlayM2, 'String', sprintf('M2: %.0f%%', T_f.motor_1_(x2))); catch, end
+        try set(guiHandles.overlayM3, 'String', sprintf('M3: %.0f%%', T_f.motor_2_(x2))); catch, end
+        try set(guiHandles.overlayM4, 'String', sprintf('M4: %.0f%%', T_f.motor_3_(x2))); catch, end
+    end
     try set(guiHandles.overlayGR, 'String', sprintf('gyro R: %.0f deg/s', T_f.gyroADC_0_(x2))); catch, end
     try set(guiHandles.overlayGP, 'String', sprintf('gyro P: %.0f deg/s', T_f.gyroADC_1_(x2))); catch, end
     try set(guiHandles.overlayGY, 'String', sprintf('gyro Y: %.0f deg/s', T_f.gyroADC_2_(x2))); catch, end

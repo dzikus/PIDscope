@@ -229,6 +229,23 @@ try
                         end
                     end
                   end % ~isArduPilot
+                  % Rotorflight: fill empty motor slots with servo data
+                  if fwSel == 6 && k == 3
+                      nMotReal = 0;
+                      for mm = 0:3
+                          if isfield(T{fcnt}, ['motor_' int2str(mm) '_']), nMotReal = mm+1; end
+                      end
+                      si = 0;
+                      for mm = nMotReal:3
+                          sf = ['servo_' int2str(si) '_'];
+                          mf = ['motor_' int2str(mm) '_'];
+                          if isfield(T{fcnt}, sf)
+                              T{fcnt}.(mf) = (T{fcnt}.(sf) - 1000) / 10;
+                          end
+                          si = si + 1;
+                      end
+                      try setappdata(PSfig, 'rfMotorCount', nMotReal); catch, end
+                  end
                     if k < 3
                         ks = int2str(k);
                         if k < 2 % compute prefiltered dterm
@@ -266,6 +283,7 @@ try
     end
 
     try close(waitbarFid), catch, end
+
 catch  ME
     try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     try close(waitbarFid); catch, end
