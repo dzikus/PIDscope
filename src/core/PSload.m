@@ -51,6 +51,7 @@ try
         loaded_firmware = current_fw;
 
         logfile_directory=filepathA;
+        try setappdata(PSfig, 'rfMotorCount', []); catch, end
 
         us2sec=1000000;
         maxMotorOutput=2000;
@@ -127,6 +128,19 @@ try
                 [fwType{fcnt}, fwMajor(fcnt), fwMinor(fcnt)] = PSparseBFversion(SetupInfo{fcnt});
                 debugIdx{fcnt} = PSdebugModeIndices(fwType{fcnt}, fwMajor(fcnt), fwMinor(fcnt));
 
+                % Auto-switch firmware dropdown if detected type differs
+                detFwIdx = 0;
+                ft = fwType{fcnt};
+                if strcmpi(ft,'Betaflight') || strcmpi(ft,'Cleanflight'), detFwIdx = 1;
+                elseif strcmpi(ft,'Emuflight'), detFwIdx = 2;
+                elseif strcmpi(ft,'INAV'), detFwIdx = 3;
+                elseif strcmpi(ft,'Rotorflight'), detFwIdx = 6;
+                elseif strcmpi(ft,'KISS'), detFwIdx = 7;
+                end
+                if detFwIdx > 0 && detFwIdx ~= get(guiHandles.Firmware, 'Value')
+                    set(guiHandles.Firmware, 'Value', detFwIdx);
+                end
+
                 %%%%%%%%%% collect debug mode info %%%%%%%%%%
                 try
                     debugmode(fcnt) = str2double(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'debug_mode')),2)));
@@ -172,14 +186,14 @@ try
                     yawPIDF{fcnt} = '0,0,0,0,0';
                 end
 
-                fwSel = get(guiHandles.Firmware, 'Value');
-                if fwSel == 3 % INAV
+                isRF = strcmpi(fwType{fcnt}, 'Rotorflight');
+                if strcmpi(fwType{fcnt}, 'INAV')
                     T{fcnt}.setpoint_0_ = T{fcnt}.axisRate_0_;
                     T{fcnt}.setpoint_1_ = T{fcnt}.axisRate_1_;
                     T{fcnt}.setpoint_2_ = T{fcnt}.axisRate_2_;
                     T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
                 end
-                if fwSel == 6 % Rotorflight: setpoint_3_ is collective, use rcCommand[4] as throttle
+                if isRF % setpoint_3_ is collective, use rcCommand[4] as throttle
                     if isfield(T{fcnt}, 'rcCommand_4_')
                         T{fcnt}.setpoint_3_ = T{fcnt}.rcCommand_4_;
                     end
@@ -199,7 +213,7 @@ try
                 isArduPilot = strcmpi(sfext, '.bin');
 
                 Nsamples = length(T{fcnt}.loopIteration);
-                isINAV = (get(guiHandles.Firmware, 'Value') == 3);
+                isINAV = strcmpi(fwType{fcnt}, 'INAV');
                 for k = 0 : 3
                   if ~isArduPilot
                     dbg_f = ['debug_' int2str(k) '_'];
@@ -230,7 +244,7 @@ try
                     end
                   end % ~isArduPilot
                   % Rotorflight: fill empty motor slots with servo data
-                  if fwSel == 6 && k == 3
+                  if isRF && k == 3
                       nMotReal = 0;
                       for mm = 0:3
                           if isfield(T{fcnt}, ['motor_' int2str(mm) '_']), nMotReal = mm+1; end

@@ -11,6 +11,7 @@ clear tuneCrtlpanel_init setupInfoWidgets_init;
 
 fcnt = 0; filenameA = {}; fnameMaster = {}; Nfiles = 0; expandON = 0;
 try setappdata(PSfig, 'smoothCacheLV', struct()); catch, end
+try setappdata(PSfig, 'rfMotorCount', []); catch, end
 
 try, delete(checkpanel); clear checkpanel; catch, end
 try delete(findobj(PSfig,'Tag','PSrpy')); catch, end

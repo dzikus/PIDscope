@@ -62,8 +62,8 @@ if ~isempty(x2) && isfield(guiHandles, 'stickDotYT')
     T_f = T{fileIdx};
 
     if isfield(T_f, 'rcCommand_0_')
-        fwSel = get(guiHandles.Firmware, 'Value');
-        if fwSel == 6  % Rotorflight: collective is -500..500
+        rfMot = getappdata(PSfig, 'rfMotorCount');
+        if ~isempty(rfMot)  % Rotorflight: collective is -500..500
             thrPct = (T_f.rcCommand_3_(x2) + 500) / 10;
         else
             thrPct = (T_f.rcCommand_3_(x2) - 1000) / 10;
