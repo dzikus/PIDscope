@@ -17,6 +17,31 @@ ylab={'Roll';'Pitch';'Yaw'};
 ylab2={'roll';'pitch';'yaw'};
 
 axesOptions = find([get(guiHandlesTune.plotR, 'Value') get(guiHandlesTune.plotP, 'Value') get(guiHandlesTune.plotY, 'Value')]);
+
+% scale row heights to fill space when fewer than 3 RPY axes
+nActiveTune = numel(axesOptions);
+stdRows_t = [0.69 0.395 0.1]; stdRowH_t = 0.245;
+if nActiveTune > 0 && nActiveTune < 3 && ~get(guiHandlesTune.RPYcombo, 'Value')
+    topY_t = stdRows_t(1) + stdRowH_t; botY_t = stdRows_t(3); gapT = 0.05;
+    rowH_t = (topY_t - botY_t - (nActiveTune-1)*gapT) / nActiveTune;
+    ci = 0;
+    for jj = axesOptions
+        ci = ci + 1;
+        yy = topY_t - ci*rowH_t - (ci-1)*gapT;
+        for cc = 0:3
+            posInfo.TparamsPos(jj + cc*3, 2) = yy;
+            posInfo.TparamsPos(jj + cc*3, 4) = rowH_t;
+        end
+    end
+else
+    for jj = 1:3
+        for cc = 0:3
+            posInfo.TparamsPos(jj + cc*3, 2) = stdRows_t(jj);
+            posInfo.TparamsPos(jj + cc*3, 4) = stdRowH_t;
+        end
+    end
+end
+
 lineStyle = {'-' ; '--' ; ':'};
 lnLabels = {'solid' ; 'dashed'; 'dotted'};
 p = {'    P, I, D, Dm, F'; '    P, I, D, Dm, F'; '    P, I, D, cD'; ...

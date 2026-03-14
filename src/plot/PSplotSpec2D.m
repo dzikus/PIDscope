@@ -22,6 +22,26 @@ s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'pidsum'};
 datSelectionString=[s1];
 axesOptionsSpec = find([get(guiHandlesSpec2.plotR, 'Value') get(guiHandlesSpec2.plotP, 'Value') get(guiHandlesSpec2.plotY, 'Value')]);
 
+% scale row heights to fill space when fewer than 3 RPY axes
+nActiveSpec = numel(axesOptionsSpec);
+stdRows = [0.69 0.395 0.1]; stdRowH = 0.25;
+if nActiveSpec > 0 && nActiveSpec < 3 && ~get(guiHandlesSpec2.RPYcomboSpec, 'Value')
+    topY_s = stdRows(1) + stdRowH; botY_s = stdRows(3); gapS = 0.045;
+    rowH_s = (topY_s - botY_s - (nActiveSpec-1)*gapS) / nActiveSpec;
+    ci = 0;
+    for jj = axesOptionsSpec
+        ci = ci + 1;
+        yy = topY_s - ci*rowH_s - (ci-1)*gapS;
+        posInfo.Spec2Pos(jj, 2) = yy; posInfo.Spec2Pos(jj, 4) = rowH_s;
+        posInfo.Spec2Pos(jj+3, 2) = yy; posInfo.Spec2Pos(jj+3, 4) = rowH_s;
+    end
+else
+    for jj = 1:3
+        posInfo.Spec2Pos(jj, 2) = stdRows(jj); posInfo.Spec2Pos(jj, 4) = stdRowH;
+        posInfo.Spec2Pos(jj+3, 2) = stdRows(jj); posInfo.Spec2Pos(jj+3, 4) = stdRowH;
+    end
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% compute fft %%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

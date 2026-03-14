@@ -289,6 +289,35 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
             catch
             end
         end
+
+        % motor-only mode: fill available space when all RPY disabled
+        if isempty(axesOptionsLV) && ~get(guiHandles.RPYcomboLV, 'Value') && ~expandON
+            plotTop_m = posInfo.slider(2) - 0.005;
+            motorFullH = plotTop_m - 0.1 - 0.01;
+            LVpanel5 = axes('Parent', PSfig, 'Position', [plotL 0.1 plotW motorFullH], 'Tag', 'PSmotor');
+            fileIdx = get(guiHandles.FileNum, 'Value');
+            sFactor = lineSmoothFactors(get(guiHandles.lineSmooth, 'Value'));
+            lwVal = get(guiHandles.linewidth, 'Value')/2;
+            xmax = max(tta{fileIdx}/us2sec);
+            tSec = tta{fileIdx}/us2sec;
+            if get(guiHandles.checkbox10, 'Value'), try hch11=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_0_', sFactor));hold on;set(hch11,'color', [linec.col10],'LineWidth',lwVal), catch, end, end
+            if get(guiHandles.checkbox11, 'Value'), try hch12=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_1_', sFactor));hold on;set(hch12,'color', [linec.col11],'LineWidth',lwVal), catch, end, end
+            if get(guiHandles.checkbox12, 'Value'), try hch13=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_2_', sFactor));hold on;set(hch13,'color', [linec.col12],'LineWidth',lwVal), catch, end, end
+            if get(guiHandles.checkbox13, 'Value'), try hch14=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_3_', sFactor));hold on;set(hch14,'color', [linec.col13],'LineWidth',lwVal), catch, end, end
+            if get(guiHandles.checkbox14, 'Value'), try hch19=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'setpoint_3_', sFactor, 0.1));hold on;set(hch19,'color', [linec.col14],'LineWidth',lwVal), catch, end, end
+            axis([0 xmax 0 100])
+            set(gca,'Color',th.axesBg);
+            h=fill([0,t1,t1,0],[0, 0, 100, 100],th.epochFill);
+            set(h,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill);
+            h=fill([t2,xmax,xmax,t2],[0, 0, 100, 100],th.epochFill);
+            set(h,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill);
+            y=xlabel('Time (s)','fontweight','bold'); set(y,'color',th.textPrimary);
+            y=ylabel({'Throttle | Motor (%)'},'fontweight','bold'); set(y,'color',th.textPrimary);
+            set(gca,'fontsize',fontsz,'XMinorGrid','on','ylim',[0 100],'ytick',[0 20 40 60 80 100],'fontweight','bold')
+            set(gca,'xtick',[round(xmax/10):round(xmax/10):round(xmax)],'XColor',th.axesFg,'YColor',th.axesFg,'GridColor',th.gridColor)
+            grid on
+            set(LVpanel5,'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','Tag','PSmotor');
+        end
     end
 
     % i/o keyboard trim: 'i' sets in-point, 'o' sets out-point

@@ -230,11 +230,14 @@ if ~isempty(chkBar)
     for k = 1:numel(rpyAxes), if ishandle(rpyAxes(k)), upperAxes(end+1) = rpyAxes(k); end; end
     for k = 1:numel(comboAx), if ishandle(comboAx(k)), upperAxes(end+1) = comboAx(k); end; end
 
-    if ~isempty(motorAx) && ishandle(motorAx(1))
-        set(motorAx(1), 'Position', [plotL 0.1 plotW linepos4H]);
-    end
-
     nUpper = numel(upperAxes);
+    if ~isempty(motorAx) && ishandle(motorAx(1))
+        if nUpper == 0
+            set(motorAx(1), 'Position', [plotL 0.1 plotW plotTop - 0.1 - gapV]);
+        else
+            set(motorAx(1), 'Position', [plotL 0.1 plotW linepos4H]);
+        end
+    end
     if nUpper > 0
         upperBot = 0.1 + linepos4H + gapV;
         upperH = (plotTop - upperBot - max(0,nUpper-1)*gapV) / max(1,nUpper);

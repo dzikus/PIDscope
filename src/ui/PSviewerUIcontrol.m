@@ -238,6 +238,9 @@ setappdata(PSfig, 'PSoverlay', struct( ...
     'GR',guiHandles.overlayGR, 'GP',guiHandles.overlayGP, 'GY',guiHandles.overlayGY));
 end % ishandle(checkpanel)
 
+% always update file list (fnameMaster may have grown since last call)
+set(guiHandles.FileNum, 'string', fnameMaster);
+
 fileIdx = get(guiHandles.FileNum, 'Value');
 if exist('tta','var') && iscell(tta) && numel(tta) >= fileIdx
     if numel(epoch1_A) < fileIdx || numel(epoch2_A) < fileIdx
