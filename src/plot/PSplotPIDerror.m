@@ -9,6 +9,8 @@
 
 try
 
+if ~exist('fnameMaster','var') || isempty(fnameMaster), return; end
+
 set(PSerrfig, 'pointer', 'watch');
 th = PStheme();
 
@@ -29,9 +31,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     ylab2 = {'roll'; 'pitch'; 'yaw'};
     figure(PSerrfig);
     for p = 1:3
-        delete(subplot('position', posInfo.PIDerrAnalysis(p,:)));
-        h1 = subplot('position', posInfo.PIDerrAnalysis(p,:)); cla;
-        set(h1, 'Tag', 'PSgrid');
+        stag_ = sprintf('PSerr_%d', p);
+        h_old = findobj(PSerrfig, 'Type', 'axes', 'Tag', stag_);
+        if ~isempty(h_old), delete(h_old); end
+        h1 = axes('Parent', PSerrfig, 'Position', posInfo.PIDerrAnalysis(p,:), 'Tag', stag_);
         hold on;
 
         piderr_A = T{fA}.(axPIDerr{p})(tIND{fA})';
@@ -142,9 +145,10 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     %% plot error x stick
     ylab = ['R'; 'P'; 'Y'];
     for p = 1:3
-        delete(subplot('position', posInfo.PIDerrAnalysis(p+3,:)));
-        h1 = subplot('position', posInfo.PIDerrAnalysis(p+3,:)); cla;
-        set(h1, 'Tag', 'PSgrid');
+        stag_ = sprintf('PSerr_%d', p+3);
+        h_old = findobj(PSerrfig, 'Type', 'axes', 'Tag', stag_);
+        if ~isempty(h_old), delete(h_old); end
+        h1 = axes('Parent', PSerrfig, 'Position', posInfo.PIDerrAnalysis(p+3,:), 'Tag', stag_);
         posAx = .8:1:9.8;
         posBx = 1.2:1:10.2;
 

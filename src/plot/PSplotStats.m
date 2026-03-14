@@ -54,8 +54,10 @@ if plotMode == 1
     end
 
     for sp = 1:4
-        hhist = subplot('position', posInfo.statsPos(sp,:)); cla;
-        set(hhist, 'Tag', 'PSgrid');
+        stag_ = sprintf('PSstats_%d', sp);
+        hhist = findobj(PSstatsfig, 'Type', 'axes', 'Tag', stag_);
+        if isempty(hhist), hhist = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos(sp,:), 'Tag', stag_);
+        else set(PSstatsfig, 'CurrentAxes', hhist); cla; end
         if sp <= 3
             pctData = Rpct_A{sp};
         else
@@ -92,8 +94,10 @@ if plotMode == 1
         end
 
         for sp = 1:4
-            hhist = subplot('position', posInfo.statsPos(sp+4,:)); cla;
-            set(hhist, 'Tag', 'PSgrid');
+            stag_ = sprintf('PSstats_%d', sp+4);
+            hhist = findobj(PSstatsfig, 'Type', 'axes', 'Tag', stag_);
+            if isempty(hhist), hhist = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos(sp+4,:), 'Tag', stag_);
+            else set(PSstatsfig, 'CurrentAxes', hhist); cla; end
             if sp <= 3
                 pctData = Rpct_B{sp};
             else
@@ -167,8 +171,10 @@ if plotMode == 2
             xlbl = grp{3};
             useAbs = grp{4};
 
-            h1 = subplot('position', posInfo.statsPos2(slots(g),:)); cla;
-            set(h1, 'Tag', 'PSgrid');
+            stag_ = sprintf('PSstats2_%d', slots(g));
+            h1 = findobj(PSstatsfig, 'Type', 'axes', 'Tag', stag_);
+            if isempty(h1), h1 = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos2(slots(g),:), 'Tag', stag_);
+            else set(PSstatsfig, 'CurrentAxes', h1); cla; end
 
             vals = zeros(nAx, 1);
             sds = zeros(nAx, 1);

@@ -162,13 +162,13 @@ set(guiHandlesSpec2.chirpButton, 'ForegroundColor', [.8 .3 .8]);
      'callback','PSplotSpec2D;');
 
 guiHandlesSpec2.plotR =uicontrol(PSspecfig2,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotRspec], 'callback', 'delete(findobj(PSspecfig2,''Type'',''axes'')); set(PSspecfig2, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotRspec], 'callback', 'PSplotSpec2D;');
 
 guiHandlesSpec2.plotP =uicontrol(PSspecfig2,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotPspec], 'callback', 'delete(findobj(PSspecfig2,''Type'',''axes'')); set(PSspecfig2, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotPspec], 'callback', 'PSplotSpec2D;');
 
 guiHandlesSpec2.plotY =uicontrol(PSspecfig2,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotYspec], 'callback', 'delete(findobj(PSspecfig2,''Type'',''axes'')); set(PSspecfig2, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotYspec], 'callback', 'PSplotSpec2D;');
 
 guiHandlesSpec2.checkboxPSD =uicontrol(PSspecfig2,'Style','checkbox','String','PSD','fontsize',fontsz,'TooltipString', ['Power Spectral Density'],...
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxPSD],'callback', 'PSplotSpec2D;');

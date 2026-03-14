@@ -36,7 +36,7 @@ TooltipString_FastStepResp=['Plots the step response associated with snap maneuv
 TooltipString_fileListWindowStep=['List of files available. Click to select which files to run']; 
 TooltipString_clearPlot=['Clears lines from all subplots']; 
 
-fcntSR = 0;
+if ~exist('fcntSR','var'), fcntSR = 0; end
 
 clear posInfo.TparamsPos
 plotR = cpL - 0.02;  plotLt = 0.07;  colGapT = 0.015;
@@ -99,14 +99,14 @@ guiHandlesTune.saveSettings = uicontrol(PStunefig,'string','Save Settings','font
 set(guiHandlesTune.saveSettings, 'ForegroundColor', saveCol);
 
 guiHandlesTune.plotR =uicontrol(PStunefig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotR],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotR],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 
 guiHandlesTune.plotP =uicontrol(PStunefig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotP],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotP],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.plotP, 'Value', 1);
 
 guiHandlesTune.plotY =uicontrol(PStunefig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotY],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotY],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.plotY, 'Value', 0);
 
 guiHandlesTune.clearPlots = uicontrol(PStunefig,'string','Reset','fontsize',fontsz,'TooltipString',[TooltipString_clearPlot],'units','normalized','Position',[posInfo.clearPlots],...
@@ -114,16 +114,16 @@ guiHandlesTune.clearPlots = uicontrol(PStunefig,'string','Reset','fontsize',font
 set(guiHandlesTune.clearPlots, 'ForegroundColor', cautionCol);
 
 guiHandlesTune.Ycorrection =uicontrol(PStunefig,'Style','checkbox','String','Y correction','fontsize',fontsz,'TooltipString', ['Y axis offset correction '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.Ycorrection],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PStunefig, ''pointer'', ''arrow''); PStuningParams;');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.Ycorrection],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.Ycorrection, 'Value', 0);
 
 guiHandlesTune.RPYcombo =uicontrol(PStunefig,'Style','checkbox','String','Single Panel','fontsize',fontsz,'TooltipString', ['Plot RPY in same panel '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.RPYcombo],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PStunefig, ''pointer'', ''arrow''); PStuningParams;');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.RPYcombo],'callback', 'set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.RPYcombo, 'Value', 0);
 
 guiHandlesTune.maxYStepTxt = uicontrol(PStunefig,'style','text','string','Y max ','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYStepTxt]);
 guiHandlesTune.maxYStepInput = uicontrol(PStunefig,'style','edit','string','1.75','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','Position',[posInfo.maxYStepInput],...
-     'callback','@textinput_call3; set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0;PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal'') ;PStuningParams;  ');
+     'callback','@textinput_call3; set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
  
 guiHandlesTune.smoothFactor_select = uicontrol(PStunefig,'style','popupmenu','string',{'smoothing off' 'smoothing low' 'smoothing medium' 'smoothing high'},'fontsize',fontsz,'TooltipString', ['Smooth the gyro when step response traces are too noisy'], 'units','normalized','Position',[posInfo.smooth_tuning],...
      'callback','@selection2;');

@@ -44,6 +44,11 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
         cmd = ['"' decoder_path '" --output-dir "' outdir '" "' filename '" 2>&1'];
     end
     [status, result] = system(cmd);
+    if status ~= 0
+        warning('blackbox_decode failed (exit %d): %s', status, result);
+        csvFnames = {};
+        return;
+    end
 
     fbase = fullfile(outdir, fname);
     files = dir([fbase '*.csv']);

@@ -136,12 +136,12 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
     baselineY = [0 -40];
     ftr = fspecial('gaussian',[get(guiHandlesSpec.smoothFactor_select, 'Value')*5 get(guiHandlesSpec.smoothFactor_select, 'Value')],4);
     for p=1:size(ampmat,2)
-        try delete(subplot('position',posInfo.SpecPos(p,:))); catch, end
+        stag_ = sprintf('PSspec_%d', p);
+        h_old = findobj(PSspecfig, 'Type', 'axes', 'Tag', stag_);
+        if ~isempty(h_old), delete(h_old); end
         if ~isempty(ampmat{p})
         try
-            delete(subplot('position',posInfo.SpecPos(p,:)));
-            h1=subplot('position',posInfo.SpecPos(p,:)); cla
-            set(h1, 'Tag', 'PSgrid');
+            h1 = axes('Parent', PSspecfig, 'Position', posInfo.SpecPos(p,:), 'Tag', stag_);
             img = flipud((filter2(ftr, ampmat{p} ))') + baselineY(get(guiHandlesSpec.checkboxPSD, 'Value')+1);
             imagesc(img); 
 
@@ -340,10 +340,11 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==1 && ~isempty(amp2d)
     for p=1:size(amp2d,2)
          axLabel={'roll';'pitch';'yaw'};
        
-        delete(subplot('position',posInfo.SpecPos(p,:)));
+        stag_ = sprintf('PSspec_%d', p);
+        h_old = findobj(PSspecfig, 'Type', 'axes', 'Tag', stag_);
+        if ~isempty(h_old), delete(h_old); end
         if ~isempty(amp2d{p})
-            h2=subplot('position',posInfo.SpecPos(p,:)); cla
-            set(h2, 'Tag', 'PSgrid');
+            h2 = axes('Parent', PSspecfig, 'Position', posInfo.SpecPos(p,:), 'Tag', stag_);
             h=plot(freq2d{p}, smooth(amp2d{p}, log10(size(amp2d{p},1)) * (get(guiHandlesSpec.smoothFactor_select, 'Value')^2), 'lowess'));hold on
             set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2)
             set(h2,'fontsize',fontsz,'fontweight','bold')

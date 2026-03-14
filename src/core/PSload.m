@@ -140,6 +140,48 @@ try
                 if detFwIdx > 0 && detFwIdx ~= get(guiHandles.Firmware, 'Value')
                     set(guiHandles.Firmware, 'Value', detFwIdx);
                 end
+                if detFwIdx > 0 && detFwIdx ~= loaded_firmware && fcnt > 1
+                    % stash current file (already imported above)
+                    stash_T_ = T{fcnt}; stash_SI_ = SetupInfo{fcnt};
+                    stash_LR_ = A_lograte(fcnt); stash_TTA_ = tta{fcnt};
+                    stash_E1_ = epoch1_A(fcnt); stash_E2_ = epoch2_A(fcnt);
+                    stash_FN_ = fnameMaster{fcnt};
+                    stash_FwT_ = fwType{fcnt}; stash_FwMaj_ = fwMajor(fcnt);
+                    stash_FwMin_ = fwMinor(fcnt); stash_DbgIdx_ = debugIdx{fcnt};
+
+                    clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData rpmFilterData ampmat freq2d2 amp2d2 specMat delayDataReady FilterDelayDterm SPGyroDelay Debug01 Debug02 gyro_phase_shift_deg dterm_phase_shift_deg tuneCrtlpanel_init setupInfoWidgets_init;
+                    fnameMaster = {};
+                    try, delete(checkpanel); clear checkpanel; catch, end
+                    try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
+                    try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
+                    try delete(findobj(PSfig,'Tag','PScombo')); catch, end
+                    ov = getappdata(PSfig, 'PSoverlay');
+                    if ~isempty(ov)
+                        flds = fieldnames(ov);
+                        for fi=1:numel(flds), try delete(ov.(flds{fi})); catch, end; end
+                        setappdata(PSfig, 'PSoverlay', []);
+                    end
+                    figs=findobj('Type','figure'); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end
+                    clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel freqTimeCrtlpanel tuneCrtlpanel;
+                    set(guiHandles.FileNum, 'String', ' ');
+                    try, set(guiHandles.Epoch1_A_Input, 'String', ' '); set(guiHandles.Epoch2_A_Input, 'String', ' '); catch, end
+                    try setappdata(PSfig, 'smoothCacheLV', struct()); catch, end
+                    try setappdata(PSfig, 'rfMotorCount', []); catch, end
+
+                    % restore as file #1 and continue processing
+                    fcnt = 1; Nfiles = 1;
+                    T{1} = stash_T_; SetupInfo{1} = stash_SI_;
+                    A_lograte(1) = stash_LR_; tta{1} = stash_TTA_;
+                    epoch1_A(1) = stash_E1_; epoch2_A(1) = stash_E2_;
+                    fnameMaster{1} = stash_FN_;
+                    fwType{1} = stash_FwT_; fwMajor(1) = stash_FwMaj_;
+                    fwMinor(1) = stash_FwMin_; debugIdx{1} = stash_DbgIdx_;
+                    clear stash_T_ stash_SI_ stash_LR_ stash_TTA_ stash_E1_ stash_E2_ stash_FN_ stash_FwT_ stash_FwMaj_ stash_FwMin_ stash_DbgIdx_;
+                    loaded_firmware = detFwIdx;
+                end
+                if detFwIdx > 0
+                    loaded_firmware = detFwIdx;
+                end
 
                 %%%%%%%%%% collect debug mode info %%%%%%%%%%
                 try

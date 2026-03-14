@@ -178,12 +178,8 @@ baselineYlines = [0 -50];
 multilineStyle = {'-' ; ':'; '--'};
 rpyLineStyle = {'-' ; '--'; ':'};
 
-delete(subplot('position',posInfo.Spec2Pos(1,:))) 
-delete(subplot('position',posInfo.Spec2Pos(2,:)))
-delete(subplot('position',posInfo.Spec2Pos(3,:)))
-delete(subplot('position',posInfo.Spec2Pos(4,:)))
-delete(subplot('position',posInfo.Spec2Pos(5,:)))
-delete(subplot('position',posInfo.Spec2Pos(6,:)))
+for di_=1:6, h_del=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_del), delete(h_del); end; end
+h_del=findobj(PSspecfig2,'Type','axes','Tag','PSspec2_combo'); if ~isempty(h_del), delete(h_del); end
 %%%%% plot 2d amp spec
 axLabel={'Roll';'Pitch';'Yaw'};
 
@@ -203,9 +199,11 @@ for k = 1 : length(tmpSpecVal)
                 if ~isempty(freq2d2{p}) && ~isempty(amp2d2{p})
                     
                     if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
-                        
-                        h2=subplot('position',posInfo.Spec2Pos(a,:));
-                        set(h2, 'Tag', 'PSgrid');
+
+                        stag_ = sprintf('PSspec2_%d', a);
+                        h2 = findobj(PSspecfig2, 'Type', 'axes', 'Tag', stag_);
+                        if isempty(h2), h2 = axes('Parent', PSspecfig2, 'Position', posInfo.Spec2Pos(a,:), 'Tag', stag_);
+                        else set(PSspecfig2, 'CurrentAxes', h2); end
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
@@ -230,8 +228,10 @@ for k = 1 : length(tmpSpecVal)
                         end
                         grid on
 
-                        h2=subplot('position',posInfo.Spec2Pos(a+3,:));
-                        set(h2, 'Tag', 'PSgrid');
+                        stag2_ = sprintf('PSspec2_%d', a+3);
+                        h2 = findobj(PSspecfig2, 'Type', 'axes', 'Tag', stag2_);
+                        if isempty(h2), h2 = axes('Parent', PSspecfig2, 'Position', posInfo.Spec2Pos(a+3,:), 'Tag', stag2_);
+                        else set(PSspecfig2, 'CurrentAxes', h2); end
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
@@ -299,8 +299,9 @@ for k = 1 : length(tmpSpecVal)
                     
                     else
                         % combine R P Y
-                        h2=subplot('position',[0.0500    0.1000    cpL-0.1    0.840]);
-                        set(h2, 'Tag', 'PSgrid');
+                        h2 = findobj(PSspecfig2, 'Type', 'axes', 'Tag', 'PSspec2_combo');
+                        if isempty(h2), h2 = axes('Parent', PSspecfig2, 'Position', [0.0500 0.1000 cpL-0.1 0.840], 'Tag', 'PSspec2_combo');
+                        else set(PSspecfig2, 'CurrentAxes', h2); end
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on

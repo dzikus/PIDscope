@@ -25,7 +25,7 @@ fwIdx = min(get(guiHandles.Firmware, 'Value'), numel(p));
 pidlabels = p{fwIdx};
 
 %%%%%%%%%%%%% step resp %%%%%%%%%%%%%
-figure(PStunefig)
+figure(PStunefig);
 
 ymax = str2double(get(guiHandlesTune.maxYStepInput, 'String'));
 ypos = [(ymax/3)*2.9 (ymax/3)*1.85 (ymax/3)*.8];
@@ -55,8 +55,10 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                 end
 
                 if get(guiHandlesTune.RPYcombo, 'Value') == 0
-                    h1=subplot('position',posInfo.TparamsPos(p,:));
-                    set(h1, 'Tag', 'PSgrid');
+                    stag_ = sprintf('PSstep_%d', p);
+                    h1 = findobj(PStunefig, 'Type', 'axes', 'Tag', stag_);
+                    if isempty(h1), h1 = axes('Parent', PStunefig, 'Position', posInfo.TparamsPos(p,:), 'Tag', stag_);
+                    else set(PStunefig, 'CurrentAxes', h1); end
                     hold on
 
                      if size(stepresp_A{p},1)>1
@@ -93,8 +95,10 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                     grid on
 
                     % Col 2: PID text in dedicated column
-                    hTxt=subplot('position',posInfo.TparamsPos(p+3,:));
-                    set(hTxt, 'Tag', 'PSgrid', 'Visible', 'off', 'XLim', [0 1], 'YLim', [0 1]);
+                    stag_ = sprintf('PSstep_%d', p+3);
+                    hTxt = findobj(PStunefig, 'Type', 'axes', 'Tag', stag_);
+                    if isempty(hTxt), hTxt = axes('Parent', PStunefig, 'Position', posInfo.TparamsPos(p+3,:), 'Tag', stag_, 'Visible', 'off', 'XLim', [0 1], 'YLim', [0 1]);
+                    else set(PStunefig, 'CurrentAxes', hTxt); end
                     hold on
                     if size(stepresp_A{p},1)>1
                         if cnt <= 3, h=text(0.05, 0.97, [pidlabels],'fontsize',fontsz,'fontweight','bold','Color',th.textPrimary); end
@@ -107,8 +111,10 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                     end
 
                     % Col 3: Peak
-                    h2=subplot('position',posInfo.TparamsPos(p+6,:));
-                    set(h2, 'Tag', 'PSgrid');
+                    stag_ = sprintf('PSstep_%d', p+6);
+                    h2 = findobj(PStunefig, 'Type', 'axes', 'Tag', stag_);
+                    if isempty(h2), h2 = axes('Parent', PStunefig, 'Position', posInfo.TparamsPos(p+6,:), 'Tag', stag_);
+                    else set(PStunefig, 'CurrentAxes', h2); end
                     h=plot(fcntSR, peakresp(p, fcntSR),'sk');
                     set(h,'Markersize',markerSz, 'MarkerFaceColor', [multiLineCols(fcntSR,:)])
                     set(gca,'fontsize',fontsz, 'ylim',[0.8 ymax],'ytick',[0.8:.1:ymax],'xlim',[0.5 fcntSR+0.5],'xtick',[1:fcntSR])
@@ -119,8 +125,10 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                     plot([0 10],[1 1],'--','Color',th.axesFg)
 
                     % Col 4: Latency
-                    h3=subplot('position',posInfo.TparamsPos(p+9,:));
-                    set(h3, 'Tag', 'PSgrid');
+                    stag_ = sprintf('PSstep_%d', p+9);
+                    h3 = findobj(PStunefig, 'Type', 'axes', 'Tag', stag_);
+                    if isempty(h3), h3 = axes('Parent', PStunefig, 'Position', posInfo.TparamsPos(p+9,:), 'Tag', stag_);
+                    else set(PStunefig, 'CurrentAxes', h3); end
                     h=plot(fcntSR, latencyHalfHeight(p, fcntSR),'sk');
                     set(h,'Markersize',markerSz, 'MarkerFaceColor', [multiLineCols(fcntSR,:)])
 
@@ -143,7 +151,9 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
 
 
                 if get(guiHandlesTune.RPYcombo, 'Value') == 1
-                    h1=subplot('position',[0.0500    0.1    0.72    0.84])
+                    h1 = findobj(PStunefig, 'Type', 'axes', 'Tag', 'PSstep_combo');
+                    if isempty(h1), h1 = axes('Parent', PStunefig, 'Position', [0.0500 0.1 0.72 0.84], 'Tag', 'PSstep_combo');
+                    else set(PStunefig, 'CurrentAxes', h1); end
                     hold on
 
                      if size(stepresp_A{p},1)>1
@@ -218,16 +228,19 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
     updateStep=0;
 else
     for p = 1 : 3
-        delete(subplot('position',posInfo.TparamsPos(p,:)))
-        delete(subplot('position',posInfo.TparamsPos(p+3,:)))
-        delete(subplot('position',posInfo.TparamsPos(p+6,:)))
-        delete(subplot('position',posInfo.TparamsPos(p+9,:)))
+        for off_ = [0 3 6 9]
+            stag_ = sprintf('PSstep_%d', p+off_);
+            h_del = findobj(PStunefig, 'Type', 'axes', 'Tag', stag_);
+            if ~isempty(h_del), delete(h_del); end
+        end
         peaktime = [];
         peakresp = [];
         latencyHalfHeight = [];
         latencyHalfHeight_std = [];
         peakresp_std = [];
     end
+    h_del = findobj(PStunefig, 'Type', 'axes', 'Tag', 'PSstep_combo');
+    if ~isempty(h_del), delete(h_del); end
 end
 
 

@@ -85,7 +85,9 @@ end
 
 try delete(findobj(PSspecfig3, 'Tag', 'PScbar')); catch, end
 for i = 1 : 3
-    delete(subplot('position',posInfo.Spec3Pos(i,:)));
+    stag_ = sprintf('PSfreqTime_%d', i);
+    h_old = findobj(PSspecfig3, 'Type', 'axes', 'Tag', stag_);
+    if ~isempty(h_old), delete(h_old); end
     try
     if ~updateSpec
         fld = [char(datSelectionString(tmpSpecVal3)) '_' int2str(i-1) '_'];
@@ -93,8 +95,7 @@ for i = 1 : 3
         [Tm F specMat{i}] = PStimeFreqCalc(dat', A_lograte(tmpFileVal3), specSmoothFactors(tmpSmoothVal3), timeSmoothFactors(tmpSubVal3));
     end
 
-    h2=subplot('position',posInfo.Spec3Pos(i,:));
-    set(h2, 'Tag', 'PSgrid');
+    h2 = axes('Parent', PSspecfig3, 'Position', posInfo.Spec3Pos(i,:), 'Tag', stag_);
     h = imagesc(specMat{i});
 
     set(gca,'Clim',[ClimScale3], 'fontsize',fontsz,'fontweight','bold')
@@ -130,7 +131,8 @@ for i = 1 : 3
     try set(cbar, 'Color', th.axesFg); catch, end
 
     if i == 3 && (strcmp(char(datSelectionString(get(guiHandlesSpec3.SpecList, 'Value'))), 'axisD') || strcmp(char(datSelectionString(get(guiHandlesSpec3.SpecList, 'Value'))), 'axisDpf'))
-        delete(subplot('position',posInfo.Spec3Pos(i,:)));
+        h_del = findobj(PSspecfig3, 'Type', 'axes', 'Tag', stag_);
+        if ~isempty(h_del), delete(h_del); end
     end
     box off
 
@@ -198,7 +200,8 @@ for i = 1 : 3
     end
 
     catch
-        delete(subplot('position',posInfo.Spec3Pos(i,:)));
+        h_del = findobj(PSspecfig3, 'Type', 'axes', 'Tag', stag_);
+        if ~isempty(h_del), delete(h_del); end
     end
 end
 updateSpec = 0;

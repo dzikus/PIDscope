@@ -12,8 +12,26 @@ env:
 permissions: {}
 
 jobs:
+  # Stage 0: Run tests before building anything
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/pidscope-builder-appimage:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Run unit tests
+        run: octave --no-gui --eval "run('tests/run_tests.m')"
+
   # Stage 1: Build Docker builder images (3 parallel)
   build-appimage-builder:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -33,6 +51,7 @@ jobs:
           docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
 
   build-windows-builder:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -51,24 +70,31 @@ jobs:
           docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest ./packaging/windows
           docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
 
-  build-macos-builder:
-    runs-on: ubuntu-latest
+  build-macos-blackbox:
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14
+            arch_name: arm64
+          - runner: macos-13
+            arch_name: x86_64
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
-      packages: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-
-      - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772  # v3.4.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push builder image
+      - name: Build blackbox_decode
         run: |
-          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest ./packaging/macos
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
+          git clone --depth 1 https://github.com/betaflight/blackbox-tools.git
+          cd blackbox-tools
+          make DEBUG= obj/blackbox_decode
+          cp obj/blackbox_decode ../blackbox_decode.${{ matrix.arch_name }}
+          codesign --force --sign - ../blackbox_decode.${{ matrix.arch_name }}
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: blackbox-decode-${{ matrix.arch_name }}
+          path: blackbox_decode.${{ matrix.arch_name }}
 
   # Stage 2: Build packages (each depends only on its own builder)
   build-appimage:
@@ -130,28 +156,56 @@ jobs:
           path: dist/PIDscope-*-windows-x86_64.zip
 
   build-macos:
-    needs: build-macos-builder
-    runs-on: ubuntu-latest
+    needs: build-macos-blackbox
+    runs-on: macos-14
     permissions:
       contents: read
-      packages: read
+    env:
+      INAV_BB_VERSION: "9.0.0"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772  # v3.4.0
+      - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e  # v4.2.1
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          pattern: blackbox-decode-*
+          merge-multiple: true
 
-      - name: Build macOS ZIP
+      - name: Download INAV blackbox_decode
         run: |
+          brew install zstd
+          wget -q "https://github.com/iNavFlight/blackbox-tools/releases/download/v${INAV_BB_VERSION}/blackbox-tools-${INAV_BB_VERSION}_macos-aarch64.tar.zst" -O inav-arm64.tar.zst
+          tar --zstd -xf inav-arm64.tar.zst && cp bin/blackbox_decode blackbox_decode_INAV.arm64 && rm -rf bin share inav-arm64.tar.zst
+          wget -q "https://github.com/iNavFlight/blackbox-tools/releases/download/v${INAV_BB_VERSION}/blackbox-tools-${INAV_BB_VERSION}_macos-x86_64.tar.zst" -O inav-x86.tar.zst
+          tar --zstd -xf inav-x86.tar.zst && cp bin/blackbox_decode blackbox_decode_INAV.x86_64 && rm -rf bin share inav-x86.tar.zst
+
+      - name: Package macOS ZIP
+        run: |
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          STAGING="/tmp/PIDscope-${VERSION}-macos"
+          mkdir -p "$STAGING"
+          cp PIDscope.m "$STAGING/"
+          cp -r src "$STAGING/"
+          cp VERSION "$STAGING/"
+          cp packaging/macos/pidscope.command "$STAGING/"
+          chmod +x "$STAGING/pidscope.command"
+          cp blackbox_decode.arm64 blackbox_decode.x86_64 "$STAGING/"
+          cp blackbox_decode_INAV.arm64 blackbox_decode_INAV.x86_64 "$STAGING/"
+          chmod +x "$STAGING"/blackbox_decode*
+          if [ -f packaging/com.pidscope.PIDscope.png ]; then cp packaging/com.pidscope.PIDscope.png "$STAGING/PIDscope.png"; fi
+          cat > "$STAGING/README-macOS.txt" <<'HEREDOC'
+          PIDscope - Blackbox Flight Log Analyzer
+
+          SETUP:
+          1. brew install octave
+          2. xattr -cr ~/Downloads/PIDscope-*-macos
+          3. Double-click pidscope.command
+             (Octave packages are installed automatically on first launch)
+
+          Project: https://buymeacoffee.com/dzikus
+          License: GPL v3
+          HEREDOC
           mkdir -p dist
-          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
-          docker run --rm \
-            -v ${{ github.workspace }}:/src \
-            -v ${{ github.workspace }}/dist:/dist \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
+          cd /tmp && zip -r -q "$GITHUB_WORKSPACE/dist/PIDscope-${VERSION}-macos-universal.zip" "PIDscope-${VERSION}-macos"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:

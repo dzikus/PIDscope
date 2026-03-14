@@ -39,7 +39,12 @@ if strcmp(mode, 'throttle')
             end
         end
         if numel(yPts) >= 5
-            yPts = round(smooth(yPts(:), 5))';
+            try
+                yPts = round(smooth(yPts(:), 5))';
+            catch
+                kernel = ones(5,1)/5;
+                yPts = round(conv(yPts(:), kernel, 'same'))';
+            end
         end
         if ~isempty(xPts)
             h = plot(ax, xPts, yPts, '-', 'LineWidth', lw);
@@ -74,7 +79,12 @@ elseif strcmp(mode, 'time')
             end
         end
         if numel(yPts) >= 5
-            yPts = round(smooth(yPts(:), 5))';
+            try
+                yPts = round(smooth(yPts(:), 5))';
+            catch
+                kernel = ones(5,1)/5;
+                yPts = round(conv(yPts(:), kernel, 'same'))';
+            end
         end
         if ~isempty(xPts)
             h = plot(ax, xPts, yPts, '-', 'LineWidth', lw);

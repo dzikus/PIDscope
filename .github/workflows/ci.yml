@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main, pidscope]
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/pidscope-builder-appimage:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Run unit tests
+        run: octave --no-gui --eval "run('tests/run_tests.m')"

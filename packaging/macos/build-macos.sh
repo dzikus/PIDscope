@@ -27,16 +27,25 @@ echo "Copying PIDscope files..."
 cp "${SRC_DIR}"/PIDscope.m "${STAGING}/"
 cp -r "${SRC_DIR}/src" "${STAGING}/"
 
-# 2. Copy blackbox_decode universal binaries
+# 2. Copy blackbox_decode binaries
+# BF: from GH Actions artifacts (mounted) or /cache; INAV: from /cache (Dockerfile)
 echo "Copying blackbox_decode binaries..."
-cp /cache/blackbox_decode "${STAGING}/"
-cp /cache/blackbox_decode_INAV "${STAGING}/"
+for bin in blackbox_decode.arm64 blackbox_decode.x86_64 blackbox_decode_INAV.arm64 blackbox_decode_INAV.x86_64; do
+    if [ -f "/cache/${bin}" ]; then
+        cp "/cache/${bin}" "${STAGING}/"
+    elif [ -f "${SRC_DIR}/${bin}" ]; then
+        cp "${SRC_DIR}/${bin}" "${STAGING}/"
+    else
+        echo "WARNING: ${bin} not found, skipping (BF binaries come from GH Actions)"
+    fi
+done
 
-# 3. Copy launcher and helper scripts
+# 3. Copy launcher
 cp "${SRC_DIR}/packaging/macos/pidscope.command" "${STAGING}/"
-cp "${SRC_DIR}/packaging/macos/fix-quarantine.command" "${STAGING}/"
-chmod +x "${STAGING}/pidscope.command" "${STAGING}/fix-quarantine.command"
-chmod +x "${STAGING}/blackbox_decode" "${STAGING}/blackbox_decode_INAV"
+chmod +x "${STAGING}/pidscope.command"
+for bin in "${STAGING}"/blackbox_decode*; do
+    [ -f "$bin" ] && chmod +x "$bin"
+done
 
 # 4. Copy icon
 if [ -f "${SRC_DIR}/packaging/com.pidscope.PIDscope.png" ]; then
@@ -58,15 +67,12 @@ FIRST TIME SETUP:
    brew install octave
    (If you don't have Homebrew: https://brew.sh)
 
-2. Install required Octave packages (first time only):
-   octave --eval "pkg install -forge signal statistics control image"
+2. Remove macOS quarantine - run this in Terminal:
+   xattr -cr ~/Downloads/PIDscope-*-macos
 
-3. Remove macOS quarantine (required after download):
-   Double-click "fix-quarantine.command"
-   (or run in Terminal: xattr -cr /path/to/PIDscope-folder)
-
-4. Launch PIDscope:
+3. Launch PIDscope:
    Double-click "pidscope.command"
+   (Octave packages are installed automatically on first launch)
 
 ALTERNATIVE (Terminal):
    cd /path/to/PIDscope-folder
@@ -74,7 +80,7 @@ ALTERNATIVE (Terminal):
 
 REQUIREMENTS:
 - macOS 12+ (Monterey or later)
-- GNU Octave 9.x or 10.x (via Homebrew)
+- GNU Octave 9.x, 10.x, or 11.x (via Homebrew)
 - Apple Silicon (M1/M2/M3/M4/M5) or Intel Mac
 
 Project: https://buymeacoffee.com/dzikus

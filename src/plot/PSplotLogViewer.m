@@ -164,12 +164,12 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
             if get(guiHandles.RPYcomboLV, 'Value'), expandON = 0; end
             lpKey = ['linepos' int2str(ii)];
             if ~get(guiHandles.RPYcomboLV, 'Value') && ~expandON
-                LVpanels{ii} = subplot('position', posInfo.(lpKey));
-                LVpanel5 = subplot('position',posInfo.linepos4);
+                LVpanels{ii} = axes('Parent', PSfig, 'Position', posInfo.(lpKey), 'Tag', 'PSrpy');
+                LVpanel5 = axes('Parent', PSfig, 'Position', posInfo.linepos4, 'Tag', 'PSmotor');
             end
             if ~get(guiHandles.RPYcomboLV, 'Value') && expandON
                 try
-                    subplot(hexpand{ii}, 'position', expand_sz);
+                    set(hexpand{ii}, 'Position', expand_sz);
                 catch
                 end
             end
@@ -179,12 +179,13 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
                 cntLV = cntLV + 1;
                 if get(guiHandles.RPYcomboLV, 'Value')
-                    LVpanel4 = subplot('position' ,fullszPlot);
-                    set(LVpanel4, 'Tag', 'PScombo');
+                    LVpanel4 = findobj(PSfig, 'Type', 'axes', 'Tag', 'PScombo');
+                    if isempty(LVpanel4), LVpanel4 = axes('Parent', PSfig, 'Position', fullszPlot, 'Tag', 'PScombo');
+                    else set(PSfig, 'CurrentAxes', LVpanel4); end
                     lnstyle = lineStyle2LV;
                 end
                 if ~get(guiHandles.RPYcomboLV, 'Value') && expandON == 0
-                    LVpanels{ii} = subplot('position', posInfo.(lpKey));
+                    set(PSfig, 'CurrentAxes', LVpanels{ii});
                     lnstyle = lineStyleLV;
                 end
 
@@ -243,7 +244,9 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 grid on
                 
                             %  Percent variables
-                LVpanel5 = subplot('position',posInfo.linepos4);
+                LVpanel5 = findobj(PSfig, 'Type', 'axes', 'Tag', 'PSmotor');
+                if isempty(LVpanel5), LVpanel5 = axes('Parent', PSfig, 'Position', posInfo.linepos4, 'Tag', 'PSmotor');
+                else set(PSfig, 'CurrentAxes', LVpanel5); end
                 if get(guiHandles.checkbox10, 'Value'), try hch11=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_0_', sFactor));hold on;set(hch11,'color', [linec.col10],'LineWidth',lwVal), catch, end, end
                 if get(guiHandles.checkbox11, 'Value'), try hch12=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_1_', sFactor));hold on;set(hch12,'color', [linec.col11],'LineWidth',lwVal), catch, end, end
                 if get(guiHandles.checkbox12, 'Value'), try hch13=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_2_', sFactor));hold on;set(hch13,'color', [linec.col12],'LineWidth',lwVal), catch, end, end
