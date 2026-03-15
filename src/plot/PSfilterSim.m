@@ -325,7 +325,7 @@ doUpdate();
         sigDur = max(0.1, readEditF(h.sig_dur));
 
         types = {'pt1', 'biquad', 'pt2', 'pt3'};
-        Nfft = 2048;
+        Nfft = 4096;
         fVec = linspace(0, Fs/2, Nfft)';
         fMax = min(Fs/2, 1000);
         fIdx = fVec <= fMax;
@@ -347,18 +347,25 @@ doUpdate();
         % RPM harmonic notches (cascaded nMotors times per harmonic)
         rpmCols = {[.9 .2 .2],[.9 .6 .1],[.9 .9 .2],[.3 .8 .3],[.2 .8 .8],[.9 .9 .9],[.8 .3 .8]};
         H_rpm = cell(rpmNharm, 1);
+        H_rpm1 = cell(rpmNharm, 1);  % single-motor for phase plot
         H_rpmAll = ones(Nfft, 1);
         for ri = 1:rpmNharm
             fc_rpm = rpmBase * ri;
             if fc_rpm > 0 && fc_rpm < Fs/2
                 H_single = notchH_Q(fc_rpm, rpmQ, Fs, Nfft);
+                H_rpm1{ri} = H_single;
                 H_rpm{ri} = H_single .^ nMotors;
             else
+                H_rpm1{ri} = ones(Nfft, 1);
                 H_rpm{ri} = ones(Nfft, 1);
             end
             H_rpmAll = H_rpmAll .* H_rpm{ri};
         end
         H_gyroN = H_gn1 .* H_gn2 .* H_rpmAll;
+        % single-motor product for phase plot (avoids ±180 wrapping)
+        H_rpmAll1 = ones(Nfft, 1);
+        for ri = 1:rpmNharm, H_rpmAll1 = H_rpmAll1 .* H_rpm1{ri}; end
+        H_gyroN1 = H_gn1 .* H_gn2 .* H_rpmAll1;
         H_dtermN = H_dn;
 
         % Group delay
@@ -561,18 +568,19 @@ doUpdate();
         end
         if isfinite(gdMax) && gdMax > 0, set(axLdelay, 'YLim', [0 gdMax]); end
         set(get(axLdelay, 'YLabel'), 'String', 'Filter Delay (ms)');
+        drawCutoffLines(axLdelay, g1on, glpf1f, g2on, glpf2f, colG);
         yTxtL = gdMax * 0.92;
         yTxtStp = gdMax * 0.17;
         if combineLPF
-            text(fMax*0.02, yTxtL, sprintf('gyro lpf: %.3fms', gd_gL(2)), 'Parent', axLdelay, ...
+            text(fMax*0.02, yTxtL, sprintf('gyro lpf: %.5fms', gd_gL(2)), 'Parent', axLdelay, ...
                 'Color', colG, 'FontSize', fontsz-1);
-            text(fMax*0.02, yTxtL - yTxtStp, sprintf('dterm lpf: %.3fms', gd_dL(2)), 'Parent', axLdelay, ...
+            text(fMax*0.02, yTxtL - yTxtStp, sprintf('dterm lpf: %.5fms', gd_dL(2)), 'Parent', axLdelay, ...
                 'Color', colD, 'FontSize', fontsz-1);
         else
-            if g1on, text(fMax*0.02, yTxtL, sprintf('gyro lpf1: %.3fms', gd_g1(2)), 'Parent', axLdelay, 'Color', colG*0.7, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
-            if g2on, text(fMax*0.02, yTxtL, sprintf('gyro lpf2: %.3fms', gd_g2(2)), 'Parent', axLdelay, 'Color', colG, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
-            if d1on, text(fMax*0.02, yTxtL, sprintf('dterm lpf1: %.3fms', gd_d1(2)), 'Parent', axLdelay, 'Color', colD*0.7, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
-            if d2on, text(fMax*0.02, yTxtL, sprintf('dterm lpf2: %.3fms', gd_d2(2)), 'Parent', axLdelay, 'Color', colD, 'FontSize', fontsz-1); end
+            if g1on, text(fMax*0.02, yTxtL, sprintf('gyro lpf1: %.5fms', gd_g1(2)), 'Parent', axLdelay, 'Color', colG*0.7, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
+            if g2on, text(fMax*0.02, yTxtL, sprintf('gyro lpf2: %.5fms', gd_g2(2)), 'Parent', axLdelay, 'Color', colG, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
+            if d1on, text(fMax*0.02, yTxtL, sprintf('dterm lpf1: %.5fms', gd_d1(2)), 'Parent', axLdelay, 'Color', colD*0.7, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
+            if d2on, text(fMax*0.02, yTxtL, sprintf('dterm lpf2: %.5fms', gd_d2(2)), 'Parent', axLdelay, 'Color', colD, 'FontSize', fontsz-1); end
         end
 
         cla(axLphase); hold(axLphase, 'on');
@@ -588,12 +596,13 @@ doUpdate();
             if d2on, plotFn(axLphase, fVec(fIdx), ph_d2(fIdx), 'Color', colD, 'LineWidth', 1.0, 'LineStyle', '--'); end
         end
         if showBoth
-            ph_gN = smooth(angle(H_gyroN) * 180/pi, 9, 'moving');
+            ph_gN = smooth(angle(H_gyroN1) * 180/pi, 9, 'moving');
             plotFn(axLphase, fVec(fIdx), ph_gN(fIdx), 'Color', colCombN, 'LineWidth', 1.2);
         end
         hold(axLphase, 'off');
         PSstyleAxes(axLphase, thm); set(axLphase, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
         set(get(axLphase, 'YLabel'), 'String', 'Phase Delay (deg)');
+        drawCutoffLines(axLphase, g1on, glpf1f, g2on, glpf2f, colG);
 
         if showStep
             cla(axLstep);
@@ -651,11 +660,21 @@ doUpdate();
             annotateNotch(axNmag, gn1f, gn2f, dnf, rpmBase, rpmNharm, rpmCols, colStaticN, colCombN, colD, fontsz, usedB);
 
             cla(axNdelay); hold(axNdelay, 'on');
-            rpmGd = cell(rpmNharm, 1);
+            % per-single-motor delay (not cascaded nMotors)
+            rpmGd1 = cell(rpmNharm, 1);
             for ri = 1:rpmNharm
                 ci = min(ri, numel(rpmCols));
-                rpmGd{ri} = smooth(-gradient(unwrap(angle(H_rpm{ri}))) ./ dw * 1000, 51, 'moving');
-                plotFn(axNdelay, fVec(fIdx), rpmGd{ri}(fIdx), 'Color', rpmCols{ci}, 'LineWidth', 0.9);
+                rpmGd1{ri} = smooth(-gradient(unwrap(angle(H_rpm1{ri}))) ./ dw * 1000, 51, 'moving');
+                plotFn(axNdelay, fVec(fIdx), rpmGd1{ri}(fIdx), 'Color', rpmCols{ci}, 'LineWidth', 0.9);
+            end
+            % static notch delay curves
+            if gn1f > 0
+                gd_gn1_v = smooth(-gradient(unwrap(angle(H_gn1))) ./ dw * 1000, 51, 'moving');
+                plotFn(axNdelay, fVec(fIdx), gd_gn1_v(fIdx), 'Color', colStaticN, 'LineWidth', 0.8);
+            end
+            if gn2f > 0
+                gd_gn2_v = smooth(-gradient(unwrap(angle(H_gn2))) ./ dw * 1000, 51, 'moving');
+                plotFn(axNdelay, fVec(fIdx), gd_gn2_v(fIdx), 'Color', colStaticN*0.85, 'LineWidth', 0.8, 'LineStyle', '--');
             end
             plotFn(axNdelay, fVec(fIdx), gd_gN(fIdx), 'Color', colCombN, 'LineWidth', 1.5);
             if dnf > 0
@@ -679,19 +698,17 @@ doUpdate();
             for ri = 1:rpmNharm
                 ci = min(ri, numel(rpmCols));
                 fc_rpm = rpmBase * ri;
-                text(fMax*0.3, yTxt, sprintf('RPM %dHz: %.4fms', fc_rpm, rpmGd{ri}(2)), ...
+                text(fMax*0.3, yTxt, sprintf('RPM %dHz: %.5fms', fc_rpm, rpmGd1{ri}(2)), ...
                     'Parent', axNdelay, 'Color', rpmCols{ci}, 'FontSize', fontsz-1);
                 yTxt = yTxt - yStN;
             end
             if gn1f > 0
-                gd_gn1_v = smooth(-gradient(unwrap(angle(H_gn1))) ./ dw * 1000, 51, 'moving');
-                text(fMax*0.3, yTxt, sprintf('N1 %dHz: %.4fms', gn1f, gd_gn1_v(2)), ...
+                text(fMax*0.3, yTxt, sprintf('N1 %dHz: %.5fms', gn1f, gd_gn1_v(2)), ...
                     'Parent', axNdelay, 'Color', colStaticN, 'FontSize', fontsz-1);
                 yTxt = yTxt - yStN;
             end
             if gn2f > 0
-                gd_gn2_v = smooth(-gradient(unwrap(angle(H_gn2))) ./ dw * 1000, 51, 'moving');
-                text(fMax*0.3, yTxt, sprintf('N2 %dHz: %.4fms', gn2f, gd_gn2_v(2)), ...
+                text(fMax*0.3, yTxt, sprintf('N2 %dHz: %.5fms', gn2f, gd_gn2_v(2)), ...
                     'Parent', axNdelay, 'Color', colStaticN*0.85, 'FontSize', fontsz-1);
                 yTxt = yTxt - yStN;
             end
@@ -703,10 +720,18 @@ doUpdate();
             cla(axNphase); hold(axNphase, 'on');
             for ri = 1:rpmNharm
                 ci = min(ri, numel(rpmCols));
-                ph_ri = smooth(angle(H_rpm{ri}) * 180/pi, 9, 'moving');
+                ph_ri = smooth(angle(H_rpm1{ri}) * 180/pi, 9, 'moving');
                 plotFn(axNphase, fVec(fIdx), ph_ri(fIdx), 'Color', rpmCols{ci}, 'LineWidth', 0.9);
             end
-            ph_gN = smooth(angle(H_gyroN) * 180/pi, 9, 'moving');
+            if gn1f > 0
+                ph_gn1 = smooth(angle(H_gn1) * 180/pi, 9, 'moving');
+                plotFn(axNphase, fVec(fIdx), ph_gn1(fIdx), 'Color', colStaticN, 'LineWidth', 0.8);
+            end
+            if gn2f > 0
+                ph_gn2 = smooth(angle(H_gn2) * 180/pi, 9, 'moving');
+                plotFn(axNphase, fVec(fIdx), ph_gn2(fIdx), 'Color', colStaticN*0.85, 'LineWidth', 0.8, 'LineStyle', '--');
+            end
+            ph_gN = smooth(angle(H_gyroN1) * 180/pi, 9, 'moving');
             ph_dN = smooth(angle(H_dtermN) * 180/pi, 9, 'moving');
             plotFn(axNphase, fVec(fIdx), ph_gN(fIdx), 'Color', colCombN, 'LineWidth', 1.5);
             if dnf > 0
@@ -809,6 +834,12 @@ function H = notchH_Q(center_hz, Q, Fs, Nfft)
     [b, a] = PSbfFilters('notch', center_hz, Fs, Q/100);
     [H, ~] = freqz(b, a, Nfft, Fs);
     H = H(:);
+end
+
+function drawCutoffLines(ax, f1on, f1, f2on, f2, col)
+    yl = get(ax, 'YLim');
+    if f1on && f1 > 0, line(ax, [f1 f1], yl, 'Color', col*0.7, 'LineStyle', '--', 'LineWidth', 0.5); end
+    if f2on && f2 > 0, line(ax, [f2 f2], yl, 'Color', col, 'LineStyle', '--', 'LineWidth', 0.5); end
 end
 
 function annotateLPF(ax, t1, f1, t2, f2, ~, col, fsz, usedB)
