@@ -32,7 +32,8 @@ posInfo.checkbox12=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 posInfo.checkbox11=[chkX chkRow1 chkMotW chkH];
 posInfo.checkbox10=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 posInfo.checkbox14=[chkX chkRow1 chkMotW chkH];
-posInfo.checkbox15=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkboxTS=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkbox15=[chkX chkRow1 chkMotW chkH];      chkX=chkX+chkMotW;
 
 posInfo.maxYtext =  [chkX chkRow1 chkTxtW chkH];
 posInfo.maxYinput = [chkX+chkTxtW chkRow1 chkEdtW chkH];
@@ -110,6 +111,8 @@ guiHandles.checkbox13=uicontrol(PSfig,'Style','checkbox','String',m4lbl,'fontsiz
     'units','normalized','Position',[posInfo.checkbox13],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 guiHandles.checkbox14=uicontrol(PSfig,'Style','checkbox','String','Throttle','fontsize',fontsz,'ForegroundColor',[linec.col14],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox14],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+guiHandles.checkboxTS=uicontrol(PSfig,'Style','checkbox','String','Test Signal','fontsize',fontsz,'ForegroundColor',th.btnDash5,'BackgroundColor',bgcolor,...
+    'units','normalized','Position',[posInfo.checkboxTS],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 set(guiHandles.checkbox1, 'Value', 1);
 set(guiHandles.checkbox7, 'Value', 1);
@@ -151,7 +154,8 @@ chkBarItems{end+1} = struct('h', guiHandles.checkbox12, 'wpx', chkMotW_px, 'row'
 chkBarItems{end+1} = struct('h', guiHandles.checkbox11, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.checkbox10, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.checkbox14, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
-chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxTS, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 1, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.maxY_text, 'wpx', chkTxtW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.nCols_text, 'wpx', chkTxtW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.maxY_input, 'wpx', chkEdtW_px, 'row', 1, 'advance', false);
@@ -219,15 +223,15 @@ guiHandles.overlayM2 = uicontrol(PSfig,'Style','text','String','','FontSize',oFs
     'units','normalized','Position',[cpL+halfW oY halfW oH]);
 oY = oY - oH;
 guiHandles.overlayGR = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
-    'ForegroundColor',linec.col1,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'ForegroundColor',th_.axisRollFilt,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
     'units','normalized','Position',[cpL oY fullW oH]);
 oY = oY - oH;
 guiHandles.overlayGP = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
-    'ForegroundColor',linec.col1,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'ForegroundColor',th_.axisPitchFilt,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
     'units','normalized','Position',[cpL oY fullW oH]);
 oY = oY - oH;
 guiHandles.overlayGY = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
-    'ForegroundColor',linec.col1,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'ForegroundColor',th_.axisYawFilt,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
     'units','normalized','Position',[cpL oY fullW oH]);
 % Store overlay handles for PSresizeCP
 setappdata(PSfig, 'PSoverlay', struct( ...
@@ -240,6 +244,7 @@ end % ishandle(checkpanel)
 
 % always update file list (fnameMaster may have grown since last call)
 set(guiHandles.FileNum, 'string', fnameMaster);
+
 
 fileIdx = get(guiHandles.FileNum, 'Value');
 if exist('tta','var') && iscell(tta) && numel(tta) >= fileIdx

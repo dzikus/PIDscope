@@ -127,7 +127,6 @@ errmsg=[];
 plotall_flag=-1;
 
 colorA = th.btnDash1;
-colorA2=[.4 .0 .6];
 colorB = th.btnDash2;
 colorC=[1 .2 .2];
 colorD=[.1 .7 .2];
@@ -198,7 +197,8 @@ posInfo.linewidth =     [cpL+cpW/2 vPos-rs*row  cpW/2-cpM  rh]; row=row+1;
 posInfo.spectrogramButton = [cpL+cpM vPos-rs*row cpW-2*cpM rh]; row=row+1;
 posInfo.TuningButton =  [cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
 posInfo.PIDsliderButton=[cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
-posInfo.filterSimButton=[cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
+posInfo.filterSimButton=[cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
+posInfo.testSignalButton=[cpL+cpW/2 vPos-rs*row cpW/2-cpM  rh]; row=row+1;
 posInfo.PIDErrorButton = [cpL+cpM  vPos-rs*row  cpW/2-cpM  rh];
 posInfo.FlightStatsButton=[cpL+cpW/2 vPos-rs*row cpW/2-cpM rh]; row=row+1;
 posInfo.period2Hz =     [cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
@@ -266,13 +266,13 @@ guiHandles.startEndButton = uicontrol(PSfig,'style','checkbox', 'string','Trim '
     'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), try, [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; catch, end, end');
 
 guiHandles.plotR =uicontrol(PSfig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotR_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisRoll,'Position',[posInfo.plotR_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 guiHandles.plotP =uicontrol(PSfig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotP_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisPitch,'Position',[posInfo.plotP_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 guiHandles.plotY =uicontrol(PSfig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotY_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisYaw,'Position',[posInfo.plotY_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 guiHandles.RPYcomboLV=uicontrol(PSfig,'Style','checkbox','String','Single Panel','fontsize',fontsz,'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.RPYcomboLV],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
@@ -304,25 +304,33 @@ guiHandles.PIDsliderButton = uicontrol(PSfig,'string','PID Slider Tool','fontsiz
     'catch,' ...
         'PSsliderTool();' ...
     'end']);
-set(guiHandles.PIDsliderButton, 'ForegroundColor', [.40 .80 1.0]);
+set(guiHandles.PIDsliderButton, 'ForegroundColor', th.btnDash3);
 
 guiHandles.filterSimButton = uicontrol(PSfig,'string','Filter Simulator','fontsize',fontsz,...
     'TooltipString','Simulate BF filter chain (theoretical response)','units','normalized',...
     'Position',[posInfo.filterSimButton],...
-    'callback',['try,' ...
-        'tmpFcnt=get(guiHandles.FileNum,''Value'');tmpFcnt=tmpFcnt(1);' ...
+    'callback',['if ~exist(''A_lograte'',''var''),warndlg(''Please select file(s)'');' ...
+        'else,tmpFcnt=get(guiHandles.FileNum,''Value'');tmpFcnt=tmpFcnt(1);' ...
         'PSfilterSim([],1000*A_lograte(tmpFcnt),SetupInfo{tmpFcnt});' ...
-        'clear tmpFcnt;' ...
-    'catch e,warndlg([''Filter Simulator: '' e.message]),end']);
-set(guiHandles.filterSimButton, 'ForegroundColor', [.85 .55 .15]);
+        'clear tmpFcnt;end']);
+set(guiHandles.filterSimButton, 'ForegroundColor', th.btnDash4);
+
+guiHandles.testSignalButton = uicontrol(PSfig,'string','Test Signal','fontsize',fontsz,...
+    'TooltipString','Configure and apply offline filter chain to log data','units','normalized',...
+    'Position',[posInfo.testSignalButton],...
+    'callback',['if ~exist(''T'',''var''),warndlg(''Please select file(s)'');' ...
+        'else,tmpFcnt=get(guiHandles.FileNum,''Value'');tmpFcnt=tmpFcnt(1);' ...
+        'PSTestSignalConfig(PSfig,T,Nfiles,A_lograte,SetupInfo,guiHandles,tIND);' ...
+        'clear tmpFcnt;end']);
+set(guiHandles.testSignalButton, 'ForegroundColor', th.btnDash5);
 
 guiHandles.PIDErrorButton = uicontrol(PSfig,'string','PID Error','fontsize',fontsz,'TooltipString', ['PID error distribution analysis'],'units','normalized','Position',[posInfo.PIDErrorButton],...
     'callback','PSerrUIcontrol; PSplotPIDerror;');
-set(guiHandles.PIDErrorButton, 'ForegroundColor', [.8 .4 .1]);
+set(guiHandles.PIDErrorButton, 'ForegroundColor', th.btnDash6);
 
 guiHandles.FlightStatsButton = uicontrol(PSfig,'string','Flight Stats','fontsize',fontsz,'TooltipString', ['Flight statistics and stick analysis'],'units','normalized','Position',[posInfo.FlightStatsButton],...
     'callback','PSstatsUIcontrol; PSplotStats;');
-set(guiHandles.FlightStatsButton, 'ForegroundColor', [.2 .6 .8]);
+set(guiHandles.FlightStatsButton, 'ForegroundColor', th.btnDash7);
 
 guiHandles.period2Hz = uicontrol(PSfig,'string','Period','fontsize',fontsz,'TooltipString', ['Calculates peak to peak in Hz similar to the BBE ''Mark'' tool' , newline, 'press button, position mouse over 1st peak, mouse click,' , newline, 'then position over 2nd peak, then mouse click again'], 'units','normalized','Position',[posInfo.period2Hz],...
      'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.period2Hz, ''Value''), try, [x1 y1] = ginput(1); figure(PSfig); h=plot([x1 x1],[-(maxY*2) maxY],''-r'');set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2);  [x2 y2] = ginput(1); h=plot([x2 x2],[-(maxY*2) maxY],''-r''); set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2); plot([x1 x2],[y1 y2],'':k''); x3=[round(x1*1000) round(x2*1000)]; f = 1000/(x3(2)-x3(1)); text(x2, y2, [num2str(x3(2)-x3(1)) ''ms, '' num2str(f) ''Hz''],''FontSize'',fontsz, ''FontWeight'', ''Bold''); catch, end, end');      
@@ -432,7 +440,8 @@ cpItems{end+1} = struct('h', guiHandles.linewidth, 'type','right', 'row',6, 'col
 cpItems{end+1} = struct('h', guiHandles.spectrogramButton, 'type','full', 'row',7, 'col',0, 'nrows',0);
 cpItems{end+1} = struct('h', guiHandles.TuningButton, 'type','full', 'row',8, 'col',0, 'nrows',0);
 cpItems{end+1} = struct('h', guiHandles.PIDsliderButton, 'type','full', 'row',9, 'col',0, 'nrows',0);
-cpItems{end+1} = struct('h', guiHandles.filterSimButton, 'type','full', 'row',10, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.filterSimButton, 'type','left', 'row',10, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.testSignalButton, 'type','right', 'row',10, 'col',0, 'nrows',0);
 cpItems{end+1} = struct('h', guiHandles.PIDErrorButton, 'type','left', 'row',11, 'col',0, 'nrows',0);
 cpItems{end+1} = struct('h', guiHandles.FlightStatsButton, 'type','right', 'row',11, 'col',0, 'nrows',0);
 cpItems{end+1} = struct('h', guiHandles.period2Hz, 'type','left', 'row',12, 'col',0, 'nrows',0);

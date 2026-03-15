@@ -102,7 +102,7 @@ try PSstyleLegend(h_leg, th); catch, end
 
 % --- TOP RIGHT: Gyro PSD ---
 axGyro = axes('Parent', fig, 'Units', 'normalized', 'Position', [.56 .70 .38 .22]);
-gCols = {[1 .4 .4], [.4 1 .4], [.4 .6 1]};
+gCols = {th.axisRoll, th.axisPitch, th.axisYaw};
 for g = 1:3
     plot(axGyro, gyroFreqV{g}, gyroSpec{g}, 'Color', gCols{g}, 'LineWidth', 1.1);
     hold(axGyro, 'on');
@@ -159,7 +159,7 @@ for m = 1:nMotors
     plot(axTime, t, motorData{m}, 'Color', mCol{m}, 'LineWidth', 0.5);
     hold(axTime, 'on');
 end
-plot(axTime, t, throttle, 'Color', [.9 .9 .9], 'LineWidth', 1.5, 'LineStyle', '--');
+plot(axTime, t, throttle, 'Color', th.sigThrottle, 'LineWidth', 1.5, 'LineStyle', '--');
 hold(axTime, 'off');
 PSstyleAxes(axTime, th); set(axTime, 'XLim', [0 max(t)]);
 set(axTime, 'YLim', [0 100]);

@@ -43,6 +43,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         set(guiHandles.checkbox12, 'Value', allVal);
         set(guiHandles.checkbox13, 'Value', allVal);
         set(guiHandles.checkbox14, 'Value', allVal);
+        set(guiHandles.checkboxTS, 'Value', allVal);
     end
     plotall_flag=-1;
 
@@ -214,8 +215,9 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 if get(guiHandles.checkbox7, 'Value'), hch8=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['setpoint_' int2str(ii-1) '_'], sFactor));hold on;set(hch8,'color', [linec.col7],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
                 if get(guiHandles.checkbox8, 'Value'), hch9=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['pidsum_' int2str(ii-1) '_'], sFactor));hold on;set(hch9,'color', [linec.col8],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
                 if get(guiHandles.checkbox9, 'Value'), hch10=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['piderr_' int2str(ii-1) '_'], sFactor));hold on;set(hch10,'color', [linec.col9],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), end
+                if get(guiHandles.checkboxTS, 'Value') && isfield(T{fileIdx}, ['testSignal_' int2str(ii-1) '_']), try hchTS=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['testSignal_' int2str(ii-1) '_'], sFactor));hold on;set(hchTS,'color', th.sigTestSignal,'LineWidth',lwVal,'linestyle','--'), catch, end, end
 
-    
+
                  h=fill([0,t1,t1,0],[-maxY,-maxY,maxY,maxY],th.epochFill);
                  set(h,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill);
                  h=fill([t2,xmax,xmax,t2],[-maxY,-maxY,maxY,maxY],th.epochFill);

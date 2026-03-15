@@ -19,6 +19,7 @@ TooltipString_sub100=['Zoom data to show sub 100Hz details',...
 
 
 %%%
+th = PStheme();
 PScolormap;
 % define
 smat=[];%string
@@ -42,7 +43,7 @@ end
 
 % Control panel layout — cpL/cpW/rh/rs/cpM/ddh inherited from PIDscope.m
 % yTop tracks where the TOP of the next element goes; Position Y = yTop - height
-listH = 5*rs;  termH = 4*rs;  gap = rs - rh;  fw = cpW-2*cpM;  hw = cpW/2-cpM;
+listH = 5*rs;  termH = round(4.3*rs);  gap = rs - rh;  fw = cpW-2*cpM;  hw = cpW/2-cpM;
 tbOff_s2 = 40/screensz(4);
 yTop = 1 - tbOff_s2 - cpTitleH - cpMv;
 posInfo.fileListWindowSpec=  [cpL+cpM yTop-listH fw listH]; yTop=yTop-listH-gap;
@@ -119,6 +120,7 @@ set(guiHandlesSpec2.saveSettings2, 'ForegroundColor', saveCol);
 
 % create string list for SpecSelect
 sA={'Gyro','Gyro prefilt','Dterm','Dterm prefilt','Pterm','PID error','Set point','PIDsum'};
+if isfield(T{1}, 'testSignal_0_'), sA{end+1} = 'Test Signal'; end
 
 guiHandlesSpec2.SpecList = uicontrol(PSspecfig2,'Style','listbox','string',[sA],'max',3,'min',1, 'fontsize',fontsz, 'TooltipString',[TooltipString_user],'units','normalized','Position', [posInfo.TermListWindowSpec], 'callback', 'if length(get(guiHandlesSpec2.SpecList, ''Value'')) > 2, set(guiHandlesSpec2.SpecList, ''Value'', 1); end;');
 set(guiHandlesSpec2.SpecList, 'Value', [1 2]);
@@ -130,11 +132,11 @@ guiHandlesSpec2.smoothFactor_select = uicontrol(PSspecfig2,'style','popupmenu','
 
 guiHandlesSpec2.spectrogramButton2 = uicontrol(PSspecfig2,'string','Freq x Throttle','fontsize',fontsz,'TooltipString', ['Opens Freq x Throttle Spectrogram in New Window'], 'units','normalized','Position',[posInfo.spectrogramButton2],...
     'callback','PSspecUIcontrol;');
-set(guiHandlesSpec2.spectrogramButton2, 'ForegroundColor', colorA);
+set(guiHandlesSpec2.spectrogramButton2, 'ForegroundColor', th.btnDash1);
 
  guiHandlesSpec2.spectrogramButton3 = uicontrol(PSspecfig2,'string','Freq x Time','fontsize',fontsz,'TooltipString', ['Opens Freq x Time Spectrogram in New Window'], 'units','normalized','Position',[posInfo.spectrogramButton3],...
      'callback','PSfreqTimeUIcontrol;');
- set(guiHandlesSpec2.spectrogramButton3, 'ForegroundColor', colorB);
+ set(guiHandlesSpec2.spectrogramButton3, 'ForegroundColor', th.btnDash2);
 
 guiHandlesSpec2.motorNoiseButton = uicontrol(PSspecfig2,'string','Motor Noise','fontsize',fontsz,...
     'TooltipString','Per-motor spectral analysis and noise comparison','units','normalized',...
@@ -144,7 +146,7 @@ guiHandlesSpec2.motorNoiseButton = uicontrol(PSspecfig2,'string','Motor Noise','
         'PSplotMotorNoise(T{tmpFcnt},tmpFcnt,tIND{tmpFcnt},1000*A_lograte(tmpFcnt));' ...
         'clear tmpFcnt;' ...
     'catch e,warndlg([''Motor Noise: '' e.message]),end']);
-set(guiHandlesSpec2.motorNoiseButton, 'ForegroundColor', [.2 .7 .2]);
+set(guiHandlesSpec2.motorNoiseButton, 'ForegroundColor', th.btnMotNoise);
 
 guiHandlesSpec2.chirpButton = uicontrol(PSspecfig2,'string','Chirp Analysis','fontsize',fontsz,...
     'TooltipString','Frequency response from chirp log (BF 2025.12+, debug_mode=CHIRP)','units','normalized',...
@@ -156,19 +158,19 @@ guiHandlesSpec2.chirpButton = uicontrol(PSspecfig2,'string','Chirp Analysis','fo
         'PSrunChirpAnalysis(T{tmpFcnt},SetupInfo{tmpFcnt},debugIdx{tmpFcnt},1000*A_lograte(tmpFcnt),tIND{tmpFcnt},tmpAx);' ...
         'clear tmpFcnt tmpRPY tmpAx;' ...
     'catch e,warndlg([''Chirp: '' e.message]),end']);
-set(guiHandlesSpec2.chirpButton, 'ForegroundColor', [.8 .3 .8]);
+set(guiHandlesSpec2.chirpButton, 'ForegroundColor', th.btnChirp);
 
  guiHandlesSpec2.Delay = uicontrol(PSspecfig2,'style','popupmenu','string',{'filter delay', 'SP-gyro delay', 'SP smoothing delay', 'phase shift'},'fontsize',fontsz,'TooltipString', ['Select which Delay Display'], 'units','normalized','Position',[posInfo.Delay],...
      'callback','PSplotSpec2D;');
 
 guiHandlesSpec2.plotR =uicontrol(PSspecfig2,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotRspec], 'callback', 'PSplotSpec2D;');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisRoll,'Position',[posInfo.plotRspec], 'callback', 'PSplotSpec2D;');
 
 guiHandlesSpec2.plotP =uicontrol(PSspecfig2,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotPspec], 'callback', 'PSplotSpec2D;');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisPitch,'Position',[posInfo.plotPspec], 'callback', 'PSplotSpec2D;');
 
 guiHandlesSpec2.plotY =uicontrol(PSspecfig2,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotYspec], 'callback', 'PSplotSpec2D;');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisYaw,'Position',[posInfo.plotYspec], 'callback', 'PSplotSpec2D;');
 
 guiHandlesSpec2.checkboxPSD =uicontrol(PSspecfig2,'Style','checkbox','String','PSD','fontsize',fontsz,'TooltipString', ['Power Spectral Density'],...
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.checkboxPSD],'callback', 'PSplotSpec2D;');
@@ -192,7 +194,7 @@ cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
               'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', 0);
 cpI = {};
 cpI{end+1} = struct('h', spec2Crtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0);
-listH_px = 5*rs_px;  termH_px = 4*rs_px;
+listH_px = 5*rs_px;  termH_px = round(4.3*rs_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.FileSelect, 'type','full', 'row',0, 'col',0, 'hpx',listH_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.SpecList, 'type','full', 'row',0, 'col',0, 'hpx',termH_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.computeSpec, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);

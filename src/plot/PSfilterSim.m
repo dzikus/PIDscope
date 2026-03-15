@@ -12,7 +12,7 @@ fig = figure('Name', 'Filter Simulation', 'NumberTitle', 'off', ...
     'Position', round([0 0 screensz(3) screensz(4)]));
 try set(fig, 'WindowState', 'maximized'); catch, end
 
-fp = parseFilterParams(setupInfo);
+fp = PSparseFilterParams(setupInfo);
 
 % Layout: 2 cols x 4 rows + gradient bars
 plotL = 0.05;
@@ -52,11 +52,11 @@ titleY = topY;
 hTitleL = uicontrol(fig, 'Style', 'text', 'String', 'LOWPASS FILTERS', ...
     'Units', 'normalized', 'Position', [colL(1) titleY colW titleH], ...
     'FontSize', fontsz+1, 'FontWeight', 'bold', ...
-    'BackgroundColor', thm.figBg, 'ForegroundColor', [.4 .9 1]);
+    'BackgroundColor', thm.figBg, 'ForegroundColor', thm.textAccent);
 hTitleN = uicontrol(fig, 'Style', 'text', 'String', 'NOTCH FILTERS', ...
     'Units', 'normalized', 'Position', [colL(2) titleY colW titleH], ...
     'FontSize', fontsz+1, 'FontWeight', 'bold', ...
-    'BackgroundColor', thm.figBg, 'ForegroundColor', [1 .6 .3]);
+    'BackgroundColor', thm.figBg, 'ForegroundColor', thm.secNotch);
 
 % Control panel
 cpL = .76; cpW = .23;
@@ -92,36 +92,36 @@ h.rpm_nmot = uicontrol(fig, 'Style', 'popupmenu', ...
     'Units', 'normalized', 'Position', [x0+halfW+.04 row halfW-.04 rh], 'FontSize', fontsz, 'Callback', cb);
 row = row - rh - gap*2;
 
-mkSection(fig, 'Gyro LPF1', cpL, row, cpW, rh, bgc, [.4 .9 1], fontsz-1);
+mkSection(fig, 'Gyro LPF1', cpL, row, cpW, rh, bgc, thm.textAccent, fontsz-1);
 row = row - rh - gap;
 [h.glpf1_type, h.glpf1_hz, row] = mkTypeHz(fig, x0, row, rh, gap, cW, ibc, ifc, lc, fp.gyro_lpf1_type, fp.gyro_lpf1_hz, cb, fontsz);
 
-mkSection(fig, 'Gyro LPF2', cpL, row, cpW, rh, bgc, [.4 .9 1], fontsz-1);
+mkSection(fig, 'Gyro LPF2', cpL, row, cpW, rh, bgc, thm.textAccent, fontsz-1);
 row = row - rh - gap;
 [h.glpf2_type, h.glpf2_hz, row] = mkTypeHz(fig, x0, row, rh, gap, cW, ibc, ifc, lc, fp.gyro_lpf2_type, fp.gyro_lpf2_hz, cb, fontsz);
 
-mkSection(fig, 'Gyro Notch 1', cpL, row, cpW, rh, bgc, [1 .7 .3], fontsz-1);
+mkSection(fig, 'Gyro Notch 1', cpL, row, cpW, rh, bgc, thm.secNotch, fontsz-1);
 row = row - rh - gap;
 [h.gn1_hz, h.gn1_cut, row] = mkNotchPair(fig, x0, row, rh, gap, cW, bgc, ibc, ifc, lc, fp.gyro_notch1_hz, fp.gyro_notch1_cut, cb, fontsz);
 
-mkSection(fig, 'Gyro Notch 2', cpL, row, cpW, rh, bgc, [1 .7 .3], fontsz-1);
+mkSection(fig, 'Gyro Notch 2', cpL, row, cpW, rh, bgc, thm.secNotch, fontsz-1);
 row = row - rh - gap;
 [h.gn2_hz, h.gn2_cut, row] = mkNotchPair(fig, x0, row, rh, gap, cW, bgc, ibc, ifc, lc, fp.gyro_notch2_hz, fp.gyro_notch2_cut, cb, fontsz);
 
-mkSection(fig, 'D-term LPF1', cpL, row, cpW, rh, bgc, [.4 1 .4], fontsz-1);
+mkSection(fig, 'D-term LPF1', cpL, row, cpW, rh, bgc, thm.secDtermLPF, fontsz-1);
 row = row - rh - gap;
 [h.dlpf1_type, h.dlpf1_hz, row] = mkTypeHz(fig, x0, row, rh, gap, cW, ibc, ifc, lc, fp.dterm_lpf1_type, fp.dterm_lpf1_hz, cb, fontsz);
 
-mkSection(fig, 'D-term LPF2', cpL, row, cpW, rh, bgc, [.4 1 .4], fontsz-1);
+mkSection(fig, 'D-term LPF2', cpL, row, cpW, rh, bgc, thm.secDtermLPF, fontsz-1);
 row = row - rh - gap;
 [h.dlpf2_type, h.dlpf2_hz, row] = mkTypeHz(fig, x0, row, rh, gap, cW, ibc, ifc, lc, fp.dterm_lpf2_type, fp.dterm_lpf2_hz, cb, fontsz);
 
-mkSection(fig, 'D-term Notch', cpL, row, cpW, rh, bgc, [1 .5 .5], fontsz-1);
+mkSection(fig, 'D-term Notch', cpL, row, cpW, rh, bgc, thm.secDtermNotch, fontsz-1);
 row = row - rh - gap;
 [h.dn_hz, h.dn_cut, row] = mkNotchPair(fig, x0, row, rh, gap, cW, bgc, ibc, ifc, lc, fp.dterm_notch_hz, fp.dterm_notch_cut, cb, fontsz);
 
 % RPM: Hz + #Harm + Q on one line
-mkSection(fig, 'RPM Filter Sim', cpL, row, cpW, rh, bgc, [1 .4 .4], fontsz-1);
+mkSection(fig, 'RPM Filter Sim', cpL, row, cpW, rh, bgc, thm.btnDash1, fontsz-1);
 row = row - rh - gap;
 thirdW = cW / 3;
 uicontrol(fig, 'Style', 'text', 'String', 'Hz:', ...
@@ -145,7 +145,7 @@ h.rpm_q = uicontrol(fig, 'Style', 'edit', 'String', '500', ...
 row = row - rh - gap;
 
 % Test signal: Lo + Hi + Dur on one line
-mkSection(fig, 'Test Signal', cpL, row, cpW, rh, bgc, [.8 .6 .2], fontsz-1);
+mkSection(fig, 'Test Signal', cpL, row, cpW, rh, bgc, thm.btnDash5, fontsz-1);
 row = row - rh - gap;
 uicontrol(fig, 'Style', 'text', 'String', 'Lo:', ...
     'Units', 'normalized', 'Position', [x0 row .025 rh], ...
@@ -168,7 +168,7 @@ h.sig_dur = uicontrol(fig, 'Style', 'edit', 'String', '1', ...
 row = row - rh - gap;
 
 % Options
-mkSection(fig, 'Options', cpL, row, cpW, rh, bgc, [.7 .7 .7], fontsz-1);
+mkSection(fig, 'Options', cpL, row, cpW, rh, bgc, thm.btnSave, fontsz-1);
 row = row - rh - gap;
 h.magdB = uicontrol(fig, 'Style', 'checkbox', 'String', 'Magnitude dB', 'Value', 0, ...
     'Units', 'normalized', 'Position', [x0 row halfW rh], ...
@@ -204,7 +204,7 @@ row = row - rh - gap;
 h.totalDelay = uicontrol(fig, 'Style', 'text', 'String', '', ...
     'Units', 'normalized', 'Position', [x0 row cW rh], ...
     'FontSize', fontsz, 'FontWeight', 'bold', ...
-    'BackgroundColor', bgc, 'ForegroundColor', [.9 .2 .2], 'HorizontalAlignment', 'left');
+    'BackgroundColor', bgc, 'ForegroundColor', thm.btnDash1, 'HorizontalAlignment', 'left');
 
 doUpdate();
 
@@ -519,9 +519,9 @@ doUpdate();
         end
         fLo = xlimF(useLog, fMax);
         if usedB
-            line(axLmag, [fLo(1) fMax], [-3 -3], 'Color', [.6 .6 .2], 'LineStyle', ':', 'LineWidth', 0.5);
+            line(axLmag, [fLo(1) fMax], [-3 -3], 'Color', thm.refLine3dB, 'LineStyle', ':', 'LineWidth', 0.5);
         else
-            line(axLmag, [fLo(1) fMax], [0.707 0.707], 'Color', [.6 .6 .2], 'LineStyle', ':', 'LineWidth', 0.5);
+            line(axLmag, [fLo(1) fMax], [0.707 0.707], 'Color', thm.refLine3dB, 'LineStyle', ':', 'LineWidth', 0.5);
         end
         hold(axLmag, 'off');
         PSstyleAxes(axLmag, thm);
@@ -859,50 +859,7 @@ function annotateNotch(ax, gn1f, gn2f, dnf, rpmBase, rpmNharm, rpmCols, colStati
     end
 end
 
-function fp = parseFilterParams(si)
-    % BF enum is same across all versions: 0=PT1, 1=BIQUAD, 2=PT2, 3=PT3
-    % Filter disabled when hz == 0, NOT by type value
-    % Header key names differ: BF 4.3+ uses gyro_lpf1_*, BF 4.2 uses gyro_lowpass_*
-    fp.gyro_lpf1_type = hval(si, 'gyro_lpf1_type', hval(si, 'gyro_lowpass_type', 0));
-    fp.gyro_lpf1_hz = hval(si, 'gyro_lpf1_static_hz', hval(si, 'gyro_lowpass_hz', 0));
-    fp.gyro_lpf2_type = hval(si, 'gyro_lpf2_type', hval(si, 'gyro_lowpass2_type', 0));
-    fp.gyro_lpf2_hz = hval(si, 'gyro_lpf2_static_hz', hval(si, 'gyro_lowpass2_hz', 0));
-    fp.dterm_lpf1_type = hval(si, 'dterm_lpf1_type', hval(si, 'dterm_lowpass_type', 0));
-    fp.dterm_lpf1_hz = hval(si, 'dterm_lpf1_static_hz', hval(si, 'dterm_lowpass_hz', 0));
-    fp.dterm_lpf2_type = hval(si, 'dterm_lpf2_type', hval(si, 'dterm_lowpass2_type', 0));
-    fp.dterm_lpf2_hz = hval(si, 'dterm_lpf2_static_hz', hval(si, 'dterm_lowpass2_hz', 0));
-    fp.dterm_notch_hz = hval(si, 'dterm_notch_hz', 0);
-    fp.dterm_notch_cut = hval(si, 'dterm_notch_cutoff', 0);
-    tmp = hstr(si, 'gyro_notch_hz', '0,0'); v = str2double(strsplit(tmp, ','));
-    if any(isnan(v)), v = [0 0]; end
-    fp.gyro_notch1_hz = v(1);
-    fp.gyro_notch2_hz = 0; if numel(v) > 1, fp.gyro_notch2_hz = v(2); end
-    tmp = hstr(si, 'gyro_notch_cutoff', '0,0'); v = str2double(strsplit(tmp, ','));
-    if any(isnan(v)), v = [0 0]; end
-    fp.gyro_notch1_cut = v(1);
-    fp.gyro_notch2_cut = 0; if numel(v) > 1, fp.gyro_notch2_cut = v(2); end
-end
-
-function v = hval(si, key, default)
-    v = default;
-    for k = 1:size(si, 1)
-        if strcmp(strtrim(si{k,1}), key)
-            tmp = str2double(strtrim(si{k,2}));
-            if ~isnan(tmp), v = tmp; end
-            return;
-        end
-    end
-end
-
-function s = hstr(si, key, default)
-    s = default;
-    for k = 1:size(si, 1)
-        if strcmp(strtrim(si{k,1}), key)
-            s = strtrim(si{k,2});
-            return;
-        end
-    end
-end
+% parseFilterParams/hval/hstr moved to src/util/PSparseFilterParams.m
 
 function mkSection(fig, txt, cpL, row, cpW, rh, bgc, col, fsz)
     uicontrol(fig, 'Style', 'text', 'String', txt, ...
@@ -914,6 +871,7 @@ function [hType, hHz, rowOut] = mkTypeHz(fig, x0, row, rh, gap, cW, ibc, ifc, lc
     if initHz == 0, ddVal = 1;
     else ddVal = min(initType + 2, 5); end
     ddW = cW * 0.48; edW = cW * 0.35; lblW = cW * 0.15;
+    th_ = PStheme();
     hType = uicontrol(fig, 'Style', 'popupmenu', ...
         'String', {'OFF', 'PT1', 'Biquad', 'PT2', 'PT3'}, 'Value', ddVal, ...
         'Units', 'normalized', 'Position', [x0 row ddW rh], 'FontSize', fsz, 'Callback', cb);
@@ -923,7 +881,7 @@ function [hType, hHz, rowOut] = mkTypeHz(fig, x0, row, rh, gap, cW, ibc, ifc, lc
         'HorizontalAlignment', 'center', 'Callback', cb);
     uicontrol(fig, 'Style', 'text', 'String', 'Hz', ...
         'Units', 'normalized', 'Position', [x0+ddW+edW+.008 row lblW rh], ...
-        'FontSize', fsz-1, 'BackgroundColor', [.22 .22 .24], ...
+        'FontSize', fsz-1, 'BackgroundColor', th_.panelBg, ...
         'ForegroundColor', lc, 'HorizontalAlignment', 'left');
     rowOut = row - rh - gap;
 end

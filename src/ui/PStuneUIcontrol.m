@@ -8,7 +8,8 @@
 % ----------------------------------------------------------------------------------
     
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
-    
+
+th = PStheme();
 if exist('PStunefig','var') && ishandle(PStunefig)
     figure(PStunefig);
 else
@@ -99,14 +100,14 @@ guiHandlesTune.saveSettings = uicontrol(PStunefig,'string','Save Settings','font
 set(guiHandlesTune.saveSettings, 'ForegroundColor', saveCol);
 
 guiHandlesTune.plotR =uicontrol(PStunefig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotR],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisRoll,'Position',[posInfo.plotR],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 
 guiHandlesTune.plotP =uicontrol(PStunefig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotP],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisPitch,'Position',[posInfo.plotP],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.plotP, 'Value', 1);
 
 guiHandlesTune.plotY =uicontrol(PStunefig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotY],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisYaw,'Position',[posInfo.plotY],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.plotY, 'Value', 0);
 
 guiHandlesTune.clearPlots = uicontrol(PStunefig,'string','Reset','fontsize',fontsz,'TooltipString',[TooltipString_clearPlot],'units','normalized','Position',[posInfo.clearPlots],...

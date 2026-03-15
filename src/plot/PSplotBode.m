@@ -24,15 +24,15 @@ fPlot = freq(freq > 0);  % skip DC for log plot
 % --- magnitude ---
 ax1 = axes('Parent', fig, 'Units', 'normalized', 'Position', [.08 .72 .55 .22]);
 mag_T = 20*log10(abs(G_track(freq > 0)));
-semilogx(ax1, fPlot, mag_T, 'Color', [0 .8 1], 'LineWidth', 1.5);
+semilogx(ax1, fPlot, mag_T, 'Color', th.bodeMain, 'LineWidth', 1.5);
 hold(ax1, 'on');
 if ~isempty(G_plant)
     mag_P = 20*log10(abs(G_plant(freq > 0)));
-    semilogx(ax1, fPlot, mag_P, 'Color', [1 .5 0], 'LineWidth', 1.2);
+    semilogx(ax1, fPlot, mag_P, 'Color', th.bodeSecondary, 'LineWidth', 1.2);
     h_leg = legend(ax1, {'Tracking (T)', 'Plant (P)'}, 'Location', 'southwest');
     try PSstyleLegend(h_leg, th); catch, end
 end
-line(ax1, [fPlot(1) fPlot(end)], [0 0], 'Color', [.5 .5 .5], 'LineStyle', '--');
+line(ax1, [fPlot(1) fPlot(end)], [0 0], 'Color', th.bodeRef, 'LineStyle', '--');
 hold(ax1, 'off');
 PSstyleAxes(ax1, th);
 set(get(ax1, 'YLabel'), 'String', 'Magnitude (dB)');
@@ -41,22 +41,22 @@ th1 = title(ax1, ['Bode - ' titleStr]);
 % --- phase ---
 ax2 = axes('Parent', fig, 'Units', 'normalized', 'Position', [.08 .42 .55 .22]);
 phase_T = unwrap(angle(G_track(freq > 0))) * 180/pi;
-semilogx(ax2, fPlot, phase_T, 'Color', [0 .8 1], 'LineWidth', 1.5);
+semilogx(ax2, fPlot, phase_T, 'Color', th.bodeMain, 'LineWidth', 1.5);
 hold(ax2, 'on');
 if ~isempty(G_plant)
     phase_P = unwrap(angle(G_plant(freq > 0))) * 180/pi;
-    semilogx(ax2, fPlot, phase_P, 'Color', [1 .5 0], 'LineWidth', 1.2);
+    semilogx(ax2, fPlot, phase_P, 'Color', th.bodeSecondary, 'LineWidth', 1.2);
 end
-line(ax2, [fPlot(1) fPlot(end)], [-180 -180], 'Color', [.8 .3 .3], 'LineStyle', '--');
+line(ax2, [fPlot(1) fPlot(end)], [-180 -180], 'Color', th.btnDash1, 'LineStyle', '--');
 hold(ax2, 'off');
 PSstyleAxes(ax2, th);
 set(get(ax2, 'YLabel'), 'String', 'Phase (deg)');
 
 % --- coherence ---
 ax3 = axes('Parent', fig, 'Units', 'normalized', 'Position', [.08 .08 .55 .26]);
-semilogx(ax3, fPlot, C(freq > 0), 'Color', [.3 .9 .3], 'LineWidth', 1.2);
+semilogx(ax3, fPlot, C(freq > 0), 'Color', th.bodeCoherence, 'LineWidth', 1.2);
 hold(ax3, 'on');
-line(ax3, [fPlot(1) fPlot(end)], [.8 .8], 'Color', [.5 .5 .5], 'LineStyle', '--');
+line(ax3, [fPlot(1) fPlot(end)], [.8 .8], 'Color', th.bodeRef, 'LineStyle', '--');
 hold(ax3, 'off');
 PSstyleAxes(ax3, th);
 set(ax3, 'YLim', [0 1.05]);
@@ -71,9 +71,9 @@ end
 % --- step response (right side) ---
 ax4 = axes('Parent', fig, 'Units', 'normalized', 'Position', [.72 .42 .24 .52]);
 if ~isempty(stepData) && isfield(stepData, 't_ms') && isfield(stepData, 'step')
-    plot(ax4, stepData.t_ms, stepData.step, 'Color', [0 .8 1], 'LineWidth', 1.8);
+    plot(ax4, stepData.t_ms, stepData.step, 'Color', th.bodeMain, 'LineWidth', 1.8);
     hold(ax4, 'on');
-    line(ax4, [0 max(stepData.t_ms)], [1 1], 'Color', [.5 .5 .5], 'LineStyle', '--');
+    line(ax4, [0 max(stepData.t_ms)], [1 1], 'Color', th.bodeRef, 'LineStyle', '--');
     % overshoot
     peak = max(stepData.step);
     if peak > 1.01
@@ -81,7 +81,7 @@ if ~isempty(stepData) && isfield(stepData, 't_ms') && isfield(stepData, 'step')
         [~, pk_idx] = max(stepData.step);
         plot(ax4, stepData.t_ms(pk_idx), peak, 'ro', 'MarkerSize', 8, 'LineWidth', 2);
         text(stepData.t_ms(pk_idx)+5, peak, sprintf('%.0f%%', os_pct), ...
-            'Color', [1 .3 .3], 'FontSize', fontsz, 'FontWeight', 'bold', 'Parent', ax4);
+            'Color', th.btnDash1, 'FontSize', fontsz, 'FontWeight', 'bold', 'Parent', ax4);
     end
     hold(ax4, 'off');
 end
@@ -109,7 +109,7 @@ if ~isempty(stepData) && isfield(stepData, 'step')
         infoLines{end+1} = sprintf('Settling (2%%): %.0f ms', stepData.t_ms(settled));
     end
 end
-text(0.05, 0.9, infoLines, 'Parent', ax5, 'Color', th.textAccent, ...
+text(0.05, 0.9, infoLines, 'Parent', ax5, 'Color', th.bodeMain, ...
     'FontSize', fontsz, 'FontWeight', 'bold', 'VerticalAlignment', 'top', ...
     'Units', 'normalized');
 

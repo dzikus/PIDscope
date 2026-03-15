@@ -18,6 +18,7 @@ set(guiHandlesSpec2.climMax2_input, 'String', num2str(climScale2(get(guiHandlesS
 %%
 
 s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'pidsum'};
+if isfield(T{1}, 'testSignal_0_'), s1{end+1} = 'testSignal'; end
 
 datSelectionString=[s1];
 axesOptionsSpec = find([get(guiHandlesSpec2.plotR, 'Value') get(guiHandlesSpec2.plotP, 'Value') get(guiHandlesSpec2.plotY, 'Value')]);
@@ -171,6 +172,9 @@ for k = 1 : length(tmpSpecVal)
                 smat{p}=[];%string
                 amp2d2{p}=[];%spec 2d
                 freq2d2{p}=[];% freq2d2
+            elseif ~isfield(T{tmpFileVal(f)}, [s '_' int2str(a-1) '_'])
+                p=p+1;
+                smat{p}=[]; amp2d2{p}=[]; freq2d2{p}=[];
             else
                 p = p + 1;
                 fld = [s '_' int2str(a-1) '_'];
@@ -192,7 +196,6 @@ for k = 1 : length(tmpSpecVal)
 end
 try close(hw_fft); catch, end
 
-
 figure(PSspecfig2);
 baselineYlines = [0 -50];
 multilineStyle = {'-' ; ':'; '--'};
@@ -209,10 +212,13 @@ tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
 tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
 tmpSmoothVal = get(guiHandlesSpec2.smoothFactor_select, 'Value');
 for k = 1 : length(tmpSpecVal)
-    s = char(datSelectionString(k));
+    s = char(datSelectionString(tmpSpecVal(k)));
     for f = 1 : size(tmpFileVal,2)
+        lineCol = multiLineCols(f,:);
+        isTS = strcmp(s, 'testSignal');
+        if isTS, lineCol = th.sigTestSignal; end
         cnt = 0;
-        for a = axesOptionsSpec 
+        for a = axesOptionsSpec
             cnt = cnt + 1;
             p = p + 1;
             if ~isempty(freq2d2)
@@ -227,12 +233,13 @@ for k = 1 : length(tmpSpecVal)
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
-                        set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',multilineStyle{k})
+                        lsty = multilineStyle{k}; if isTS, lsty = '-'; end
+                        set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',lsty)
                         set(h2,'fontsize',fontsz)
-                        set(h,'Color',[multiLineCols(f,:)]) 
+                        set(h,'Color',[lineCol])
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0:m/10:m], 'yminortick','on')
-                        axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])             
+                        axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])
                         xlabel('Frequency (Hz)','fontweight','bold','Color',th.textPrimary);
                         if get(guiHandlesSpec2.checkboxPSD, 'Value')
                             ylabel(['Power Spectral Density (dB)'],'fontweight','bold','Color',th.textPrimary);
@@ -255,9 +262,10 @@ for k = 1 : length(tmpSpecVal)
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
-                        set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',multilineStyle{k})
+                        lsty = multilineStyle{k}; if isTS, lsty = '-'; end
+                        set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',lsty)
                         set(h2,'fontsize',fontsz)
-                        set(h,'Color',[multiLineCols(f,:)])
+                        set(h,'Color',[lineCol])
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0 20 40 60 80 100],'yminortick','on')
                         axis([0 100 climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])
@@ -287,32 +295,32 @@ for k = 1 : length(tmpSpecVal)
                         if get(guiHandlesSpec2.Delay, 'Value') == 1 && a == 1
                             if debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_SCALED || debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_FILTERED || debugmode(tmpFileIdx) == 1 || debugmode(tmpFileIdx) == 0
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Filter: ' Debug01{tmpFileIdx} 'ms | Dterm Filter: ' FilterDelayDterm{tmpFileIdx} 'ms']);
-                                set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
+                                set(h,'Color',[lineCol],'fontsize',fontsz);
                             else
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Filter: ' 'ms | Dterm Filter: ' FilterDelayDterm{tmpFileIdx} 'ms']);
-                                set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
+                                set(h,'Color',[lineCol],'fontsize',fontsz);
                             end
                         end
                         if get(guiHandlesSpec2.Delay, 'Value') == 2
                             h=text(80, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['SP-Gyro: ' int2str(SPGyroDelay(tmpFileIdx, a)) 'ms']);
-                            set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
+                            set(h,'Color',[lineCol],'fontsize',fontsz);
                         end
                         if get(guiHandlesSpec2.Delay, 'Value') == 3  && a == 1
                             if debugmode(tmpFileIdx) == tmpDbgIdx.RC_INTERPOLATION || debugmode(tmpFileIdx) == tmpDbgIdx.FEEDFORWARD
                                 h=text(75, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['SP smoothing delay: ' Debug02{tmpFileIdx} 'ms']);
-                                set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
+                                set(h,'Color',[lineCol],'fontsize',fontsz);
                             else
                                 h=text(80, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['debug mode not set ']);
-                                set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
+                                set(h,'Color',[lineCol],'fontsize',fontsz);
                             end
                         end
                          if get(guiHandlesSpec2.Delay, 'Value') == 4 && a == 1
                             if debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_SCALED || debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_FILTERED || debugmode(tmpFileIdx) == 1 || debugmode(tmpFileIdx) == 0
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' num2str(gyro_phase_shift_deg(tmpFileIdx)) 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(tmpFileIdx)) 'deg']);
-                                set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
+                                set(h,'Color',[lineCol],'fontsize',fontsz);
                             else
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(tmpFileIdx)) 'deg']);
-                                set(h,'Color',[multiLineCols(f,:)],'fontsize',fontsz);
+                                set(h,'Color',[lineCol],'fontsize',fontsz);
                             end
                         end
 
@@ -332,7 +340,7 @@ for k = 1 : length(tmpSpecVal)
                             set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2.6,'linestyle',rpyLineStyle{cnt})
                         end
                         set(h2,'fontsize',fontsz)
-                        set(h,'Color',[multiLineCols(f,:)]) 
+                        set(h,'Color',[lineCol]) 
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0:m/10:m], 'yminortick','on')
                         axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])             
@@ -366,11 +374,14 @@ tmpSpecListVal = get(guiHandlesSpec2.SpecList, 'Value');
 tmpFileSelStr = get(guiHandlesSpec2.FileSelect, 'String');
 tmpFileSelVal = get(guiHandlesSpec2.FileSelect, 'Value');
 for m = 1 : length(tmpSpecListVal)
+    sLeg = char(datSelectionString(tmpSpecListVal(m)));
     for n = 1 : length(tmpFileSelVal)
+        fIdx_ = tmpFileSelVal(n);
+        if ~isfield(T{fIdx_}, [sLeg '_0_']), continue; end
         l = l + 1;
         clear fstr fltDelayStr
         fstr = char(tmpFileSelStr(tmpFileSelVal(n)));
-        if size(fstr,2) > 12, fstr = fstr(1,1:12); end % only use first 20 characters of file name
+        if size(fstr,2) > 12, fstr = fstr(1,1:12); end
         if get(guiHandlesSpec2.RPYcomboSpec, 'Value') == 0
             legnd{l} = [char(tmpSpecListStr(tmpSpecListVal(m))) ' | ' fstr];
         else
