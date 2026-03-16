@@ -68,11 +68,15 @@ posInfo.run4=                [cpL+cpM yTop-rh hw rh];
 posInfo.clearPlots=          [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 posInfo.saveFig4=            [cpL+cpM yTop-rh hw rh];
 posInfo.saveSettings4=       [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
-posInfo.smooth_tuning=       [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+posInfo.period=              [cpL+cpM yTop-rh hw rh];
+posInfo.markup=              [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
+posInfo.smooth_tuning=       [cpL+cpM yTop-ddh fw/2-gap ddh];
+posInfo.srLatency=           [cpL+cpM+fw/2 yTop-ddh fw/2 ddh]; yTop=yTop-ddh-gap;
 posInfo.plotR=               [cpL+cpM yTop-rh cbW rh];
 posInfo.plotP=               [cpL+cpM+cbW yTop-rh cbW rh];
 posInfo.plotY=               [cpL+cpM+2*cbW yTop-rh cbW rh]; yTop=yTop-rh-gap;
-posInfo.RPYcombo=            [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.RPYcombo=            [cpL+cpM yTop-rh fw/2-gap rh];
+posInfo.rawTraces=           [cpL+cpM+fw/2 yTop-rh fw/2 rh]; yTop=yTop-rh-gap;
 posInfo.Ycorrection=         [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
 posInfo.maxYStepInput=       [cpL+cpM yTop-rh cpW/3 rh];
 posInfo.maxYStepTxt=         [cpL+cpW/3+cpM yTop-rhs cpW/2 rhs];
@@ -99,6 +103,17 @@ guiHandlesTune.saveSettings = uicontrol(PStunefig,'string','Save Settings','font
     'callback','set(guiHandlesTune.saveSettings, ''FontWeight'', ''bold'');PSsaveSettings; set(guiHandlesTune.saveSettings, ''FontWeight'', ''normal'');');
 set(guiHandlesTune.saveSettings, 'ForegroundColor', saveCol);
 
+guiHandlesTune.period = uicontrol(PStunefig,'string','Period','fontsize',fontsz,'TooltipString', 'Click two points to measure period + frequency', 'units','normalized','Position',[posInfo.period],...
+    'callback','PSstepPeriod(PStunefig);');
+guiHandlesTune.markup = uicontrol(PStunefig,'string','Markup','fontsize',fontsz,'TooltipString', 'Clear period markers', 'units','normalized','Position',[posInfo.markup],...
+    'callback','delete(findobj(PStunefig, ''Tag'', ''PSperiod''));');
+
+guiHandlesTune.smoothFactor_select = uicontrol(PStunefig,'style','popupmenu','string',{'smoothin...' 'smooth low' 'smooth med' 'smooth high'},'fontsize',fontsz,'TooltipString', ['Smooth the gyro when step response traces are too noisy'], 'units','normalized','Position',[posInfo.smooth_tuning],...
+     'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.smoothFactor_select, 'Value', 1);
+guiHandlesTune.srLatency = uicontrol(PStunefig,'style','popupmenu','string',{'SR Latency' 'Xcorr Latency'},'fontsize',fontsz,'TooltipString', 'Latency measurement method', 'units','normalized','Position',[posInfo.srLatency],...
+     'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+
 guiHandlesTune.plotR =uicontrol(PStunefig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
     'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisRoll,'Position',[posInfo.plotR],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 
@@ -122,13 +137,14 @@ guiHandlesTune.RPYcombo =uicontrol(PStunefig,'Style','checkbox','String','Single
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.RPYcombo],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.RPYcombo, 'Value', 0);
 
+guiHandlesTune.rawTraces =uicontrol(PStunefig,'Style','checkbox','String','Raw','fontsize',fontsz,'TooltipString', ['Show individual segment traces'],...
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.rawTraces],...
+    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.rawTraces, 'Value', 0);
+
 guiHandlesTune.maxYStepTxt = uicontrol(PStunefig,'style','text','string','Y max ','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYStepTxt]);
 guiHandlesTune.maxYStepInput = uicontrol(PStunefig,'style','edit','string','1.75','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','Position',[posInfo.maxYStepInput],...
      'callback','@textinput_call3; set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
- 
-guiHandlesTune.smoothFactor_select = uicontrol(PStunefig,'style','popupmenu','string',{'smoothing off' 'smoothing low' 'smoothing medium' 'smoothing high'},'fontsize',fontsz,'TooltipString', ['Smooth the gyro when step response traces are too noisy'], 'units','normalized','Position',[posInfo.smooth_tuning],...
-     'callback','@selection2;');
-set(guiHandlesTune.smoothFactor_select, 'Value', 1);
 tuneCrtlpanel_init = true;
 end % ishandle(tuneCrtlpanel)
 
@@ -143,11 +159,15 @@ cpI{end+1} = struct('h', guiHandlesTune.run4, 'type','left', 'row',0, 'col',0, '
 cpI{end+1} = struct('h', guiHandlesTune.clearPlots, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.saveFig4, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.saveSettings, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
-cpI{end+1} = struct('h', guiHandlesTune.smoothFactor_select, 'type','dd_full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesTune.period, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.markup, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.smoothFactor_select, 'type','left', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesTune.srLatency, 'type','right', 'row',0, 'col',0, 'hpx',ddh_px);
 cpI{end+1} = struct('h', guiHandlesTune.plotR, 'type','cb', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.plotP, 'type','cb', 'row',0, 'col',1, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.plotY, 'type','cb_end', 'row',0, 'col',2, 'hpx',rh_px);
-cpI{end+1} = struct('h', guiHandlesTune.RPYcombo, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.RPYcombo, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.rawTraces, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.Ycorrection, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.maxYStepInput, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.maxYStepTxt, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);

@@ -73,7 +73,7 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                         H = T{f}.(['setpoint_' int2str(p-1) '_'])(tIND{f});
                         G = T{f}.(['gyroADC_' int2str(p-1) '_'])(tIND{f});
                         [stepresp_A{p} tA] = PSstepcalc(H, G, A_lograte(f), get(guiHandlesTune.Ycorrection, 'Value'), get(guiHandlesTune.smoothFactor_select, 'Value'));
-                     %   xcorrLag(p) = finddelay(H, G) * A_lograte(f);
+                        try xcorrLag_cache(p) = finddelay(H, G) / A_lograte(f); catch, xcorrLag_cache(p) = nan; end
                     end
                 catch
                     stepresp_A{p}=[];
@@ -90,12 +90,48 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                         s = [];
                         s = stepresp_A{p};
                         m=nanmean(s);
+                        sd=nanstd(s);
+
+                        col_i = multiLineCols(fcntSR,:);
+
+                        % SD shading band
+                        tFlip = [tA fliplr(tA)];
+                        sdBand = [m+sd fliplr(m-sd)];
+                        patch(tFlip, sdBand, col_i, 'FaceAlpha', 0.15, 'EdgeColor', 'none', 'Parent', gca);
+
+                        % raw segment traces - blend toward bg to simulate low alpha
+                        if isfield(guiHandlesTune, 'rawTraces') && get(guiHandlesTune.rawTraces, 'Value')
+                            col_raw = col_i * 0.12 + th.axesBg * 0.88;
+                            for si = 1:size(s,1)
+                                plot(tA, s(si,:), 'Color', col_raw, 'LineWidth', 0.5);
+                            end
+                        end
 
                         h1=plot(tA,m);
-                        set(h1, 'color',[multiLineCols(fcntSR,:)],'linewidth', get(guiHandles.linewidth, 'Value')/1.5);
-                        latencyHalfHeight(p, fcntSR) = (find(m>.5,1) / A_lograte(f)) - 1;
+                        set(h1, 'color', col_i, 'linewidth', get(guiHandles.linewidth, 'Value')/1.5);
+                        if get(guiHandlesTune.srLatency, 'Value') == 2 && exist('xcorrLag_cache', 'var')
+                            latencyHalfHeight(p, fcntSR) = xcorrLag_cache(p);
+                        else
+                            latencyHalfHeight(p, fcntSR) = (find(m>.5,1) / A_lograte(f)) - 1;
+                        end
                         peakresp(p, fcntSR)=max(m(find(tA<150)));
                         peaktime(p, fcntSR)=find(m == max(m(find(tA<150)))) / A_lograte(f);
+
+                        % per-segment metrics for error bars
+                        peakIdx = find(tA < 150);
+                        segPeaks = zeros(1, size(s,1));
+                        segLats = zeros(1, size(s,1));
+                        for si = 1:size(s,1)
+                            segPeaks(si) = max(s(si, peakIdx));
+                            idx50 = find(s(si,:) > 0.5, 1);
+                            if ~isempty(idx50)
+                                segLats(si) = (idx50 / A_lograte(f)) - 1;
+                            else
+                                segLats(si) = nan;
+                            end
+                        end
+                        peakresp_std(p, fcntSR) = nanstd(segPeaks);
+                        latencyHalfHeight_std(p, fcntSR) = nanstd(segLats);
 
                         pidvar = [ylab2{p} 'PIDF'];
                         PID = eval([pidvar '{f}']);
@@ -103,6 +139,8 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                         peakresp(p, fcntSR) = nan;
                         peaktime(p, fcntSR) = nan;
                         latencyHalfHeight(p, fcntSR) = nan;
+                        peakresp_std(p, fcntSR) = nan;
+                        latencyHalfHeight_std(p, fcntSR) = nan;
                         PID = '';
                     end
 
@@ -142,9 +180,25 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                     else set(PStunefig, 'CurrentAxes', h2); end
                     h=plot(fcntSR, peakresp(p, fcntSR),'sk');
                     set(h,'Markersize',markerSz, 'MarkerFaceColor', [multiLineCols(fcntSR,:)])
-                    set(gca,'fontsize',fontsz, 'ylim',[0.8 ymax],'ytick',[0.8:.1:ymax],'xlim',[0.5 fcntSR+0.5],'xtick',[1:fcntSR])
+                    if ~isnan(peakresp_std(p, fcntSR)) && peakresp_std(p, fcntSR) > 0
+                        ey = peakresp_std(p, fcntSR);
+                        yc = peakresp(p, fcntSR);
+                        line([fcntSR fcntSR], [yc-ey yc+ey], 'Color', multiLineCols(fcntSR,:), 'LineWidth', 1.2);
+                        capW = 0.15;
+                        line([fcntSR-capW fcntSR+capW], [yc-ey yc-ey], 'Color', multiLineCols(fcntSR,:), 'LineWidth', 1.2);
+                        line([fcntSR-capW fcntSR+capW], [yc+ey yc+ey], 'Color', multiLineCols(fcntSR,:), 'LineWidth', 1.2);
+                    end
+                    ymxP = ymax; ymnP = 0.8;
+                    for ei = 1:size(peakresp_std, 2)
+                        if ~isnan(peakresp_std(p, ei))
+                            ymxP = max(ymxP, peakresp(p, ei) + peakresp_std(p, ei));
+                            ymnP = min(ymnP, peakresp(p, ei) - peakresp_std(p, ei));
+                        end
+                    end
+                    ymxP = ymxP + 0.05; ymnP = max(0, ymnP - 0.05);
+                    set(gca,'fontsize',fontsz, 'ylim',[ymnP ymxP],'ytick',[ymnP:.1:ymxP],'xlim',[0.5 fcntSR+0.5],'xtick',[1:fcntSR])
                     ylabel([ylab{p} ' Peak '], 'fontweight','bold');
-                    xlabel('Test', 'fontweight','bold');
+                    xlabel('test', 'fontweight','bold');
                     hold on
                     grid on
                     plot([0 10],[1 1],'--','Color',th.axesFg)
@@ -156,10 +210,23 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                     else set(PStunefig, 'CurrentAxes', h3); end
                     h=plot(fcntSR, latencyHalfHeight(p, fcntSR),'sk');
                     set(h,'Markersize',markerSz, 'MarkerFaceColor', [multiLineCols(fcntSR,:)])
+                    if ~isnan(latencyHalfHeight_std(p, fcntSR)) && latencyHalfHeight_std(p, fcntSR) > 0
+                        ey = latencyHalfHeight_std(p, fcntSR);
+                        yc = latencyHalfHeight(p, fcntSR);
+                        line([fcntSR fcntSR], [yc-ey yc+ey], 'Color', multiLineCols(fcntSR,:), 'LineWidth', 1.2);
+                        capW = 0.15;
+                        line([fcntSR-capW fcntSR+capW], [yc-ey yc-ey], 'Color', multiLineCols(fcntSR,:), 'LineWidth', 1.2);
+                        line([fcntSR-capW fcntSR+capW], [yc+ey yc+ey], 'Color', multiLineCols(fcntSR,:), 'LineWidth', 1.2);
+                    end
 
                     mn = min(latencyHalfHeight(p, :))-rem(min(latencyHalfHeight(p, :)),2);
                     mx = max(latencyHalfHeight(p, :))+rem(max(latencyHalfHeight(p, :)),2);
-
+                    for ei = 1:size(latencyHalfHeight_std, 2)
+                        if ~isnan(latencyHalfHeight_std(p, ei))
+                            mn = min(mn, latencyHalfHeight(p, ei) - latencyHalfHeight_std(p, ei));
+                            mx = max(mx, latencyHalfHeight(p, ei) + latencyHalfHeight_std(p, ei));
+                        end
+                    end
                     ymaxLat = mx+4;
                     yminLat = mn-4;
                     try
@@ -185,10 +252,29 @@ if ~get(guiHandlesTune.clearPlots, 'Value')
                         s = [];
                         s = stepresp_A{p};
                         m=nanmean(s);
+                        sd=nanstd(s);
+
+                        col_i = multiLineCols(fcntSR,:);
+
+                        % SD shading band
+                        tFlip = [tA fliplr(tA)];
+                        sdBand = [m+sd fliplr(m-sd)];
+                        patch(tFlip, sdBand, col_i, 'FaceAlpha', 0.15, 'EdgeColor', 'none', 'Parent', gca);
+
+                        if isfield(guiHandlesTune, 'rawTraces') && get(guiHandlesTune.rawTraces, 'Value')
+                            col_raw = col_i * 0.12 + th.axesBg * 0.88;
+                            for si = 1:size(s,1)
+                                plot(tA, s(si,:), 'Color', col_raw, 'LineWidth', 0.5);
+                            end
+                        end
 
                         h1=plot(tA,m);
-                        set(h1, 'color',[multiLineCols(fcntSR,:)],'linewidth', get(guiHandles.linewidth, 'Value')/1.5, 'linestyle', lineStyle{cnt2});
-                        latencyHalfHeight(p, fcntSR) = (find(m>.5,1) / A_lograte(f)) - 1;
+                        set(h1, 'color', col_i, 'linewidth', get(guiHandles.linewidth, 'Value')/1.5, 'linestyle', lineStyle{cnt2});
+                        if get(guiHandlesTune.srLatency, 'Value') == 2 && exist('xcorrLag_cache', 'var')
+                            latencyHalfHeight(p, fcntSR) = xcorrLag_cache(p);
+                        else
+                            latencyHalfHeight(p, fcntSR) = (find(m>.5,1) / A_lograte(f)) - 1;
+                        end
                         peakresp(p, fcntSR)=max(m(find(tA<150)));
                         peaktime(p, fcntSR)=find(m == max(m(find(tA<150)))) / A_lograte(f);
 

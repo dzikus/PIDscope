@@ -55,6 +55,9 @@ if exist('OCTAVE_VERSION', 'builtin')
     th.fontsz = round(th.fontsz * 0.85);
 end
 
+% period marker (Step Response)
+th.periodMarker  = [.95 .20 .20];
+
 % diff highlight (Setup Info)
 th.diffBg      = [.45 .18 .18];
 
