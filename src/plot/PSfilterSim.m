@@ -14,6 +14,9 @@ try set(fig, 'WindowState', 'maximized'); catch, end
 
 fp = PSparseFilterParams(setupInfo);
 
+% Use gyro loop rate from headers if available (filters run at gyro rate, not logging rate)
+if fp.gyro_rate_hz > 0, Fs = fp.gyro_rate_hz; end
+
 % Layout: 2 cols x 4 rows + gradient bars
 plotL = 0.05;
 plotR = 0.75;
@@ -382,12 +385,8 @@ doUpdate();
         set(h.totalDelay, 'String', sprintf('Total Delay: %.3fms (LPF %.3f + Notch %.3f)', ...
             delayL + delayN, delayL, delayN));
 
-        % Step responses — LPF: adaptive time, Notch: 100ms
-        minCutoff = Fs/2;
-        for cc = [glpf1f glpf2f dlpf1f dlpf2f]
-            if cc > 0, minCutoff = min(minCutoff, cc); end
-        end
-        lpfStepMs = max(4, min(10, 1000 / max(minCutoff, 50)));
+        % Step responses
+        lpfStepMs = 4;
         stepLenL = round(Fs * lpfStepMs / 1000);
         stepInL = ones(stepLenL, 1);
         tStepL = (0:stepLenL-1)' / Fs * 1000;
@@ -625,7 +624,7 @@ doUpdate();
                 end
             end
             hold(axLstep, 'off');
-            PSstyleAxes(axLstep, thm); set(axLstep, 'XLim', [tStepL(1) tStepL(end)], 'YLim', [-0.05 1.15]);
+            PSstyleAxes(axLstep, thm); set(axLstep, 'XLim', [0 lpfStepMs], 'YLim', [-0.05 1.15]);
             xlabel(axLstep, 'Time (ms)', 'Color', thm.textPrimary);
             set(get(axLstep, 'YLabel'), 'String', 'Step Resp.');
         end
@@ -738,7 +737,7 @@ doUpdate();
                 plotFn(axNphase, fVec(fIdx), ph_dN(fIdx), 'Color', colD, 'LineWidth', 1.2);
             end
             hold(axNphase, 'off');
-            PSstyleAxes(axNphase, thm); set(axNphase, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
+            PSstyleAxes(axNphase, thm); set(axNphase, 'XLim', xlimF(useLog, fMax), 'YLim', [-90 90], 'XTickLabel', {});
             set(get(axNphase, 'YLabel'), 'String', 'Phase Delay (deg)');
 
             if showStep
