@@ -33,7 +33,8 @@ posInfo.checkbox11=[chkX chkRow1 chkMotW chkH];
 posInfo.checkbox10=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 posInfo.checkbox14=[chkX chkRow1 chkMotW chkH];
 posInfo.checkboxTS=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
-posInfo.checkbox15=[chkX chkRow1 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkbox15=[chkX chkRow1 chkMotW chkH];
+posInfo.checkboxeRPM=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 
 posInfo.maxYtext =  [chkX chkRow1 chkTxtW chkH];
 posInfo.maxYinput = [chkX+chkTxtW chkRow1 chkEdtW chkH];
@@ -124,6 +125,8 @@ set(guiHandles.checkbox14, 'Value', 1);
 
 guiHandles.checkbox15=uicontrol(PSfig,'Style','checkbox','String','All','fontsize',fontsz,'TooltipString', ['Plot or clear all lines '],'ForegroundColor',[linec.col15],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox15],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), plotall_flag=get(guiHandles.checkbox15, ''Value''); PSplotLogViewer; end');
+guiHandles.checkboxeRPM=uicontrol(PSfig,'Style','checkbox','String','eRPM','fontsize',fontsz,'TooltipString','Motor eRPM traces (Hz) on motor subplot','ForegroundColor',th.textSecondary,'BackgroundColor',bgcolor,...
+    'units','normalized','Position',[posInfo.checkboxeRPM],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
  
 TooltipString_FileNum=['Select the file you wish to plot in the logviewer. '];
 set(guiHandles.FileNum, 'string', fnameMaster, 'TooltipString', TooltipString_FileNum,...
@@ -155,7 +158,8 @@ chkBarItems{end+1} = struct('h', guiHandles.checkbox11, 'wpx', chkMotW_px, 'row'
 chkBarItems{end+1} = struct('h', guiHandles.checkbox10, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.checkbox14, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.checkboxTS, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
-chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 1, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxeRPM, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.maxY_text, 'wpx', chkTxtW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.nCols_text, 'wpx', chkTxtW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.maxY_input, 'wpx', chkEdtW_px, 'row', 1, 'advance', false);

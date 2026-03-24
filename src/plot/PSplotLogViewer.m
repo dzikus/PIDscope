@@ -44,6 +44,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         set(guiHandles.checkbox13, 'Value', allVal);
         set(guiHandles.checkbox14, 'Value', allVal);
         set(guiHandles.checkboxTS, 'Value', allVal);
+        try set(guiHandles.checkboxeRPM, 'Value', allVal); catch, end
     end
     plotall_flag=-1;
 
@@ -137,6 +138,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
          try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
          try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
          try delete(findobj(PSfig,'Tag','PScombo')); catch, end
+         try delete(findobj(PSfig,'Tag','PSeRPMax')); catch, end
     end
     
     try delete(hch1); catch, end, try delete(hch2); catch, end
@@ -321,6 +323,61 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
             set(LVpanel5,'color',th.axesBg,'fontsize',fontsz,'tickdir','in','xminortick','on','yminortick','on','Tag','PSmotor');
         end
     end
+
+    % eRPM overlay on motor subplot
+    try delete(findobj(PSfig,'Tag','PSeRPMax')); catch, end
+    try
+    if isfield(guiHandles, 'checkboxeRPM') && get(guiHandles.checkboxeRPM, 'Value')
+        motorAx = findobj(PSfig, 'Type', 'axes', 'Tag', 'PSmotor');
+        if ~isempty(motorAx)
+            motorAx = motorAx(1);
+            fileIdx_ = get(guiHandles.FileNum, 'Value');
+            hasERPM = isfield(T{fileIdx_}, 'eRPM_0_');
+            if hasERPM
+                % get motor_poles from header (default 14)
+                mPoles = 14;
+                try
+                    mpRow = find(strcmp(SetupInfo{fileIdx_}(:,1), 'motor_poles'));
+                    if ~isempty(mpRow), mPoles = str2double(SetupInfo{fileIdx_}(mpRow(1),2)); end
+                catch, end
+                if mPoles < 2, mPoles = 14; end
+
+                mPos = get(motorAx, 'Position');
+                mXL = get(motorAx, 'XLim');
+                tSec_ = tta{fileIdx_}/us2sec;
+                sFactor_ = lineSmoothFactors(get(guiHandles.lineSmooth, 'Value'));
+                lwVal_ = get(guiHandles.linewidth, 'Value')/2;
+
+                rpmAx = axes('Parent', PSfig, 'Position', mPos, ...
+                    'Color', 'none', 'XLim', mXL, ...
+                    'YAxisLocation', 'right', 'Box', 'off', ...
+                    'XTick', [], 'Tag', 'PSeRPMax');
+                hold(rpmAx, 'on');
+
+                rpmColors = {linec.col10, linec.col11, linec.col12, linec.col13};
+                rpmMax = 0;
+                for mk = 0:3
+                    fld = ['eRPM_' int2str(mk) '_'];
+                    if isfield(T{fileIdx_}, fld)
+                        raw = PSsmoothLV(PSfig, T{fileIdx_}, fileIdx_, fld, sFactor_);
+                        hz = raw * 100 / (mPoles/2) / 60;
+                        plot(rpmAx, tSec_, hz, 'Color', rpmColors{mk+1}, 'LineWidth', lwVal_, 'LineStyle', ':');
+                        rpmMax = max(rpmMax, max(hz));
+                    end
+                end
+                if rpmMax > 0
+                    rpmCeil = ceil(rpmMax/100)*100;
+                    rpmStep = rpmCeil / 5;
+                    set(rpmAx, 'YLim', [0 rpmCeil], 'YColor', th.textSecondary, ...
+                        'YTick', 0:rpmStep:rpmCeil, 'fontsize', fontsz, ...
+                        'XColor', 'none', 'TickDir', 'in');
+                    yl_ = ylabel(rpmAx, 'eRPM (Hz)', 'fontweight', 'bold');
+                    set(yl_, 'color', th.textSecondary);
+                end
+            end
+        end
+    end
+    catch, end
 
     % i/o keyboard trim: 'i' sets in-point, 'o' sets out-point
     set(PSfig, 'KeyPressFcn', [ ...
