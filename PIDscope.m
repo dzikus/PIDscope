@@ -332,8 +332,8 @@ guiHandles.FlightStatsButton = uicontrol(PSfig,'string','Flight Stats','fontsize
     'callback','PSstatsUIcontrol; PSplotStats;');
 set(guiHandles.FlightStatsButton, 'ForegroundColor', th.btnDash7);
 
-guiHandles.period2Hz = uicontrol(PSfig,'string','Period','fontsize',fontsz,'TooltipString', ['Calculates peak to peak in Hz similar to the BBE ''Mark'' tool' , newline, 'press button, position mouse over 1st peak, mouse click,' , newline, 'then position over 2nd peak, then mouse click again'], 'units','normalized','Position',[posInfo.period2Hz],...
-     'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.period2Hz, ''Value''), try, [x1 y1] = ginput(1); figure(PSfig); h=plot([x1 x1],[-(maxY*2) maxY],''-r'');set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2);  [x2 y2] = ginput(1); h=plot([x2 x2],[-(maxY*2) maxY],''-r''); set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2); plot([x1 x2],[y1 y2],'':k''); x3=[round(x1*1000) round(x2*1000)]; f = 1000/(x3(2)-x3(1)); text(x2, y2, [num2str(x3(2)-x3(1)) ''ms, '' num2str(f) ''Hz''],''FontSize'',fontsz, ''FontWeight'', ''Bold''); catch, end, end');      
+guiHandles.period2Hz = uicontrol(PSfig,'string','Period','fontsize',fontsz,'TooltipString', ['Click two points on any trace to measure period and frequency.' , newline, 'Red vertical lines + ms/Hz annotation on all axes.'], 'units','normalized','Position',[posInfo.period2Hz],...
+     'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA), PSlogViewerPeriod(PSfig); end');
 
 guiHandles.DispInfoButton = uicontrol(PSfig,'string','Setup Info','fontsize',fontsz,'TooltipString', [TooltipString_setup],'units','normalized','Position',[posInfo.DispInfoButton],...
     'callback','PSdispSetupInfoUIcontrol;PSdispSetupInfo;');
