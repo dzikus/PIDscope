@@ -106,6 +106,7 @@ th.sigSetpoint  = [.90 .25 .35];
 th.sigPIDsum    = [1.0 .35 .90];
 th.sigPIDerr    = [.55 .20 .95];
 th.sigMotor     = {[.95 .20 .20], [.95 .65 .10], [.20 .85 .25], [.20 .45 .95]};
+th.sigRPM       = {[1.0 .50 .50], [1.0 .80 .40], [.50 1.0 .55], [.50 .65 1.0]};
 th.sigThrottle  = [.85 .85 .85];
 th.sigTestSignal = [1.0 1.0 1.0];  % white (matches Log Viewer overlay)
 

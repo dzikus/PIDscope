@@ -14,6 +14,8 @@ try
 th = PStheme();
 set(PSstatsfig, 'pointer', 'watch');
 
+% clean up all old stats axes before replotting
+try delete(findobj(PSstatsfig, 'Type', 'axes')); catch, end
 
 fA = get(guiHandlesStats.FileA, 'Value');
 fB = [];
@@ -55,9 +57,7 @@ if plotMode == 1
 
     for sp = 1:4
         stag_ = sprintf('PSstats_%d', sp);
-        hhist = findobj(PSstatsfig, 'Type', 'axes', 'Tag', stag_);
-        if isempty(hhist), hhist = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos(sp,:), 'Tag', stag_);
-        else set(PSstatsfig, 'CurrentAxes', hhist); cla; end
+        hhist = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos(sp,:), 'Tag', stag_);
         if sp <= 3
             pctData = Rpct_A{sp};
         else
@@ -95,9 +95,7 @@ if plotMode == 1
 
         for sp = 1:4
             stag_ = sprintf('PSstats_%d', sp+4);
-            hhist = findobj(PSstatsfig, 'Type', 'axes', 'Tag', stag_);
-            if isempty(hhist), hhist = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos(sp+4,:), 'Tag', stag_);
-            else set(PSstatsfig, 'CurrentAxes', hhist); cla; end
+            hhist = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos(sp+4,:), 'Tag', stag_);
             if sp <= 3
                 pctData = Rpct_B{sp};
             else
@@ -172,9 +170,7 @@ if plotMode == 2
             useAbs = grp{4};
 
             stag_ = sprintf('PSstats2_%d', slots(g));
-            h1 = findobj(PSstatsfig, 'Type', 'axes', 'Tag', stag_);
-            if isempty(h1), h1 = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos2(slots(g),:), 'Tag', stag_);
-            else set(PSstatsfig, 'CurrentAxes', h1); cla; end
+            h1 = axes('Parent', PSstatsfig, 'Position', posInfo.statsPos2(slots(g),:), 'Tag', stag_);
 
             vals = zeros(nAx, 1);
             sds = zeros(nAx, 1);
@@ -202,12 +198,14 @@ if plotMode == 2
                 set(s, 'FaceColor', clr);
             end
 
+            ymx_ = max(vals(1:nAx)+sds(1:nAx))*1.2+1;
+            if isnan(ymx_) || ymx_ < 1, ymx_ = 10; end
             if nAx == 2
                 set(gca, 'Xtick', 1:nAx, 'xticklabel', axLabelsRPY(1:2));
-                axis([.5 2.5 0 max(vals+sds)*1.2+1]);
+                axis([.5 2.5 0 ymx_]);
             elseif nAx == 3
                 set(gca, 'Xtick', 1:nAx, 'xticklabel', axLabelsRPY);
-                axis([.5 3.5 0 max(vals+sds)*1.2+1]);
+                axis([.5 3.5 0 ymx_]);
             elseif nAx == 4 && strcmp(prefix, 'setpoint_')
                 set(gca, 'Xtick', 1:4, 'xticklabel', axLabelsRPYT);
                 axis([.5 4.5 0 100]);
@@ -216,8 +214,7 @@ if plotMode == 2
                 axis([.5 4.5 0 100]);
             elseif nAx == 4
                 set(gca, 'Xtick', 1:4, 'xticklabel', axLabelsD4);
-                ymax = max(vals+sds)*1.2+1; if ymax < 1, ymax = 10; end
-                axis([.5 4.5 0 ymax]);
+                axis([.5 4.5 0 ymx_]);
             end
 
             set(gca, 'xcolor', clr, 'ycolor', clr, 'YMinorGrid', 'on');

@@ -44,7 +44,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         set(guiHandles.checkbox13, 'Value', allVal);
         set(guiHandles.checkbox14, 'Value', allVal);
         set(guiHandles.checkboxTS, 'Value', allVal);
-        try set(guiHandles.checkboxeRPM, 'Value', allVal); catch, end
+        for rk_=1:4, try set(guiHandles.(['checkboxRPM' int2str(rk_)]), 'Value', allVal); catch, end, end
     end
     plotall_flag=-1;
 
@@ -63,6 +63,16 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
     %% where you want full range of data
     fileIdx = get(guiHandles.FileNum, 'Value');
+
+    % enable/disable RPM checkboxes based on eRPM data
+    hasERPM_ = exist('T','var') && iscell(T) && numel(T) >= fileIdx && isfield(T{fileIdx}, 'eRPM_0_');
+    rpmEn_ = 'off'; if hasERPM_, rpmEn_ = 'on'; end
+    for rk_=1:4
+        try
+            set(guiHandles.(['checkboxRPM' int2str(rk_)]), 'Enable', rpmEn_);
+            if ~hasERPM_, set(guiHandles.(['checkboxRPM' int2str(rk_)]), 'Value', 0); end
+        catch, end
+    end
 
     % Update Debug checkbox label for RC_INTERPOLATION mode (version-aware)
     tmpRCidx = RC_INTERPOLATION; % global default
@@ -324,17 +334,18 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
         end
     end
 
-    % eRPM overlay on motor subplot
+    % eRPM overlay on motor subplot (per-motor RPM checkboxes)
     try delete(findobj(PSfig,'Tag','PSeRPMax')); catch, end
     try
-    if isfield(guiHandles, 'checkboxeRPM') && get(guiHandles.checkboxeRPM, 'Value')
+    rpmEnabled_ = false(1,4);
+    for rk_=1:4, try rpmEnabled_(rk_) = get(guiHandles.(['checkboxRPM' int2str(rk_)]), 'Value'); catch, end, end
+    if any(rpmEnabled_)
         motorAx = findobj(PSfig, 'Type', 'axes', 'Tag', 'PSmotor');
         if ~isempty(motorAx)
             motorAx = motorAx(1);
             fileIdx_ = get(guiHandles.FileNum, 'Value');
             hasERPM = isfield(T{fileIdx_}, 'eRPM_0_');
             if hasERPM
-                % get motor_poles from header (default 14)
                 mPoles = 14;
                 try
                     mpRow = find(strcmp(SetupInfo{fileIdx_}(:,1), 'motor_poles'));
@@ -351,17 +362,18 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 rpmAx = axes('Parent', PSfig, 'Position', mPos, ...
                     'Color', 'none', 'XLim', mXL, ...
                     'YAxisLocation', 'right', 'Box', 'off', ...
-                    'XTick', [], 'Tag', 'PSeRPMax');
+                    'XTick', [], 'Tag', 'PSeRPMax', 'HitTest', 'off');
                 hold(rpmAx, 'on');
 
-                rpmColors = {linec.col10, linec.col11, linec.col12, linec.col13};
+                rpmColors = th.sigRPM;
                 rpmMax = 0;
                 for mk = 0:3
+                    if ~rpmEnabled_(mk+1), continue; end
                     fld = ['eRPM_' int2str(mk) '_'];
                     if isfield(T{fileIdx_}, fld)
                         raw = PSsmoothLV(PSfig, T{fileIdx_}, fileIdx_, fld, sFactor_);
                         hz = raw * 100 / (mPoles/2) / 60;
-                        plot(rpmAx, tSec_, hz, 'Color', rpmColors{mk+1}, 'LineWidth', lwVal_, 'LineStyle', ':');
+                        plot(rpmAx, tSec_, hz, 'Color', rpmColors{mk+1}, 'LineWidth', lwVal_, 'LineStyle', ':', 'HitTest', 'off');
                         rpmMax = max(rpmMax, max(hz));
                     end
                 end
@@ -373,6 +385,11 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                         'XColor', 'none', 'TickDir', 'in');
                     yl_ = ylabel(rpmAx, 'eRPM (Hz)', 'fontweight', 'bold');
                     set(yl_, 'color', th.textSecondary);
+                    % epoch trim fills on RPM overlay
+                    hf_=fill(rpmAx,[0,t1,t1,0],[0,0,rpmCeil,rpmCeil],th.epochFill);
+                    set(hf_,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill,'HitTest','off');
+                    hf_=fill(rpmAx,[t2,mXL(2),mXL(2),t2],[0,0,rpmCeil,rpmCeil],th.epochFill);
+                    set(hf_,'FaceAlpha',th.epochAlpha,'EdgeColor',th.epochFill,'HitTest','off');
                 end
             end
         end
