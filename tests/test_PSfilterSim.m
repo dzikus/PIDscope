@@ -115,3 +115,77 @@
 %! [~, ifc] = min(abs(f - fc));
 %! ph_deg = angle(H(ifc)) * 180/pi;
 %! assert(ph_deg, -45, 3);
+
+%!test
+%! % Emuflight per-axis keys: dterm_lowpass_hz_roll, gyro_lowpass_hz_roll
+%! si = {
+%!   'Firmware revision', 'EmuFlight 0.4.1 HELIOSPRING';
+%!   'gyro_lowpass_type', '0';
+%!   'gyro_lowpass_hz_roll', '200';
+%!   'gyro_lowpass_hz_pitch', '200';
+%!   'gyro_lowpass_hz_yaw', '200';
+%!   'gyro_lowpass2_type', '0';
+%!   'gyro_lowpass2_hz_roll', '150';
+%!   'gyro_lowpass2_hz_pitch', '150';
+%!   'gyro_lowpass2_hz_yaw', '150';
+%!   'dterm_lowpass_hz_roll', '110';
+%!   'dterm_lowpass_hz_pitch', '110';
+%!   'dterm_lowpass_hz_yaw', '110';
+%!   'dterm_lowpass2_hz_roll', '185';
+%!   'dterm_lowpass2_hz_pitch', '185';
+%!   'dterm_lowpass2_hz_yaw', '185';
+%!   'dterm_notch_hz', '0';
+%!   'dterm_notch_cutoff', '0';
+%!   'gyro_notch_hz', '0,0';
+%!   'gyro_notch_cutoff', '0,0';
+%! };
+%! fp = PSparseFilterParams(si);
+%! assert(fp.gyro_lpf1_hz, 200);
+%! assert(fp.gyro_lpf2_hz, 150);
+%! assert(fp.dterm_lpf1_hz, 110);
+%! assert(fp.dterm_lpf2_hz, 185);
+
+%!test
+%! % PSparseFilterParams must return gyro loop rate from headers
+%! % looptime:125 = 125us = 8kHz gyro rate
+%! si = {
+%!   'looptime', '125';
+%!   'gyro_sync_denom', '1';
+%!   'pid_process_denom', '1';
+%!   'gyro_lowpass_type', '0';
+%!   'gyro_lowpass_hz', '300';
+%!   'dterm_lowpass_hz', '100';
+%!   'gyro_notch_hz', '0,0';
+%!   'gyro_notch_cutoff', '0,0';
+%!   'dterm_notch_hz', '0';
+%!   'dterm_notch_cutoff', '0';
+%! };
+%! fp = PSparseFilterParams(si);
+%! assert(fp.gyro_rate_hz, 8000, 'looptime:125 should give 8kHz gyro rate');
+
+%!test
+%! % looptime:250 with gyro_sync_denom:2 = 500us gyro, 1000us pid -> gyro 4kHz
+%! si = {
+%!   'looptime', '250';
+%!   'gyro_sync_denom', '2';
+%!   'pid_process_denom', '2';
+%!   'gyro_lowpass_hz', '300';
+%!   'gyro_notch_hz', '0,0';
+%!   'gyro_notch_cutoff', '0,0';
+%!   'dterm_notch_hz', '0';
+%!   'dterm_notch_cutoff', '0';
+%! };
+%! fp = PSparseFilterParams(si);
+%! assert(fp.gyro_rate_hz, 4000, 'looptime 250us / gyro_sync_denom 2 = 4kHz');
+
+%!test
+%! % No looptime header -> gyro_rate_hz should be 0 (use log rate as fallback)
+%! si = {
+%!   'gyro_lowpass_hz', '300';
+%!   'gyro_notch_hz', '0,0';
+%!   'gyro_notch_cutoff', '0,0';
+%!   'dterm_notch_hz', '0';
+%!   'dterm_notch_cutoff', '0';
+%! };
+%! fp = PSparseFilterParams(si);
+%! assert(fp.gyro_rate_hz, 0, 'no looptime header -> gyro_rate_hz = 0');

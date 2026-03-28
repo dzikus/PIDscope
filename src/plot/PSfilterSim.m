@@ -47,6 +47,40 @@ axNdelay = axes('Parent', fig, 'Units', 'normalized', 'Position', [colL(2) rowB2
 axNphase = axes('Parent', fig, 'Units', 'normalized', 'Position', [colL(2) rowB3 colW rowH]);
 axNstep  = axes('Parent', fig, 'Units', 'normalized', 'Position', [colL(2) rowB4 colW rowH]);
 
+% Style all plot axes once (dark theme)
+for ax_ = {axLmag, axLdelay, axLphase, axNmag, axNdelay, axNphase}
+    PSstyleAxes(ax_{1}, thm);
+    set(ax_{1}, 'XTickLabel', {});  % freq-domain rows: hide X ticks (shared axis)
+end
+for ax_ = {axLstep, axNstep}
+    PSstyleAxes(ax_{1}, thm);  % row4: keep X tick labels
+end
+
+% Pre-create pooled line objects: 16 per axes, reuse via setLine/hideLines
+POOL = 16;
+axAll8 = [axLmag axLdelay axLphase axLstep axNmag axNdelay axNphase axNstep];
+lnPool = cell(8, POOL);
+for ai = 1:8
+    hold(axAll8(ai), 'on');
+    for li = 1:POOL
+        lnPool{ai, li} = line(axAll8(ai), NaN, NaN, 'Visible', 'off', 'HitTest', 'off');
+    end
+end
+% text annotation pools: 8 per axes
+TPOOL = 8;
+txPool = cell(8, TPOOL);
+for ai = 1:8
+    for ti = 1:TPOOL
+        txPool{ai, ti} = text(NaN, NaN, '', 'Parent', axAll8(ai), 'Visible', 'off', ...
+            'FontSize', fontsz-1, 'HitTest', 'off');
+    end
+end
+% re-enable grid after hold+line creation (hold can reset grid in Octave)
+for ai = 1:8, grid(axAll8(ai), 'on'); end
+% axes indices for easy access
+AX_LMAG=1; AX_LDLY=2; AX_LPH=3; AX_LSTP=4;
+AX_NMAG=5; AX_NDLY=6; AX_NPH=7; AX_NSTP=8;
+
 % Gradient frequency bars
 axBarL = axes('Parent', fig, 'Units', 'normalized', 'Position', [colL(1) barY colW barH], 'Tag', 'gradbar');
 axBarN = axes('Parent', fig, 'Units', 'normalized', 'Position', [colL(2) barY colW barH], 'Tag', 'gradbar');
@@ -183,18 +217,19 @@ row = row - rh - gap;
 h.combinelpf = uicontrol(fig, 'Style', 'checkbox', 'String', 'combine lpf', 'Value', 0, ...
     'Units', 'normalized', 'Position', [x0 row halfW rh], ...
     'FontSize', fontsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'Callback', cb);
+row = row - rh - gap;
+ddW_ = cW * 0.48;
+h.row4mode = uicontrol(fig, 'Style', 'popupmenu', 'String', {'Step resp.','Impulse resp.','Signal Generator'}, 'Value', 1, ...
+    'Units', 'normalized', 'Position', [x0 row ddW_ rh], ...
+    'FontSize', fontsz, 'Callback', @(~,~) toggleStepRow());
 h.addnoise = uicontrol(fig, 'Style', 'checkbox', 'String', 'Add noise', 'Value', 0, ...
     'Units', 'normalized', 'Position', [x0+halfW row halfW rh], ...
     'FontSize', fontsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'Callback', cb);
 row = row - rh - gap;
-h.showstep = uicontrol(fig, 'Style', 'checkbox', 'String', 'Step resp.', 'Value', 1, ...
-    'Units', 'normalized', 'Position', [x0 row halfW rh], ...
-    'FontSize', fontsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, ...
-    'Callback', @(~,~) toggleStepRow());
 h.showboth = uicontrol(fig, 'Style', 'checkbox', 'String', 'Show Both', 'Value', 0, ...
-    'Units', 'normalized', 'Position', [x0+halfW row halfW rh], ...
+    'Units', 'normalized', 'Position', [x0 row halfW rh], ...
     'FontSize', fontsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, 'Callback', cb);
-row = row - rh - gap*2;
+row = row - rh - gap;
 h.autoupd = uicontrol(fig, 'Style', 'checkbox', 'String', 'Auto Update', 'Value', 1, ...
     'Units', 'normalized', 'Position', [x0 row halfW rh], ...
     'FontSize', fontsz, 'BackgroundColor', bgc, 'ForegroundColor', fgc, ...
@@ -208,6 +243,12 @@ h.totalDelay = uicontrol(fig, 'Style', 'text', 'String', '', ...
     'Units', 'normalized', 'Position', [x0 row cW rh], ...
     'FontSize', fontsz, 'FontWeight', 'bold', ...
     'BackgroundColor', bgc, 'ForegroundColor', thm.btnDash1, 'HorizontalAlignment', 'left');
+row = row - rh - gap*2;
+h.copyCLI = uicontrol(fig, 'Style', 'pushbutton', 'String', 'Copy CLI', ...
+    'Units', 'normalized', 'Position', [x0+halfW*.3 row halfW*1.3 rh+.004], ...
+    'FontSize', fontsz, 'FontWeight', 'bold', ...
+    'BackgroundColor', thm.btnBg, 'ForegroundColor', thm.textAccent, ...
+    'Callback', @(~,~) copyCLI());
 
 doUpdate();
 
@@ -226,7 +267,7 @@ doUpdate();
     end
 
     function applyLayout()
-        sStep = get(h.showstep, 'Value');
+        sStep = get(h.row4mode, 'Value') > 0;  % always show row 4
         sBoth = get(h.showboth, 'Value');
         offscr = [-2 -2 .01 .01];
 
@@ -259,10 +300,10 @@ doUpdate();
         end
 
         if sBoth
-            set(axNmag,   'Position', offscr); cla(axNmag);
-            set(axNdelay, 'Position', offscr); cla(axNdelay);
-            set(axNphase, 'Position', offscr); cla(axNphase);
-            set(axNstep,  'Position', offscr); cla(axNstep);
+            set(axNmag,   'Position', offscr);
+            set(axNdelay, 'Position', offscr);
+            set(axNphase, 'Position', offscr);
+            set(axNstep,  'Position', offscr);
             set(hTitleN, 'Visible', 'off');
             set(axBarN, 'Position', offscr);
             set(axBarL, 'Position', [plotL barY plotR-plotL barH]);
@@ -322,10 +363,28 @@ doUpdate();
         combineLPF = get(h.combinelpf, 'Value');
         addNoise = get(h.addnoise, 'Value');
         showBoth = get(h.showboth, 'Value');
-        showStep = get(h.showstep, 'Value');
+        row4mode = get(h.row4mode, 'Value');  % 1=step, 2=impulse, 3=signal gen
         sigHzLo = readEdit(h.sig_start);
         sigHzHi = readEdit(h.sig_end);
         sigDur = max(0.1, readEditF(h.sig_dur));
+
+        % partial update: skip unchanged column
+        curAll = [glpf1t glpf1f glpf2t glpf2f dlpf1t dlpf1f dlpf2t dlpf2f ...
+                  gn1f gn1c gn2f gn2c dnf dnc rpmBase rpmNharm rpmQ nMotors ...
+                  usedB useLog combineLPF addNoise showBoth row4mode sigHzLo sigHzHi round(sigDur*100)];
+        curLPF = curAll(1:8); curNotch = curAll(9:18);
+        prev = getappdata(fig, 'prevAll');
+        doLPF = true; doNotch = true;
+        if ~isempty(prev) && numel(prev) == numel(curAll)
+            lpfChanged = ~isequal(curLPF, prev(1:8));
+            notchChanged = ~isequal(curNotch, prev(9:18));
+            optsChanged = ~isequal(curAll(19:end), prev(19:end));
+            if ~optsChanged && ~showBoth
+                if lpfChanged && ~notchChanged, doNotch = false; end
+                if notchChanged && ~lpfChanged, doLPF = false; end
+            end
+        end
+        setappdata(fig, 'prevAll', curAll);
 
         types = {'pt1', 'biquad', 'pt2', 'pt3'};
         Nfft = 4096;
@@ -385,20 +444,44 @@ doUpdate();
         set(h.totalDelay, 'String', sprintf('Total Delay: %.3fms (LPF %.3f + Notch %.3f)', ...
             delayL + delayN, delayL, delayN));
 
-        % Step responses
-        lpfStepMs = 4;
-        stepLenL = round(Fs * lpfStepMs / 1000);
-        stepInL = ones(stepLenL, 1);
-        tStepL = (0:stepLenL-1)' / Fs * 1000;
+        % Row 4 input signals
+        if row4mode == 3
+            % Signal Generator: chirp
+            sigLen = round(Fs * sigDur);
+            tSigL = (0:sigLen-1)' / Fs;
+            sigInL = localChirp(tSigL, sigHzLo, sigDur, sigHzHi);
+            tSigN = tSigL; sigInN = sigInL;
+            r4labelL = 'Duration (sec)'; r4ylabelL = 'Amplitude';
+            r4labelN = 'Duration (sec)'; r4ylabelN = 'Amplitude';
+        elseif row4mode == 2
+            % Impulse response
+            lpfStepMs = 4;
+            stepLenL = round(Fs * lpfStepMs / 1000);
+            sigInL = zeros(stepLenL, 1); sigInL(1) = 1;
+            tSigL = (0:stepLenL-1)' / Fs * 1000;
+            notchStepMs = 100;
+            stepLenN = round(Fs * notchStepMs / 1000);
+            sigInN = zeros(stepLenN, 1); sigInN(1) = 1;
+            tSigN = (0:stepLenN-1)' / Fs * 1000;
+            r4labelL = 'Time (ms)'; r4ylabelL = 'Impulse Resp.';
+            r4labelN = 'Time (ms)'; r4ylabelN = 'Impulse Resp.';
+        else
+            % Step response
+            lpfStepMs = 4;
+            stepLenL = round(Fs * lpfStepMs / 1000);
+            sigInL = ones(stepLenL, 1);
+            tSigL = (0:stepLenL-1)' / Fs * 1000;
+            notchStepMs = 100;
+            stepLenN = round(Fs * notchStepMs / 1000);
+            sigInN = ones(stepLenN, 1);
+            tSigN = (0:stepLenN-1)' / Fs * 1000;
+            r4labelL = 'Time (ms)'; r4ylabelL = 'Step Resp.';
+            r4labelN = 'Time (ms)'; r4ylabelN = 'Step Resp.';
+        end
 
-        notchStepMs = 100;
-        stepLenN = round(Fs * notchStepMs / 1000);
-        stepInN = ones(stepLenN, 1);
-        tStepN = (0:stepLenN-1)' / Fs * 1000;
-
-        sL_g = applyLPF(applyLPF(stepInL, glpf2t, glpf2f, Fs), glpf1t, glpf1f, Fs);
-        sL_d = applyLPF(applyLPF(stepInL, dlpf2t, dlpf2f, Fs), dlpf1t, dlpf1f, Fs);
-        sN_g = applyNotch(applyNotch(stepInN, gn2f, gn2c, Fs), gn1f, gn1c, Fs);
+        sL_g = applyLPF(applyLPF(sigInL, glpf2t, glpf2f, Fs), glpf1t, glpf1f, Fs);
+        sL_d = applyLPF(applyLPF(sigInL, dlpf2t, dlpf2f, Fs), dlpf1t, dlpf1f, Fs);
+        sN_g = applyNotch(applyNotch(sigInN, gn2f, gn2c, Fs), gn1f, gn1c, Fs);
         for ri = 1:rpmNharm
             fc_rpm = rpmBase * ri;
             if fc_rpm > 0 && fc_rpm < Fs/2
@@ -407,29 +490,27 @@ doUpdate();
                 end
             end
         end
-        sN_d = applyNotch(stepInN, dnf, dnc, Fs);
-        % Per-RPM-harmonic steps (cascaded nMotors)
+        sN_d = applyNotch(sigInN, dnf, dnc, Fs);
         sN_rpm = cell(rpmNharm, 1);
         for ri = 1:rpmNharm
             fc_rpm = rpmBase * ri;
             if fc_rpm > 0 && fc_rpm < Fs/2
-                tmp = stepInN;
+                tmp = sigInN;
                 for mi = 1:nMotors, tmp = applyNotch_Q(tmp, fc_rpm, rpmQ, Fs); end
                 sN_rpm{ri} = tmp;
             else
-                sN_rpm{ri} = stepInN;
+                sN_rpm{ri} = sigInN;
             end
         end
-        sN_gn1 = applyNotch(stepInN, gn1f, gn1c, Fs);
-        sN_gn2 = applyNotch(stepInN, gn2f, gn2c, Fs);
+        sN_gn1 = applyNotch(sigInN, gn1f, gn1c, Fs);
+        sN_gn2 = applyNotch(sigInN, gn2f, gn2c, Fs);
 
-        % Noisy step responses (for "Add noise" option)
         if addNoise
             noiseAmp = 0.03;
-            noisyL = stepInL + randn(stepLenL, 1) * noiseAmp;
+            noisyL = sigInL + randn(numel(sigInL), 1) * noiseAmp;
             nsL_g = applyLPF(applyLPF(noisyL, glpf2t, glpf2f, Fs), glpf1t, glpf1f, Fs);
             nsL_d = applyLPF(applyLPF(noisyL, dlpf2t, dlpf2f, Fs), dlpf1t, dlpf1f, Fs);
-            noisyN = stepInN + randn(stepLenN, 1) * noiseAmp;
+            noisyN = sigInN + randn(numel(sigInN), 1) * noiseAmp;
             nsN_g = applyNotch(applyNotch(noisyN, gn2f, gn2c, Fs), gn1f, gn1c, Fs);
             for ri = 1:rpmNharm
                 fc_rpm = rpmBase * ri;
@@ -450,6 +531,7 @@ doUpdate();
         %% GRADIENT FREQUENCY BARS
         drawGradientBar(axBarL, fMax, [.2 .7 .8; .3 .9 .5], ...
             {glpf1f, glpf2f, dlpf1f, dlpf2f}, {colG*0.7, colG, colD*0.7, colD}, thm);
+        set(axBarL, 'ButtonDownFcn', @(~,~) barClick(axBarL, {h.glpf1_hz, h.glpf2_hz, h.dlpf1_hz, h.dlpf2_hz}, fMax));
         notchFreqs = {}; notchCols = {};
         for ri = 1:rpmNharm
             ci = min(ri, numel(rpmCols));
@@ -460,6 +542,7 @@ doUpdate();
         if gn2f > 0, notchFreqs{end+1} = gn2f; notchCols{end+1} = colStaticN*0.85; end
         if dnf > 0, notchFreqs{end+1} = dnf; notchCols{end+1} = colD; end
         drawGradientBar(axBarN, fMax, [.8 .3 .2; .9 .7 .2], notchFreqs, notchCols, thm);
+        set(axBarN, 'ButtonDownFcn', @(~,~) barClick(axBarN, {h.gn1_hz, h.gn2_hz, h.dn_hz}, fMax));
 
         %% TEST SIGNAL PSD (if sigHzHi > sigHzLo)
         if sigHzHi > sigHzLo && sigDur > 0
@@ -491,10 +574,10 @@ doUpdate();
         ph_g2 = unwrap(angle(H_lpf2)) * 180/pi;
         ph_d1 = unwrap(angle(H_dlpf1)) * 180/pi;
         ph_d2 = unwrap(angle(H_dlpf2)) * 180/pi;
-        sL_g1 = applyLPF(stepInL, glpf1t, glpf1f, Fs);
-        sL_g2 = applyLPF(stepInL, glpf2t, glpf2f, Fs);
-        sL_d1 = applyLPF(stepInL, dlpf1t, dlpf1f, Fs);
-        sL_d2 = applyLPF(stepInL, dlpf2t, dlpf2f, Fs);
+        sL_g1 = applyLPF(sigInL, glpf1t, glpf1f, Fs);
+        sL_g2 = applyLPF(sigInL, glpf2t, glpf2f, Fs);
+        sL_d1 = applyLPF(sigInL, dlpf1t, dlpf1f, Fs);
+        sL_d2 = applyLPF(sigInL, dlpf2t, dlpf2f, Fs);
 
         g1on = glpf1t > 0 && glpf1f > 0;
         g2on = glpf2t > 0 && glpf2f > 0;
@@ -503,152 +586,193 @@ doUpdate();
         colNoise = [.9 .25 .25];
 
         applyLayout();
+        fF = fVec(fIdx);
 
-        %% LOWPASS COLUMN (+ notch overlay when showBoth)
+        if doLPF  % --- LPF COLUMN ---
 
-        cla(axLmag); hold(axLmag, 'on');
+        %% LOWPASS MAGNITUDE (pre-created lines)
+        li = 1;
         if combineLPF
-            plotFn(axLmag, fVec(fIdx), magY(H_gyroLPF(fIdx), usedB), 'Color', colG, 'LineWidth', 1.5);
-            plotFn(axLmag, fVec(fIdx), magY(H_dtermLPF(fIdx), usedB), 'Color', colD, 'LineWidth', 1.2);
+            li = setLine(AX_LMAG, li, fF, magY(H_gyroLPF(fIdx), usedB), colG, 1.5);
+            li = setLine(AX_LMAG, li, fF, magY(H_dtermLPF(fIdx), usedB), colD, 1.2);
         else
-            if g1on, plotFn(axLmag, fVec(fIdx), magY(H_lpf1(fIdx), usedB), 'Color', colG, 'LineWidth', 1.2); end
-            if g2on, plotFn(axLmag, fVec(fIdx), magY(H_lpf2(fIdx), usedB), 'Color', colG, 'LineWidth', 1.2, 'LineStyle', '--'); end
-            if d1on, plotFn(axLmag, fVec(fIdx), magY(H_dlpf1(fIdx), usedB), 'Color', colD, 'LineWidth', 1.0); end
-            if d2on, plotFn(axLmag, fVec(fIdx), magY(H_dlpf2(fIdx), usedB), 'Color', colD, 'LineWidth', 1.0, 'LineStyle', '--'); end
+            if g1on, li = setLine(AX_LMAG, li, fF, magY(H_lpf1(fIdx), usedB), colG, 1.2); end
+            if g2on, li = setLine(AX_LMAG, li, fF, magY(H_lpf2(fIdx), usedB), colG, 1.2, '--'); end
+            if d1on, li = setLine(AX_LMAG, li, fF, magY(H_dlpf1(fIdx), usedB), colD, 1.0); end
+            if d2on, li = setLine(AX_LMAG, li, fF, magY(H_dlpf2(fIdx), usedB), colD, 1.0, '--'); end
         end
         if showBoth
-            plotFn(axLmag, fVec(fIdx), magY(H_gyroN(fIdx), usedB), 'Color', colCombN, 'LineWidth', 1.2);
+            li = setLine(AX_LMAG, li, fF, magY(H_gyroN(fIdx), usedB), colCombN, 1.2);
             for ri = 1:rpmNharm
                 ci = min(ri, numel(rpmCols));
-                plotFn(axLmag, fVec(fIdx), magY(H_rpm{ri}(fIdx), usedB), 'Color', rpmCols{ci}, 'LineWidth', 0.7);
+                li = setLine(AX_LMAG, li, fF, magY(H_rpm{ri}(fIdx), usedB), rpmCols{ci}, 0.7);
             end
         end
         fLo = xlimF(useLog, fMax);
+        refY = 0.707; if usedB, refY = -3; end
+        li = setLine(AX_LMAG, li, [fLo(1) fMax], [refY refY], thm.refLine3dB, 0.5, ':');
+        % cutoff vertical lines (gyro + dterm)
+        magYL = [0 1.1]; if usedB, magYL = [-60 3]; end
+        if g1on && glpf1f > 0, li = setLine(AX_LMAG, li, [glpf1f glpf1f], magYL, colG*0.7, 0.5, '--'); end
+        if g2on && glpf2f > 0, li = setLine(AX_LMAG, li, [glpf2f glpf2f], magYL, colG, 0.5, '--'); end
+        if d1on && dlpf1f > 0, li = setLine(AX_LMAG, li, [dlpf1f dlpf1f], magYL, colD*0.7, 0.5, '--'); end
+        if d2on && dlpf2f > 0, li = setLine(AX_LMAG, li, [dlpf2f dlpf2f], magYL, colD, 0.5, '--'); end
+        hideRest(AX_LMAG, li);
         if usedB
-            line(axLmag, [fLo(1) fMax], [-3 -3], 'Color', thm.refLine3dB, 'LineStyle', ':', 'LineWidth', 0.5);
-        else
-            line(axLmag, [fLo(1) fMax], [0.707 0.707], 'Color', thm.refLine3dB, 'LineStyle', ':', 'LineWidth', 0.5);
-        end
-        hold(axLmag, 'off');
-        PSstyleAxes(axLmag, thm);
-        if usedB
-            set(axLmag, 'XLim', xlimF(useLog, fMax), 'YLim', [-60 3], 'XTickLabel', {});
+            set(axLmag, 'XLim', fLo, 'YLim', [-60 3], 'XTickLabel', {});
             set(get(axLmag, 'YLabel'), 'String', 'Magnitude (dB)');
         else
-            set(axLmag, 'XLim', xlimF(useLog, fMax), 'YLim', [0 1.1], 'XTickLabel', {});
+            set(axLmag, 'XLim', fLo, 'YLim', [0 1.1], 'XTickLabel', {});
             set(get(axLmag, 'YLabel'), 'String', 'Magnitude (abs)');
         end
-        annotateLPF(axLmag, glpf1t, glpf1f, glpf2t, glpf2f, types, colG, fontsz, usedB);
+        % annotations (text + cutoff lines via txPool)
+        ti = 1;
+        names_ = {'off', 'pt1', 'biquad', 'pt2', 'pt3'};
+        if usedB, ay = -3; ayd = -6; else ay = 1.05; ayd = -0.08; end
+        if glpf1t > 0 && glpf1f > 0
+            ti = setTxt(AX_LMAG, ti, glpf1f+10, ay, sprintf('%s: %dHz', names_{glpf1t+1}, glpf1f), colG*0.7);
+            ay = ay + ayd;
+        end
+        if glpf2t > 0 && glpf2f > 0
+            ti = setTxt(AX_LMAG, ti, glpf2f+10, ay, sprintf('%s: %dHz', names_{glpf2t+1}, glpf2f), colG);
+            ay = ay + ayd;
+        end
+        if dlpf1t > 0 && dlpf1f > 0
+            ti = setTxt(AX_LMAG, ti, dlpf1f+10, ay, sprintf('D %s: %dHz', names_{dlpf1t+1}, dlpf1f), colD*0.7);
+            ay = ay + ayd;
+        end
+        if dlpf2t > 0 && dlpf2f > 0
+            ti = setTxt(AX_LMAG, ti, dlpf2f+10, ay, sprintf('D %s: %dHz', names_{dlpf2t+1}, dlpf2f), colD);
+        end
+        hideTxt(AX_LMAG, ti);
 
-        cla(axLdelay); hold(axLdelay, 'on');
+        %% LOWPASS DELAY (pre-created lines)
+        li = 1;
         if combineLPF
-            plotFn(axLdelay, fVec(fIdx), gd_gL(fIdx), 'Color', colG, 'LineWidth', 1.5);
-            plotFn(axLdelay, fVec(fIdx), gd_dL(fIdx), 'Color', colD, 'LineWidth', 1.2);
-        else
-            if g1on, plotFn(axLdelay, fVec(fIdx), gd_g1(fIdx), 'Color', colG, 'LineWidth', 1.2); end
-            if g2on, plotFn(axLdelay, fVec(fIdx), gd_g2(fIdx), 'Color', colG, 'LineWidth', 1.2, 'LineStyle', '--'); end
-            if d1on, plotFn(axLdelay, fVec(fIdx), gd_d1(fIdx), 'Color', colD, 'LineWidth', 1.0); end
-            if d2on, plotFn(axLdelay, fVec(fIdx), gd_d2(fIdx), 'Color', colD, 'LineWidth', 1.0, 'LineStyle', '--'); end
-        end
-        if showBoth
-            plotFn(axLdelay, fVec(fIdx), gd_gN(fIdx), 'Color', colCombN, 'LineWidth', 1.2);
-        end
-        hold(axLdelay, 'off');
-        PSstyleAxes(axLdelay, thm); set(axLdelay, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
-        if combineLPF
+            li = setLine(AX_LDLY, li, fF, gd_gL(fIdx), colG, 1.5);
+            li = setLine(AX_LDLY, li, fF, gd_dL(fIdx), colD, 1.2);
             gdMax = max([max(gd_gL(fIdx)) max(gd_dL(fIdx)) 0.3]) * 1.3;
         else
             allGdL = [0.3];
-            if g1on, allGdL(end+1) = max(gd_g1(fIdx)); end
-            if g2on, allGdL(end+1) = max(gd_g2(fIdx)); end
-            if d1on, allGdL(end+1) = max(gd_d1(fIdx)); end
-            if d2on, allGdL(end+1) = max(gd_d2(fIdx)); end
+            if g1on, li = setLine(AX_LDLY, li, fF, gd_g1(fIdx), colG, 1.2); allGdL(end+1) = max(gd_g1(fIdx)); end
+            if g2on, li = setLine(AX_LDLY, li, fF, gd_g2(fIdx), colG, 1.2, '--'); allGdL(end+1) = max(gd_g2(fIdx)); end
+            if d1on, li = setLine(AX_LDLY, li, fF, gd_d1(fIdx), colD, 1.0); allGdL(end+1) = max(gd_d1(fIdx)); end
+            if d2on, li = setLine(AX_LDLY, li, fF, gd_d2(fIdx), colD, 1.0, '--'); allGdL(end+1) = max(gd_d2(fIdx)); end
             gdMax = max(allGdL) * 1.3;
         end
+        if showBoth
+            li = setLine(AX_LDLY, li, fF, gd_gN(fIdx), colCombN, 1.2);
+        end
+        % cutoff lines (gyro + dterm)
+        if g1on && glpf1f > 0, li = setLine(AX_LDLY, li, [glpf1f glpf1f], [0 gdMax], colG*0.7, 0.5, '--'); end
+        if g2on && glpf2f > 0, li = setLine(AX_LDLY, li, [glpf2f glpf2f], [0 gdMax], colG, 0.5, '--'); end
+        if d1on && dlpf1f > 0, li = setLine(AX_LDLY, li, [dlpf1f dlpf1f], [0 gdMax], colD*0.7, 0.5, '--'); end
+        if d2on && dlpf2f > 0, li = setLine(AX_LDLY, li, [dlpf2f dlpf2f], [0 gdMax], colD, 0.5, '--'); end
+        hideRest(AX_LDLY, li);
+        set(axLdelay, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
         if isfinite(gdMax) && gdMax > 0, set(axLdelay, 'YLim', [0 gdMax]); end
         set(get(axLdelay, 'YLabel'), 'String', 'Filter Delay (ms)');
-        drawCutoffLines(axLdelay, g1on, glpf1f, g2on, glpf2f, colG);
-        yTxtL = gdMax * 0.92;
-        yTxtStp = gdMax * 0.17;
+        % delay annotations
+        ti = 1;
+        yTxtL = gdMax * 0.92; yTxtStp = gdMax * 0.17;
         if combineLPF
-            text(fMax*0.02, yTxtL, sprintf('gyro lpf: %.5fms', gd_gL(2)), 'Parent', axLdelay, ...
-                'Color', colG, 'FontSize', fontsz-1);
-            text(fMax*0.02, yTxtL - yTxtStp, sprintf('dterm lpf: %.5fms', gd_dL(2)), 'Parent', axLdelay, ...
-                'Color', colD, 'FontSize', fontsz-1);
+            ti = setTxt(AX_LDLY, ti, fMax*0.02, yTxtL, sprintf('gyro lpf: %.5fms', gd_gL(2)), colG);
+            ti = setTxt(AX_LDLY, ti, fMax*0.02, yTxtL-yTxtStp, sprintf('dterm lpf: %.5fms', gd_dL(2)), colD);
         else
-            if g1on, text(fMax*0.02, yTxtL, sprintf('gyro lpf1: %.5fms', gd_g1(2)), 'Parent', axLdelay, 'Color', colG*0.7, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
-            if g2on, text(fMax*0.02, yTxtL, sprintf('gyro lpf2: %.5fms', gd_g2(2)), 'Parent', axLdelay, 'Color', colG, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
-            if d1on, text(fMax*0.02, yTxtL, sprintf('dterm lpf1: %.5fms', gd_d1(2)), 'Parent', axLdelay, 'Color', colD*0.7, 'FontSize', fontsz-1); yTxtL = yTxtL - yTxtStp; end
-            if d2on, text(fMax*0.02, yTxtL, sprintf('dterm lpf2: %.5fms', gd_d2(2)), 'Parent', axLdelay, 'Color', colD, 'FontSize', fontsz-1); end
+            if g1on, ti = setTxt(AX_LDLY, ti, fMax*0.02, yTxtL, sprintf('gyro lpf1: %.5fms', gd_g1(2)), colG*0.7); yTxtL=yTxtL-yTxtStp; end
+            if g2on, ti = setTxt(AX_LDLY, ti, fMax*0.02, yTxtL, sprintf('gyro lpf2: %.5fms', gd_g2(2)), colG); yTxtL=yTxtL-yTxtStp; end
+            if d1on, ti = setTxt(AX_LDLY, ti, fMax*0.02, yTxtL, sprintf('dterm lpf1: %.5fms', gd_d1(2)), colD*0.7); yTxtL=yTxtL-yTxtStp; end
+            if d2on, ti = setTxt(AX_LDLY, ti, fMax*0.02, yTxtL, sprintf('dterm lpf2: %.5fms', gd_d2(2)), colD); end
         end
+        hideTxt(AX_LDLY, ti);
 
-        cla(axLphase); hold(axLphase, 'on');
+        %% LOWPASS PHASE (pre-created lines)
+        li = 1;
         if combineLPF
             ph_gL = unwrap(angle(H_gyroLPF)) * 180/pi;
             ph_dL = unwrap(angle(H_dtermLPF)) * 180/pi;
-            plotFn(axLphase, fVec(fIdx), ph_gL(fIdx), 'Color', colG, 'LineWidth', 1.5);
-            plotFn(axLphase, fVec(fIdx), ph_dL(fIdx), 'Color', colD, 'LineWidth', 1.2);
+            li = setLine(AX_LPH, li, fF, ph_gL(fIdx), colG, 1.5);
+            li = setLine(AX_LPH, li, fF, ph_dL(fIdx), colD, 1.2);
         else
-            if g1on, plotFn(axLphase, fVec(fIdx), ph_g1(fIdx), 'Color', colG, 'LineWidth', 1.2); end
-            if g2on, plotFn(axLphase, fVec(fIdx), ph_g2(fIdx), 'Color', colG, 'LineWidth', 1.2, 'LineStyle', '--'); end
-            if d1on, plotFn(axLphase, fVec(fIdx), ph_d1(fIdx), 'Color', colD, 'LineWidth', 1.0); end
-            if d2on, plotFn(axLphase, fVec(fIdx), ph_d2(fIdx), 'Color', colD, 'LineWidth', 1.0, 'LineStyle', '--'); end
+            if g1on, li = setLine(AX_LPH, li, fF, ph_g1(fIdx), colG, 1.2); end
+            if g2on, li = setLine(AX_LPH, li, fF, ph_g2(fIdx), colG, 1.2, '--'); end
+            if d1on, li = setLine(AX_LPH, li, fF, ph_d1(fIdx), colD, 1.0); end
+            if d2on, li = setLine(AX_LPH, li, fF, ph_d2(fIdx), colD, 1.0, '--'); end
         end
         if showBoth
-            ph_gN = smooth(angle(H_gyroN1) * 180/pi, 9, 'moving');
-            plotFn(axLphase, fVec(fIdx), ph_gN(fIdx), 'Color', colCombN, 'LineWidth', 1.2);
+            ph_gN_ = smooth(angle(H_gyroN1) * 180/pi, 9, 'moving');
+            li = setLine(AX_LPH, li, fF, ph_gN_(fIdx), colCombN, 1.2);
         end
-        hold(axLphase, 'off');
-        PSstyleAxes(axLphase, thm); set(axLphase, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
+        if g1on && glpf1f > 0, li = setLine(AX_LPH, li, [glpf1f glpf1f], [-200 0], colG*0.7, 0.5, '--'); end
+        if g2on && glpf2f > 0, li = setLine(AX_LPH, li, [glpf2f glpf2f], [-200 0], colG, 0.5, '--'); end
+        if d1on && dlpf1f > 0, li = setLine(AX_LPH, li, [dlpf1f dlpf1f], [-200 0], colD*0.7, 0.5, '--'); end
+        if d2on && dlpf2f > 0, li = setLine(AX_LPH, li, [dlpf2f dlpf2f], [-200 0], colD, 0.5, '--'); end
+        hideRest(AX_LPH, li);
+        set(axLphase, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
         set(get(axLphase, 'YLabel'), 'String', 'Phase Delay (deg)');
-        drawCutoffLines(axLphase, g1on, glpf1f, g2on, glpf2f, colG);
+        hideTxt(AX_LPH, 1);
 
-        if showStep
-            cla(axLstep);
-            line(axLstep, [tStepL(1) tStepL(end)], [1 1], 'Color', colRef, 'LineWidth', 0.5, 'LineStyle', '--'); hold(axLstep, 'on');
+        %% LOWPASS ROW 4 (pre-created lines)
+        li = 1;
+        if row4mode == 3
+            li = setLine(AX_LSTP, li, tSigL, sigInL, [.5 .5 .5], 0.6);
+            li = setLine(AX_LSTP, li, tSigL, sL_g, [.95 .2 .2], 1.2);
+            hideRest(AX_LSTP, li);
+            set(axLstep, 'XLim', [0 sigDur], 'YLim', [-1.1 1.1]);
+        else
+            if row4mode == 1
+                li = setLine(AX_LSTP, li, [tSigL(1) tSigL(end)], [1 1], colRef, 0.5, '--');
+            end
             if combineLPF
-                plot(axLstep, tStepL, sL_g, 'Color', colG, 'LineWidth', 1.5);
-                plot(axLstep, tStepL, sL_d, 'Color', colD, 'LineWidth', 1.2);
+                li = setLine(AX_LSTP, li, tSigL, sL_g, colG, 1.5);
+                li = setLine(AX_LSTP, li, tSigL, sL_d, colD, 1.2);
                 if addNoise
-                    plot(axLstep, tStepL, nsL_g, 'Color', colNoise, 'LineWidth', 0.8);
-                    plot(axLstep, tStepL, nsL_d, 'Color', colNoise*0.7, 'LineWidth', 0.7);
+                    li = setLine(AX_LSTP, li, tSigL, nsL_g, colNoise, 0.8);
+                    li = setLine(AX_LSTP, li, tSigL, nsL_d, colNoise*0.7, 0.7);
                 end
             else
-                if g1on, plot(axLstep, tStepL, sL_g1, 'Color', colG, 'LineWidth', 1.2); end
-                if g2on, plot(axLstep, tStepL, sL_g2, 'Color', colG, 'LineWidth', 1.2, 'LineStyle', '--'); end
-                if d1on, plot(axLstep, tStepL, sL_d1, 'Color', colD, 'LineWidth', 1.0); end
-                if d2on, plot(axLstep, tStepL, sL_d2, 'Color', colD, 'LineWidth', 1.0, 'LineStyle', '--'); end
+                if g1on, li = setLine(AX_LSTP, li, tSigL, sL_g1, colG, 1.2); end
+                if g2on, li = setLine(AX_LSTP, li, tSigL, sL_g2, colG, 1.2, '--'); end
+                if d1on, li = setLine(AX_LSTP, li, tSigL, sL_d1, colD, 1.0); end
+                if d2on, li = setLine(AX_LSTP, li, tSigL, sL_d2, colD, 1.0, '--'); end
                 if addNoise
-                    plot(axLstep, tStepL, nsL_g, 'Color', colNoise, 'LineWidth', 0.8);
-                    plot(axLstep, tStepL, nsL_d, 'Color', colNoise*0.7, 'LineWidth', 0.7);
+                    li = setLine(AX_LSTP, li, tSigL, nsL_g, colNoise, 0.8);
+                    li = setLine(AX_LSTP, li, tSigL, nsL_d, colNoise*0.7, 0.7);
                 end
             end
-            hold(axLstep, 'off');
-            PSstyleAxes(axLstep, thm); set(axLstep, 'XLim', [0 lpfStepMs], 'YLim', [-0.05 1.15]);
-            xlabel(axLstep, 'Time (ms)', 'Color', thm.textPrimary);
-            set(get(axLstep, 'YLabel'), 'String', 'Step Resp.');
+            hideRest(AX_LSTP, li);
+            if row4mode == 1
+                set(axLstep, 'XLim', [tSigL(1) tSigL(end)], 'YLim', [-0.05 1.15]);
+            else
+                set(axLstep, 'XLim', [tSigL(1) tSigL(end)]);
+            end
         end
+        xlabel(axLstep, r4labelL, 'Color', thm.textPrimary);
+        set(get(axLstep, 'YLabel'), 'String', r4ylabelL);
+        hideTxt(AX_LSTP, 1);
+        end  % if doLPF
 
         %% NOTCH COLUMN (skip when showBoth)
 
-        if ~showBoth
-            cla(axNmag); hold(axNmag, 'on');
+        if doNotch && ~showBoth
+            gridC = thm.gridColor;
+
+            %% NOTCH MAGNITUDE
+            li = 1;
             for ri = 1:rpmNharm
                 ci = min(ri, numel(rpmCols));
-                plotFn(axNmag, fVec(fIdx), magY(H_rpm{ri}(fIdx), usedB), 'Color', rpmCols{ci}, 'LineWidth', 0.9);
+                li = setLine(AX_NMAG, li, fF, magY(H_rpm{ri}(fIdx), usedB), rpmCols{ci}, 0.9);
             end
-            if gn1f > 0
-                plotFn(axNmag, fVec(fIdx), magY(H_gn1(fIdx), usedB), 'Color', colStaticN, 'LineWidth', 0.8);
-            end
-            if gn2f > 0
-                plotFn(axNmag, fVec(fIdx), magY(H_gn2(fIdx), usedB), 'Color', colStaticN*0.85, 'LineWidth', 0.8, 'LineStyle', '--');
-            end
-            plotFn(axNmag, fVec(fIdx), magY(H_gyroN(fIdx), usedB), 'Color', colCombN, 'LineWidth', 1.5);
-            if dnf > 0
-                plotFn(axNmag, fVec(fIdx), magY(H_dtermN(fIdx), usedB), 'Color', colD, 'LineWidth', 1.2);
-            end
-            hold(axNmag, 'off');
-            PSstyleAxes(axNmag, thm);
+            if gn1f > 0, li = setLine(AX_NMAG, li, fF, magY(H_gn1(fIdx), usedB), colStaticN, 0.8); end
+            if gn2f > 0, li = setLine(AX_NMAG, li, fF, magY(H_gn2(fIdx), usedB), colStaticN*0.85, 0.8, '--'); end
+            li = setLine(AX_NMAG, li, fF, magY(H_gyroN(fIdx), usedB), colCombN, 1.5);
+            if dnf > 0, li = setLine(AX_NMAG, li, fF, magY(H_dtermN(fIdx), usedB), colD, 1.2); end
+            % notch vertical lines
+            for ri = 1:rpmNharm, fc=rpmBase*ri; if fc>0, li=setLine(AX_NMAG,li,[fc fc],[0 1.1],gridC,0.5,':'); end; end
+            if gn1f>0, li=setLine(AX_NMAG,li,[gn1f gn1f],[0 1.1],colStaticN,0.5,'--'); end
+            if gn2f>0, li=setLine(AX_NMAG,li,[gn2f gn2f],[0 1.1],colStaticN*0.85,0.5,'--'); end
+            if dnf>0, li=setLine(AX_NMAG,li,[dnf dnf],[0 1.1],colD,0.5,'--'); end
+            hideRest(AX_NMAG, li);
             if usedB
                 set(axNmag, 'XLim', xlimF(useLog, fMax), 'YLim', [-40 3], 'XTickLabel', {});
                 set(get(axNmag, 'YLabel'), 'String', 'Magnitude (dB)');
@@ -656,110 +780,119 @@ doUpdate();
                 set(axNmag, 'XLim', xlimF(useLog, fMax), 'YLim', [0 1.1], 'XTickLabel', {});
                 set(get(axNmag, 'YLabel'), 'String', 'Magnitude (abs)');
             end
-            annotateNotch(axNmag, gn1f, gn2f, dnf, rpmBase, rpmNharm, rpmCols, colStaticN, colCombN, colD, fontsz, usedB);
+            % annotations
+            ti = 1;
+            if usedB, ay0=-5; ayd=-5; else ay0=0.85; ayd=-0.07; end
+            ay = ay0;
+            for ri = 1:rpmNharm
+                ci = min(ri, numel(rpmCols)); fc=rpmBase*ri;
+                ti = setTxt(AX_NMAG, ti, fc+10, ay, sprintf('RPM: %dHz', fc), rpmCols{ci}); ay=ay+ayd;
+            end
+            if gn1f>0, ti=setTxt(AX_NMAG,ti,gn1f+10,ay,sprintf('N1: %dHz',gn1f),colStaticN); ay=ay+ayd; end
+            if gn2f>0, ti=setTxt(AX_NMAG,ti,gn2f+10,ay,sprintf('N2: %dHz',gn2f),colStaticN*0.85); ay=ay+ayd; end
+            if dnf>0, ti=setTxt(AX_NMAG,ti,dnf+10,ay,sprintf('D: %dHz',dnf),colD); end
+            hideTxt(AX_NMAG, ti);
 
-            cla(axNdelay); hold(axNdelay, 'on');
-            % per-single-motor delay (not cascaded nMotors)
+            %% NOTCH DELAY
+            li = 1;
             rpmGd1 = cell(rpmNharm, 1);
             for ri = 1:rpmNharm
                 ci = min(ri, numel(rpmCols));
                 rpmGd1{ri} = smooth(-gradient(unwrap(angle(H_rpm1{ri}))) ./ dw * 1000, 51, 'moving');
-                plotFn(axNdelay, fVec(fIdx), rpmGd1{ri}(fIdx), 'Color', rpmCols{ci}, 'LineWidth', 0.9);
+                li = setLine(AX_NDLY, li, fF, rpmGd1{ri}(fIdx), rpmCols{ci}, 0.9);
             end
-            % static notch delay curves
             if gn1f > 0
                 gd_gn1_v = smooth(-gradient(unwrap(angle(H_gn1))) ./ dw * 1000, 51, 'moving');
-                plotFn(axNdelay, fVec(fIdx), gd_gn1_v(fIdx), 'Color', colStaticN, 'LineWidth', 0.8);
+                li = setLine(AX_NDLY, li, fF, gd_gn1_v(fIdx), colStaticN, 0.8);
             end
             if gn2f > 0
                 gd_gn2_v = smooth(-gradient(unwrap(angle(H_gn2))) ./ dw * 1000, 51, 'moving');
-                plotFn(axNdelay, fVec(fIdx), gd_gn2_v(fIdx), 'Color', colStaticN*0.85, 'LineWidth', 0.8, 'LineStyle', '--');
+                li = setLine(AX_NDLY, li, fF, gd_gn2_v(fIdx), colStaticN*0.85, 0.8, '--');
             end
-            plotFn(axNdelay, fVec(fIdx), gd_gN(fIdx), 'Color', colCombN, 'LineWidth', 1.5);
-            if dnf > 0
-                plotFn(axNdelay, fVec(fIdx), gd_dN(fIdx), 'Color', colD, 'LineWidth', 1.2);
-            end
-            hold(axNdelay, 'off');
-            PSstyleAxes(axNdelay, thm); set(axNdelay, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
+            li = setLine(AX_NDLY, li, fF, gd_gN(fIdx), colCombN, 1.5);
+            if dnf > 0, li = setLine(AX_NDLY, li, fF, gd_dN(fIdx), colD, 1.2); end
+            % vertical lines
+            for ri=1:rpmNharm, fc=rpmBase*ri; if fc>0, li=setLine(AX_NDLY,li,[fc fc],[-1 1],gridC,0.5,':'); end; end
+            if gn1f>0, li=setLine(AX_NDLY,li,[gn1f gn1f],[-1 1],colStaticN,0.5,'--'); end
+            if gn2f>0, li=setLine(AX_NDLY,li,[gn2f gn2f],[-1 1],colStaticN*0.85,0.5,'--'); end
+            if dnf>0, li=setLine(AX_NDLY,li,[dnf dnf],[-1 1],colD,0.5,'--'); end
+            hideRest(AX_NDLY, li);
             gdMaxN = max(abs(gd_gN(2)) * 3, 0.5);
             if isfinite(gdMaxN), set(axNdelay, 'YLim', [-gdMaxN gdMaxN]); end
+            set(axNdelay, 'XLim', xlimF(useLog, fMax), 'XTickLabel', {});
             set(get(axNdelay, 'YLabel'), 'String', 'Filter Delay (ms)');
-            nAnnot = rpmNharm;
-            if gn1f > 0, nAnnot = nAnnot + 1; end
-            if gn2f > 0, nAnnot = nAnnot + 1; end
-            if dnf > 0, nAnnot = nAnnot + 1; end
-            nAnnot = max(nAnnot + 1, 2);
-            yTxt = gdMaxN * 0.9;
-            yStN = 2 * gdMaxN * 0.9 / nAnnot;
-            text(fMax*0.3, yTxt, sprintf('combined: %.4fms', gd_gN(2)), ...
-                'Parent', axNdelay, 'Color', colCombN, 'FontSize', fontsz-1);
-            yTxt = yTxt - yStN;
+            % annotations
+            ti = 1; nAn = max(rpmNharm+2, 2);
+            yTxt = gdMaxN*0.9; yStN = 2*gdMaxN*0.9/nAn;
+            ti = setTxt(AX_NDLY, ti, fMax*0.3, yTxt, sprintf('combined: %.4fms', gd_gN(2)), colCombN); yTxt=yTxt-yStN;
             for ri = 1:rpmNharm
-                ci = min(ri, numel(rpmCols));
-                fc_rpm = rpmBase * ri;
-                text(fMax*0.3, yTxt, sprintf('RPM %dHz: %.5fms', fc_rpm, rpmGd1{ri}(2)), ...
-                    'Parent', axNdelay, 'Color', rpmCols{ci}, 'FontSize', fontsz-1);
-                yTxt = yTxt - yStN;
+                ci = min(ri, numel(rpmCols)); fc=rpmBase*ri;
+                ti = setTxt(AX_NDLY, ti, fMax*0.3, yTxt, sprintf('RPM %dHz: %.5fms', fc, rpmGd1{ri}(2)), rpmCols{ci}); yTxt=yTxt-yStN;
             end
-            if gn1f > 0
-                text(fMax*0.3, yTxt, sprintf('N1 %dHz: %.5fms', gn1f, gd_gn1_v(2)), ...
-                    'Parent', axNdelay, 'Color', colStaticN, 'FontSize', fontsz-1);
-                yTxt = yTxt - yStN;
-            end
-            if gn2f > 0
-                text(fMax*0.3, yTxt, sprintf('N2 %dHz: %.5fms', gn2f, gd_gn2_v(2)), ...
-                    'Parent', axNdelay, 'Color', colStaticN*0.85, 'FontSize', fontsz-1);
-                yTxt = yTxt - yStN;
-            end
-            if dnf > 0
-                text(fMax*0.3, yTxt, sprintf('D %dHz: %.4fms', dnf, gd_dN(2)), ...
-                    'Parent', axNdelay, 'Color', colD, 'FontSize', fontsz-1);
-            end
+            if gn1f>0, ti=setTxt(AX_NDLY,ti,fMax*0.3,yTxt,sprintf('N1 %dHz: %.5fms',gn1f,gd_gn1_v(2)),colStaticN); yTxt=yTxt-yStN; end
+            if gn2f>0, ti=setTxt(AX_NDLY,ti,fMax*0.3,yTxt,sprintf('N2 %dHz: %.5fms',gn2f,gd_gn2_v(2)),colStaticN*0.85); yTxt=yTxt-yStN; end
+            if dnf>0, ti=setTxt(AX_NDLY,ti,fMax*0.3,yTxt,sprintf('D %dHz: %.4fms',dnf,gd_dN(2)),colD); end
+            hideTxt(AX_NDLY, ti);
 
-            cla(axNphase); hold(axNphase, 'on');
+            %% NOTCH PHASE
+            li = 1;
             for ri = 1:rpmNharm
                 ci = min(ri, numel(rpmCols));
                 ph_ri = smooth(angle(H_rpm1{ri}) * 180/pi, 9, 'moving');
-                plotFn(axNphase, fVec(fIdx), ph_ri(fIdx), 'Color', rpmCols{ci}, 'LineWidth', 0.9);
+                li = setLine(AX_NPH, li, fF, ph_ri(fIdx), rpmCols{ci}, 0.9);
             end
             if gn1f > 0
-                ph_gn1 = smooth(angle(H_gn1) * 180/pi, 9, 'moving');
-                plotFn(axNphase, fVec(fIdx), ph_gn1(fIdx), 'Color', colStaticN, 'LineWidth', 0.8);
+                ph_gn1_ = smooth(angle(H_gn1) * 180/pi, 9, 'moving');
+                li = setLine(AX_NPH, li, fF, ph_gn1_(fIdx), colStaticN, 0.8);
             end
             if gn2f > 0
-                ph_gn2 = smooth(angle(H_gn2) * 180/pi, 9, 'moving');
-                plotFn(axNphase, fVec(fIdx), ph_gn2(fIdx), 'Color', colStaticN*0.85, 'LineWidth', 0.8, 'LineStyle', '--');
+                ph_gn2_ = smooth(angle(H_gn2) * 180/pi, 9, 'moving');
+                li = setLine(AX_NPH, li, fF, ph_gn2_(fIdx), colStaticN*0.85, 0.8, '--');
             end
             ph_gN = smooth(angle(H_gyroN1) * 180/pi, 9, 'moving');
-            ph_dN = smooth(angle(H_dtermN) * 180/pi, 9, 'moving');
-            plotFn(axNphase, fVec(fIdx), ph_gN(fIdx), 'Color', colCombN, 'LineWidth', 1.5);
-            if dnf > 0
-                plotFn(axNphase, fVec(fIdx), ph_dN(fIdx), 'Color', colD, 'LineWidth', 1.2);
-            end
-            hold(axNphase, 'off');
-            PSstyleAxes(axNphase, thm); set(axNphase, 'XLim', xlimF(useLog, fMax), 'YLim', [-90 90], 'XTickLabel', {});
+            ph_dN_ = smooth(angle(H_dtermN) * 180/pi, 9, 'moving');
+            li = setLine(AX_NPH, li, fF, ph_gN(fIdx), colCombN, 1.5);
+            if dnf > 0, li = setLine(AX_NPH, li, fF, ph_dN_(fIdx), colD, 1.2); end
+            for ri=1:rpmNharm, fc=rpmBase*ri; if fc>0, li=setLine(AX_NPH,li,[fc fc],[-90 90],gridC,0.5,':'); end; end
+            if gn1f>0, li=setLine(AX_NPH,li,[gn1f gn1f],[-90 90],colStaticN,0.5,'--'); end
+            if gn2f>0, li=setLine(AX_NPH,li,[gn2f gn2f],[-90 90],colStaticN*0.85,0.5,'--'); end
+            if dnf>0, li=setLine(AX_NPH,li,[dnf dnf],[-90 90],colD,0.5,'--'); end
+            hideRest(AX_NPH, li);
+            set(axNphase, 'XLim', xlimF(useLog, fMax), 'YLim', [-90 90], 'XTickLabel', {});
             set(get(axNphase, 'YLabel'), 'String', 'Phase Delay (deg)');
+            hideTxt(AX_NPH, 1);
 
-            if showStep
-                cla(axNstep);
-                line(axNstep, [tStepN(1) tStepN(end)], [1 1], 'Color', colRef, 'LineWidth', 0.5, 'LineStyle', '--'); hold(axNstep, 'on');
+            %% NOTCH ROW 4
+            li = 1;
+            if row4mode == 3
+                li = setLine(AX_NSTP, li, tSigN, sigInN, [.5 .5 .5], 0.6);
+                li = setLine(AX_NSTP, li, tSigN, sN_g, [.95 .2 .2], 1.2);
+                hideRest(AX_NSTP, li);
+                set(axNstep, 'XLim', [0 sigDur], 'YLim', [-1.1 1.1]);
+            else
+                if row4mode == 1, li = setLine(AX_NSTP, li, [tSigN(1) tSigN(end)], [1 1], colRef, 0.5, '--'); end
                 for ri = 1:rpmNharm
                     ci = min(ri, numel(rpmCols));
-                    plot(axNstep, tStepN, sN_rpm{ri}, 'Color', rpmCols{ci}, 'LineWidth', 0.8);
+                    li = setLine(AX_NSTP, li, tSigN, sN_rpm{ri}, rpmCols{ci}, 0.8);
                 end
-                if gn1f > 0, plot(axNstep, tStepN, sN_gn1, 'Color', colStaticN, 'LineWidth', 0.8); end
-                if gn2f > 0, plot(axNstep, tStepN, sN_gn2, 'Color', colStaticN*0.85, 'LineWidth', 0.8, 'LineStyle', '--'); end
-                plot(axNstep, tStepN, sN_g, 'Color', colCombN, 'LineWidth', 1.5);
-                if dnf > 0, plot(axNstep, tStepN, sN_d, 'Color', colD, 'LineWidth', 1.2); end
+                if gn1f > 0, li = setLine(AX_NSTP, li, tSigN, sN_gn1, colStaticN, 0.8); end
+                if gn2f > 0, li = setLine(AX_NSTP, li, tSigN, sN_gn2, colStaticN*0.85, 0.8, '--'); end
+                li = setLine(AX_NSTP, li, tSigN, sN_g, colCombN, 1.5);
+                if dnf > 0, li = setLine(AX_NSTP, li, tSigN, sN_d, colD, 1.2); end
                 if addNoise
-                    plot(axNstep, tStepN, nsN_g, 'Color', colNoise, 'LineWidth', 0.8);
-                    if dnf > 0, plot(axNstep, tStepN, nsN_d, 'Color', colNoise*0.7, 'LineWidth', 0.7); end
+                    li = setLine(AX_NSTP, li, tSigN, nsN_g, colNoise, 0.8);
+                    if dnf > 0, li = setLine(AX_NSTP, li, tSigN, nsN_d, colNoise*0.7, 0.7); end
                 end
-                hold(axNstep, 'off');
-                PSstyleAxes(axNstep, thm); set(axNstep, 'XLim', [tStepN(1) tStepN(end)], 'YLim', [0.8 1.2]);
-                xlabel(axNstep, 'Time (ms)', 'Color', thm.textPrimary);
-                set(get(axNstep, 'YLabel'), 'String', 'Step Resp.');
+                hideRest(AX_NSTP, li);
+                if row4mode == 1
+                    set(axNstep, 'XLim', [tSigN(1) tSigN(end)], 'YLim', [0.8 1.2]);
+                else
+                    set(axNstep, 'XLim', [tSigN(1) tSigN(end)]);
+                end
             end
+            xlabel(axNstep, r4labelN, 'Color', thm.textPrimary);
+            set(get(axNstep, 'YLabel'), 'String', r4ylabelN);
+            hideTxt(AX_NSTP, 1);
         end
 
         % Set XScale+XLim atomically
@@ -770,6 +903,93 @@ doUpdate();
         end
 
         warning(wstate);
+    end
+
+    function copyCLI()
+        typeNames = {'PT1', 'BIQUAD', 'PT2', 'PT3'};
+        lines = {};
+        lines{end+1} = '# PIDscope Filter Sim -> BF CLI';
+        lines{end+1} = '# Gyro Lowpass';
+        t = cliTypeIdx(h.glpf1_type);
+        lines{end+1} = sprintf('set gyro_lpf1_type = %s', typeNames{max(t,1)});
+        lines{end+1} = sprintf('set gyro_lpf1_static_hz = %d', cliHz(h.glpf1_hz, t));
+        t = cliTypeIdx(h.glpf2_type);
+        lines{end+1} = sprintf('set gyro_lpf2_type = %s', typeNames{max(t,1)});
+        lines{end+1} = sprintf('set gyro_lpf2_static_hz = %d', cliHz(h.glpf2_hz, t));
+        lines{end+1} = '# Gyro Notch';
+        lines{end+1} = sprintf('set gyro_notch1_hz = %d', readEdit(h.gn1_hz));
+        lines{end+1} = sprintf('set gyro_notch1_cutoff = %d', readEdit(h.gn1_cut));
+        lines{end+1} = sprintf('set gyro_notch2_hz = %d', readEdit(h.gn2_hz));
+        lines{end+1} = sprintf('set gyro_notch2_cutoff = %d', readEdit(h.gn2_cut));
+        lines{end+1} = '# D-term Lowpass';
+        t = cliTypeIdx(h.dlpf1_type);
+        lines{end+1} = sprintf('set dterm_lpf1_type = %s', typeNames{max(t,1)});
+        lines{end+1} = sprintf('set dterm_lpf1_static_hz = %d', cliHz(h.dlpf1_hz, t));
+        t = cliTypeIdx(h.dlpf2_type);
+        lines{end+1} = sprintf('set dterm_lpf2_type = %s', typeNames{max(t,1)});
+        lines{end+1} = sprintf('set dterm_lpf2_static_hz = %d', cliHz(h.dlpf2_hz, t));
+        lines{end+1} = '# D-term Notch';
+        lines{end+1} = sprintf('set dterm_notch_hz = %d', readEdit(h.dn_hz));
+        lines{end+1} = sprintf('set dterm_notch_cutoff = %d', readEdit(h.dn_cut));
+        lines{end+1} = 'save';
+        cliText = strjoin(lines, char(10));
+        ok = copyToClipboard(cliText);
+        if ok
+            set(h.copyCLI, 'String', 'Copied!');
+        else
+            showCLIDialog(cliText);
+        end
+    end
+
+    function t = cliTypeIdx(hPopup)
+        v = get(hPopup, 'Value');
+        t = max(v - 1, 0);
+    end
+
+    function hz = cliHz(hEdit, typeVal)
+        if typeVal == 0, hz = 0; return; end
+        hz = readEdit(hEdit);
+    end
+
+    function idx = setLine(axi, idx, x, y, col, lw, ls)
+        % update pre-created line from pool
+        if nargin < 7, ls = '-'; end
+        set(lnPool{axi, idx}, 'XData', x, 'YData', y, 'Color', col, ...
+            'LineWidth', lw, 'LineStyle', ls, 'Visible', 'on');
+        idx = idx + 1;
+    end
+
+    function hideRest(axi, fromIdx)
+        for li = fromIdx:POOL
+            set(lnPool{axi, li}, 'Visible', 'off', 'XData', NaN, 'YData', NaN);
+        end
+    end
+
+    function idx = setTxt(axi, idx, x, y, str, col)
+        set(txPool{axi, idx}, 'Position', [x y 0], 'String', str, 'Color', col, 'Visible', 'on');
+        idx = idx + 1;
+    end
+
+    function hideTxt(axi, fromIdx)
+        for ti = fromIdx:TPOOL
+            set(txPool{axi, ti}, 'Visible', 'off', 'String', '');
+        end
+    end
+
+    function barClick(ax, edits, fMax)
+        if isempty(edits), return; end
+        cp = get(ax, 'CurrentPoint');
+        xClick = max(0, min(fMax, round(cp(1,1))));
+        % find nearest edit box by current value
+        bestDist = inf; bestIdx = 1;
+        for ei = 1:numel(edits)
+            ev = str2double(get(edits{ei}, 'String'));
+            if isnan(ev), ev = 0; end
+            d = abs(ev - xClick);
+            if d < bestDist, bestDist = d; bestIdx = ei; end
+        end
+        set(edits{bestIdx}, 'String', int2str(xClick));
+        autoUpdate();
     end
 
 end
@@ -837,8 +1057,19 @@ end
 
 function drawCutoffLines(ax, f1on, f1, f2on, f2, col)
     yl = get(ax, 'YLim');
-    if f1on && f1 > 0, line(ax, [f1 f1], yl, 'Color', col*0.7, 'LineStyle', '--', 'LineWidth', 0.5); end
-    if f2on && f2 > 0, line(ax, [f2 f2], yl, 'Color', col, 'LineStyle', '--', 'LineWidth', 0.5); end
+    if f1on && f1 > 0, line(ax, [f1 f1], yl, 'Color', col*0.7, 'LineStyle', '--', 'LineWidth', 0.5, 'HitTest', 'off'); end
+    if f2on && f2 > 0, line(ax, [f2 f2], yl, 'Color', col, 'LineStyle', '--', 'LineWidth', 0.5, 'HitTest', 'off'); end
+end
+
+function drawNotchLines(ax, rpmBase, rpmNharm, gn1f, gn2f, dnf, gridCol)
+    yl = get(ax, 'YLim');
+    for ri = 1:rpmNharm
+        fc = rpmBase * ri;
+        if fc > 0, line(ax, [fc fc], yl, 'Color', gridCol, 'LineStyle', ':', 'LineWidth', 0.5, 'HitTest', 'off'); end
+    end
+    if gn1f > 0, line(ax, [gn1f gn1f], yl, 'Color', gridCol, 'LineStyle', '--', 'LineWidth', 0.5, 'HitTest', 'off'); end
+    if gn2f > 0, line(ax, [gn2f gn2f], yl, 'Color', gridCol, 'LineStyle', '--', 'LineWidth', 0.5, 'HitTest', 'off'); end
+    if dnf > 0, line(ax, [dnf dnf], yl, 'Color', gridCol, 'LineStyle', '--', 'LineWidth', 0.5, 'HitTest', 'off'); end
 end
 
 function annotateLPF(ax, t1, f1, t2, f2, ~, col, fsz, usedB)
@@ -917,7 +1148,7 @@ function [hType, hHz, rowOut] = mkTypeHz(fig, x0, row, rh, gap, cW, ibc, ifc, lc
 end
 
 function [hCenter, hCutoff, rowOut] = mkNotchPair(fig, x0, row, rh, gap, cW, bgc, ibc, ifc, lc, initCenter, initCutoff, cb, fsz)
-    halfW = cW / 2; lblW = .03; edW = halfW - lblW - .005;
+    halfW = cW / 2; lblW = .03; edW = halfW - lblW - .01;
     uicontrol(fig, 'Style', 'text', 'String', 'Ctr:', ...
         'Units', 'normalized', 'Position', [x0 row lblW rh], ...
         'FontSize', fsz, 'BackgroundColor', bgc, 'ForegroundColor', lc, 'HorizontalAlignment', 'right');
@@ -950,15 +1181,18 @@ function drawGradientBar(ax, fMax, gradCols, markerFreqs, markerCols, thm)
     Ngr = 256;
     grad = zeros(1, Ngr, 3);
     for ch = 1:3, grad(1,:,ch) = linspace(gradCols(1,ch), gradCols(2,ch), Ngr); end
-    imagesc(ax, [0 fMax], [0 1], grad);
+    hi = imagesc(ax, [0 fMax], [0 1], grad);
+    set(hi, 'HitTest', 'off');
     set(ax, 'YTick', [], 'XTick', [], 'XLim', [0 fMax], 'YLim', [0 1], 'Box', 'on');
     set(ax, 'XColor', thm.axesFg, 'YColor', thm.axesFg);
     hold(ax, 'on');
     for k = 1:numel(markerFreqs)
         f = markerFreqs{k};
         if f > 0 && f <= fMax
-            line(ax, [f f], [0 1], 'Color', markerCols{k}, 'LineWidth', 2);
-            plot(ax, f, 0.5, 'v', 'Color', markerCols{k}, 'MarkerSize', 5, 'MarkerFaceColor', markerCols{k});
+            line(ax, [f f], [0 1], 'Color', markerCols{k}, 'LineWidth', 2, 'HitTest', 'off');
+            % slider handle: triangle top + bottom
+            plot(ax, f, 0.95, 'v', 'Color', markerCols{k}, 'MarkerSize', 7, 'MarkerFaceColor', markerCols{k}, 'HitTest', 'off');
+            plot(ax, f, 0.05, '^', 'Color', markerCols{k}, 'MarkerSize', 7, 'MarkerFaceColor', markerCols{k}, 'HitTest', 'off');
         end
     end
     hold(ax, 'off');
@@ -971,4 +1205,42 @@ function y = localChirp(t, f0, dur, f1)
     beta = (f1/f0)^(1/dur);
     phase = 2*pi * f0 * (beta.^t - 1) / log(beta);
     y = sin(phase);
+end
+
+function ok = copyToClipboard(str)
+    ok = false;
+    tmpf = [tempname '.txt'];
+    fid = fopen(tmpf, 'w'); fprintf(fid, '%s', str); fclose(fid);
+    if ismac()
+        [st, ~] = system(sprintf('pbcopy < %s 2>&1', tmpf));
+        ok = (st == 0);
+    elseif ispc()
+        [st, ~] = system(sprintf('clip < %s 2>&1', tmpf));
+        ok = (st == 0);
+    else
+        cmds = {'xclip -selection clipboard', 'xsel --clipboard --input', 'wl-copy'};
+        for k = 1:numel(cmds)
+            [st, ~] = system(sprintf('%s < %s 2>&1', cmds{k}, tmpf));
+            if st == 0, ok = true; break; end
+        end
+    end
+    delete(tmpf);
+end
+
+function showCLIDialog(cliText)
+    screensz = get(0, 'ScreenSize');
+    dlg = figure('Name', 'BF CLI Commands', 'NumberTitle', 'off', ...
+        'Color', [.15 .15 .15], ...
+        'Position', round([screensz(3)*.3 screensz(4)*.25 460 380]));
+    uicontrol(dlg, 'Style', 'text', 'String', 'Select All + Copy:', ...
+        'Units', 'normalized', 'Position', [.05 .90 .9 .07], ...
+        'FontSize', 11, 'BackgroundColor', [.15 .15 .15], 'ForegroundColor', [.9 .9 .9]);
+    uicontrol(dlg, 'Style', 'edit', 'Max', 100, 'String', cliText, ...
+        'Units', 'normalized', 'Position', [.05 .12 .9 .76], ...
+        'HorizontalAlignment', 'left', 'FontName', 'Monospace', 'FontSize', 10, ...
+        'BackgroundColor', [.1 .1 .1], 'ForegroundColor', [.9 .9 .9]);
+    uicontrol(dlg, 'Style', 'pushbutton', 'String', 'Close', ...
+        'Units', 'normalized', 'Position', [.35 .02 .3 .08], ...
+        'FontSize', 11, 'BackgroundColor', [.3 .3 .3], 'ForegroundColor', [.9 .9 .9], ...
+        'Callback', @(~,~) close(dlg));
 end

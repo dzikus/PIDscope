@@ -59,7 +59,7 @@ end
 th.periodMarker  = [.95 .20 .20];
 
 % diff highlight (Setup Info)
-th.diffBg      = [.45 .18 .18];
+th.diffBg      = [.30 .30 .32];
 
 % checkbox / input bg
 th.checkBg     = [.18 .18 .20];
@@ -80,7 +80,7 @@ th.axisYawFilt   = [.60 .75 1.0];   % lighter sky blue
 % filter section headers
 th.secNotch      = [1.0 .70 .30];   % amber/orange
 th.secDtermLPF   = [.40 1.0 .40];   % green
-th.secDtermNotch = [1.0 .50 .50];   % salmon
+th.secDtermNotch = [.40 .90 .40];   % green (matches D-term plot curves)
 th.refLine3dB    = [.60 .60 .20];   % -3dB / 0.707 reference
 
 % Bode / chirp analysis
