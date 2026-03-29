@@ -71,7 +71,15 @@ posInfo.RPYcomboSpec =       [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 posInfo.climMax1_text =      [cpL+cpM yTop-rhs cpW/4 rhs];
 posInfo.climMax2_text =      [cpL+cpW/2 yTop-rhs cpW/4 rhs]; yTop=yTop-rhs-gap;
 posInfo.climMax1_input =     [cpL+cpM yTop-rh cpW/4 rh];
-posInfo.climMax2_input =     [cpL+cpW/2 yTop-rh cpW/4 rh];
+posInfo.climMax2_input =     [cpL+cpW/2 yTop-rh cpW/4 rh]; yTop=yTop-rh-gap;
+
+qw = fw/4;
+posInfo.rpmMotor1 =          [cpL+cpM       yTop-rh qw rh];
+posInfo.rpmMotor2 =          [cpL+cpM+qw    yTop-rh qw rh];
+posInfo.rpmMotor3 =          [cpL+cpM+2*qw  yTop-rh qw rh];
+posInfo.rpmMotor4 =          [cpL+cpM+3*qw  yTop-rh qw rh]; yTop=yTop-rh-gap;
+posInfo.rpmHarmDd =          [cpL+cpM yTop-ddh hw ddh];
+posInfo.rpmLwDd   =          [cpL+cpW/2 yTop-ddh hw ddh]; yTop=yTop-ddh-gap;
 
 climScale1=[0 ; -50 ];
 climScale2=[0.5 ; 20];
@@ -119,7 +127,7 @@ guiHandlesSpec2.saveSettings2 = uicontrol(PSspecfig2,'string','Save Settings','f
 set(guiHandlesSpec2.saveSettings2, 'ForegroundColor', saveCol);
 
 % create string list for SpecSelect
-sA={'Gyro','Gyro prefilt','Dterm','Dterm prefilt','Pterm','PID error','Set point','PIDsum'};
+sA={'Gyro','Gyro prefilt','Dterm','Dterm prefilt','Pterm','PID error','Set point','Fterm','PIDsum','Motors'};
 if isfield(T{1}, 'testSignal_0_'), sA{end+1} = 'Test Signal'; end
 
 guiHandlesSpec2.SpecList = uicontrol(PSspecfig2,'Style','listbox','string',[sA],'max',3,'min',1, 'fontsize',fontsz, 'TooltipString',[TooltipString_user],'units','normalized','Position', [posInfo.TermListWindowSpec], 'callback', 'if length(get(guiHandlesSpec2.SpecList, ''Value'')) > 2, set(guiHandlesSpec2.SpecList, ''Value'', 1); end;');
@@ -138,15 +146,13 @@ set(guiHandlesSpec2.spectrogramButton2, 'ForegroundColor', th.btnDash1);
      'callback','PSfreqTimeUIcontrol;');
  set(guiHandlesSpec2.spectrogramButton3, 'ForegroundColor', th.btnDash2);
 
-guiHandlesSpec2.motorNoiseButton = uicontrol(PSspecfig2,'string','Motor Noise','fontsize',fontsz,...
-    'TooltipString','Per-motor spectral analysis and noise comparison','units','normalized',...
-    'Position',[posInfo.motorNoiseButton],...
-    'callback',['try,' ...
-        'tmpFcnt=get(guiHandlesSpec2.FileSelect,''Value'');tmpFcnt=tmpFcnt(1);' ...
-        'PSplotMotorNoise(T{tmpFcnt},tmpFcnt,tIND{tmpFcnt},1000*A_lograte(tmpFcnt));' ...
-        'clear tmpFcnt;' ...
-    'catch e,warndlg([''Motor Noise: '' e.message]),end']);
-set(guiHandlesSpec2.motorNoiseButton, 'ForegroundColor', th.btnMotNoise);
+guiHandlesSpec2.rightColMode = uicontrol(PSspecfig2,'Style','popupmenu','String',{'sub 100Hz','Motor Noise'},...
+    'fontsize',fontsz,'TooltipString','Right column: sub 100Hz PSD or Motor Noise per-harmonic',...
+    'units','normalized','Position',[posInfo.motorNoiseButton],...
+    'callback',['vis_=''off'';if get(guiHandlesSpec2.rightColMode,''Value'')==2,vis_=''on'';end;' ...
+        'flds_={''rpmMotor1'',''rpmMotor2'',''rpmMotor3'',''rpmMotor4'',''rpmHarmDd'',''rpmLwDd''};' ...
+        'for fi_=1:6,set(guiHandlesSpec2.(flds_{fi_}),''Visible'',vis_);end;' ...
+        'try PSresizeCP(PSspecfig2,[]);catch,end;updateSpec=1;PSplotSpec2D;']);
 
 guiHandlesSpec2.chirpButton = uicontrol(PSspecfig2,'string','Chirp Analysis','fontsize',fontsz,...
     'TooltipString','Frequency response from chirp log (BF 2025.12+, debug_mode=CHIRP)','units','normalized',...
@@ -187,6 +193,36 @@ guiHandlesSpec2.climMax1_input = uicontrol(PSspecfig2,'style','edit','string',[n
 guiHandlesSpec2.climMax2_input = uicontrol(PSspecfig2,'style','edit','string',[num2str(climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1, 1))],'fontsize',fontsz,'TooltipString',['Y max'],'units','normalized','Position',[posInfo.climMax2_input],...
      'callback','@textinput_call2; climScale2(get(guiHandlesSpec2.checkboxPSD, ''Value'')+1, 1)=str2double(get(guiHandlesSpec2.climMax2_input, ''String''));PSplotSpec2D;');
 
+motorCols = PStheme().sigMotor;
+nMot_ = 4;
+if exist('T','var') && ~isempty(T)
+    for mi_ = 4:7
+        if isfield(T{1}, ['motor_' int2str(mi_) '_']), nMot_ = mi_+1; end
+    end
+end
+if nMot_ > 4
+    motorNames = {sprintf('M1/%d',nMot_/2+1), sprintf('M2/%d',nMot_/2+2), sprintf('M3/%d',nMot_/2+3), sprintf('M4/%d',nMot_/2+4)};
+else
+    motorNames = {'M1','M2','M3','M4'};
+end
+guiHandlesSpec2.nMotors = nMot_;
+rpmCb2 = 'updateSpec=1; PSplotSpec2D;';
+for mi = 1:4
+    fld = sprintf('rpmMotor%d', mi);
+    guiHandlesSpec2.(fld) = uicontrol(PSspecfig2, 'Style','checkbox', 'String', motorNames{mi}, ...
+        'fontsize', fontsz-1, 'Value', 1, 'Visible', 'off', ...
+        'ForegroundColor', motorCols{mi}, 'BackgroundColor', bgcolor, ...
+        'units','normalized', 'Position', posInfo.(fld), 'callback', rpmCb2);
+end
+guiHandlesSpec2.rpmHarmDd = uicontrol(PSspecfig2, 'Style','popupmenu', ...
+    'String', {'All harm.','1st','2nd','3rd','1st & 2nd','1st & 3rd','2nd & 3rd'}, ...
+    'fontsize', fontsz, 'Value', 1, 'Visible', 'off', ...
+    'units','normalized', 'Position', posInfo.rpmHarmDd, 'callback', rpmCb2);
+guiHandlesSpec2.rpmLwDd = uicontrol(PSspecfig2, 'Style','popupmenu', ...
+    'String', {'lw 0.5','lw 1','lw 1.5','lw 2'}, ...
+    'fontsize', fontsz, 'Value', 3, 'Visible', 'off', ...
+    'units','normalized', 'Position', posInfo.rpmLwDd, 'callback', rpmCb2);
+
 end % ishandle(spec2Crtlpanel)
 
 % Register CP for fixed-pixel resize
@@ -201,7 +237,7 @@ cpI{end+1} = struct('h', guiHandlesSpec2.computeSpec, 'type','left', 'row',0, 'c
 cpI{end+1} = struct('h', guiHandlesSpec2.resetSpec, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.spectrogramButton2, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.spectrogramButton3, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
-cpI{end+1} = struct('h', guiHandlesSpec2.motorNoiseButton, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.rightColMode, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.chirpButton, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.saveFig2, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.saveSettings2, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
@@ -216,6 +252,12 @@ cpI{end+1} = struct('h', guiHandlesSpec2.climMax1_text, 'type','text_left', 'row
 cpI{end+1} = struct('h', guiHandlesSpec2.climMax2_text, 'type','text_right', 'row',0, 'col',0, 'hpx',rhs_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.climMax1_input, 'type','input_left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesSpec2.climMax2_input, 'type','input_right', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.rpmMotor1, 'type','quarter1', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.rpmMotor2, 'type','quarter2', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.rpmMotor3, 'type','quarter3', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.rpmMotor4, 'type','quarter4', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.rpmHarmDd, 'type','dd_left', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesSpec2.rpmLwDd, 'type','dd_right', 'row',0, 'col',0, 'hpx',ddh_px);
 setappdata(PSspecfig2, 'PSplotGrid', struct('plotL',plotL2, 'colGap',colGap2, ...
     'ncols',2, 'rows',rows, 'rowH',0.25, 'margin',0.04));
 PSregisterResize(PSspecfig2, cpPx, cpI, 'seq');

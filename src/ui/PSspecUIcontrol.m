@@ -179,7 +179,19 @@ guiHandlesSpec.checkboxPSD =uicontrol(PSspecfig,'Style','checkbox','String','PSD
 set(guiHandlesSpec.checkboxPSD, 'Value', 0);
 
 motorCols = PStheme().sigMotor;
-motorNames = {'M1','M2','M3','M4'};
+% detect motor count and label pairs for hex/octo
+nMot_ = 4;
+if exist('T','var') && ~isempty(T)
+    for mi_ = 4:7
+        if isfield(T{1}, ['motor_' int2str(mi_) '_']), nMot_ = mi_+1; end
+    end
+end
+if nMot_ > 4
+    motorNames = {sprintf('M1/%d',nMot_/2+1), sprintf('M2/%d',nMot_/2+2), sprintf('M3/%d',nMot_/2+3), sprintf('M4/%d',nMot_/2+4)};
+else
+    motorNames = {'M1','M2','M3','M4'};
+end
+guiHandlesSpec.nMotors = nMot_;
 rpmCb = 'updateSpec=1;PSplotSpec;';
 for mi = 1:4
     fld = sprintf('rpmMotor%d', mi);

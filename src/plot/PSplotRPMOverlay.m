@@ -12,7 +12,7 @@ function PSplotRPMOverlay(ax, rpmMat, xData, imgHeight, freqMax, mode, nHarmonic
 %  lw          - line width (default 1)
 
 if nargin < 7 || isempty(nHarmonics), nHarmonics = 3; end
-if nargin < 8 || isempty(motors), motors = 1:min(4, size(rpmMat, 2)); end
+if nargin < 8 || isempty(motors), motors = 1:size(rpmMat, 2); end
 if nargin < 9 || isempty(harmonics), harmonics = 1:nHarmonics; end
 if nargin < 10 || isempty(lw), lw = 1; end
 if isempty(rpmMat) || imgHeight < 2 || freqMax <= 0
@@ -29,7 +29,7 @@ if strcmp(mode, 'throttle')
     for mi = 1:numel(motors)
         m = motors(mi);
         if m > size(rpmMat, 2), continue; end
-        ci = min(m, size(motorCol, 1));
+        ci = mod(m-1, size(motorCol, 1)) + 1;
         for hi = 1:numel(harmonics)
             harm = harmonics(hi);
             xPts = [];
@@ -67,7 +67,7 @@ elseif strcmp(mode, 'time')
     for mi = 1:numel(motors)
         m = motors(mi);
         if m > size(rpmMat, 2), continue; end
-        ci = min(m, size(motorCol, 1));
+        ci = mod(m-1, size(motorCol, 1)) + 1;
         for hi = 1:numel(harmonics)
             harm = harmonics(hi);
             xPts = [];

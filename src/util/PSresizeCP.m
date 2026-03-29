@@ -36,6 +36,7 @@ if strcmp(mode, 'seq')
     for i = 1:numel(cpd.items)
         it = cpd.items{i};
         if ~ishandle(it.h), continue; end
+        if ~strcmp(it.type, 'panel') && strcmp(get(it.h, 'Visible'), 'off'), continue; end
         try
             hpx = it.hpx;
             h = hpx / figH;

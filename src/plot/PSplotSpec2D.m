@@ -17,7 +17,7 @@ set(guiHandlesSpec2.climMax2_input, 'String', num2str(climScale2(get(guiHandlesS
 
 %%
 
-s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'pidsum'};
+s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'axisF';'pidsum';'motorAvg'};
 if isfield(T{1}, 'testSignal_0_'), s1{end+1} = 'testSignal'; end
 
 datSelectionString=[s1];
@@ -172,6 +172,29 @@ for k = 1 : length(tmpSpecVal)
                 smat{p}=[];%string
                 amp2d2{p}=[];%spec 2d
                 freq2d2{p}=[];% freq2d2
+            elseif strcmp(s, 'motorAvg')
+                p = p + 1;
+                mAvg = zeros(sum(tIND{tmpFileVal(f)}), 1);
+                nMot = 0;
+                for mi = 0:3
+                    mf = ['motor_' int2str(mi) '_'];
+                    if isfield(T{tmpFileVal(f)}, mf)
+                        mAvg = mAvg + T{tmpFileVal(f)}.(mf)(tIND{tmpFileVal(f)});
+                        nMot = nMot + 1;
+                    end
+                end
+                if nMot > 0, mAvg = mAvg / nMot; end
+                dat = mAvg';
+                lograte = A_lograte(tmpFileVal(f));
+                smat{p} = s;
+                [tmpF tmpA] = PSSpec2d(dat, lograte, tmpPSDVal);
+                if isempty(tmpF)
+                    smat{p}=[]; amp2d2{p}=[]; freq2d2{p}=[];
+                else
+                    ff = ['f' int2str(f)];
+                    freq2d2{p}.(ff) = tmpF;
+                    amp2d2{p}.(ff) = tmpA;
+                end
             elseif ~isfield(T{tmpFileVal(f)}, [s '_' int2str(a-1) '_'])
                 p=p+1;
                 smat{p}=[]; amp2d2{p}=[]; freq2d2{p}=[];
@@ -201,8 +224,10 @@ baselineYlines = [0 -50];
 multilineStyle = {'-' ; ':'; '--'};
 rpyLineStyle = {'-' ; '--'; ':'};
 
-for di_=1:6, h_del=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_del), delete(h_del); end; end
+% cla instead of delete to avoid Qt rendering artifacts (stale white pixels)
+for di_=1:6, h_cla=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_cla), cla(h_cla); hold(h_cla,'off'); end; end
 h_del=findobj(PSspecfig2,'Type','axes','Tag','PSspec2_combo'); if ~isempty(h_del), delete(h_del); end
+h_del=findobj(PSspecfig2,'Type','axes','Tag','legend'); if ~isempty(h_del), delete(h_del); end
 %%%%% plot 2d amp spec
 axLabel={'Roll';'Pitch';'Yaw'};
 
@@ -229,7 +254,7 @@ for k = 1 : length(tmpSpecVal)
                         stag_ = sprintf('PSspec2_%d', a);
                         h2 = findobj(PSspecfig2, 'Type', 'axes', 'Tag', stag_);
                         if isempty(h2), h2 = axes('Parent', PSspecfig2, 'Position', posInfo.Spec2Pos(a,:), 'Tag', stag_);
-                        else set(PSspecfig2, 'CurrentAxes', h2); end
+                        else set(h2, 'Position', posInfo.Spec2Pos(a,:)); set(PSspecfig2, 'CurrentAxes', h2); end
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
@@ -239,7 +264,11 @@ for k = 1 : length(tmpSpecVal)
                         set(h,'Color',[lineCol])
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
                         set(h2,'xtick',[0:m/10:m], 'yminortick','on')
-                        axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])
+                        if ~strcmp(s, 'motorAvg')
+                            axis([0 m climScale1(get(guiHandlesSpec2.checkboxPSD, 'Value')+1) climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)])
+                        else
+                            set(h2, 'XLim', [0 m]);
+                        end
                         xlabel('Frequency (Hz)','fontweight','bold','Color',th.textPrimary);
                         if get(guiHandlesSpec2.checkboxPSD, 'Value')
                             ylabel(['Power Spectral Density (dB)'],'fontweight','bold','Color',th.textPrimary);
@@ -255,10 +284,20 @@ for k = 1 : length(tmpSpecVal)
                         end
                         grid on
 
+                        rightMode_ = 1;
+                        try rightMode_ = get(guiHandlesSpec2.rightColMode, 'Value'); catch, end
+
+                        if rightMode_ ~= 2
                         stag2_ = sprintf('PSspec2_%d', a+3);
                         h2 = findobj(PSspecfig2, 'Type', 'axes', 'Tag', stag2_);
                         if isempty(h2), h2 = axes('Parent', PSspecfig2, 'Position', posInfo.Spec2Pos(a+3,:), 'Tag', stag2_);
-                        else set(PSspecfig2, 'CurrentAxes', h2); end
+                        else set(h2, 'Position', posInfo.Spec2Pos(a+3,:)); set(PSspecfig2, 'CurrentAxes', h2); end
+
+                        if strcmp(s, 'motorAvg')
+                            set(h2, 'Visible', 'on');
+                            PSstyleAxes(h2, th);
+                        else
+                        % Sub 100Hz PSD
                         ff = ['f' int2str(f)];
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
@@ -282,6 +321,8 @@ for k = 1 : length(tmpSpecVal)
                         h=text(1,climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)*.92,axLabel{a});
                         set(h,'Color',th.textPrimary,'fontsize',fontsz,'fontweight','bold');
                         end
+                        end  % motorAvg
+                        end  % rightMode_
                         
                         %%%%%%%%%%%%%%%%%%% Plot Latencies %%%%%%%%%%%%%%%
                         tmpFileSelVals = get(guiHandlesSpec2.FileSelect, 'Value');
@@ -404,6 +445,163 @@ try
     end
 catch, end
 
+
+% Motor Noise panels (right column, when rightColMode == 2)
+rightMode_final = 1;
+try rightMode_final = get(guiHandlesSpec2.rightColMode, 'Value'); catch, end
+if rightMode_final == 2
+    axLabel_mn = {'Roll','Pitch','Yaw'};
+    axesOpt_mn = find([get(guiHandlesSpec2.plotR, 'Value') get(guiHandlesSpec2.plotP, 'Value') get(guiHandlesSpec2.plotY, 'Value')]);
+    tmpFileVal_mn = get(guiHandlesSpec2.FileSelect, 'Value');
+
+    % read RPM controls
+    rpmMotors_mn = [1 2 3 4];
+    try
+        rpmMotors_mn = [];
+        nMot_mn = 4; try nMot_mn = guiHandlesSpec2.nMotors; catch, end
+        for mi_ = 1:4
+            if get(guiHandlesSpec2.(sprintf('rpmMotor%d', mi_)), 'Value')
+                rpmMotors_mn(end+1) = mi_;
+                if nMot_mn > 4, rpmMotors_mn(end+1) = mi_ + nMot_mn/2; end
+            end
+        end
+    catch, rpmMotors_mn = [1 2 3 4]; end
+
+    nHarm_sel = [1 2 3];
+    try
+        harmSel_ = get(guiHandlesSpec2.rpmHarmDd, 'Value');
+        harmMap_ = {[1 2 3], [1], [2], [3], [1 2], [1 3], [2 3]};
+        nHarm_sel = harmMap_{harmSel_};
+    catch, end
+
+    rpmLw_mn = 1.5;
+    try
+        lwSel_ = get(guiHandlesSpec2.rpmLwDd, 'Value');
+        lwMap_ = [0.5 1 1.5 2];
+        rpmLw_mn = lwMap_(lwSel_);
+    catch, end
+
+    for ai = axesOpt_mn
+        stag_mn = sprintf('PSspec2_%d', ai+3);
+        h_mn = findobj(PSspecfig2, 'Type', 'axes', 'Tag', stag_mn);
+        if isempty(h_mn), h_mn = axes('Parent', PSspecfig2, 'Position', posInfo.Spec2Pos(ai+3,:), 'Tag', stag_mn);
+        else cla(h_mn); set(h_mn, 'Position', posInfo.Spec2Pos(ai+3,:)); set(PSspecfig2, 'CurrentAxes', h_mn); title(h_mn, ''); xlabel(h_mn, ''); ylabel(h_mn, ''); end
+
+        for fi_mn = 1:numel(tmpFileVal_mn)
+            fIdx_mn = tmpFileVal_mn(fi_mn);
+            fCol_mn = multiLineCols(fi_mn, :);
+            try
+                gyroFld_mn = ['gyroADC_' int2str(ai-1) '_'];
+                if ~isfield(T{fIdx_mn}, gyroFld_mn) || ~isfield(T{fIdx_mn}, 'eRPM_0_')
+                    if fi_mn == 1
+                        text(0.5, 0.5, 'No RPM data', 'Parent', h_mn, 'Units', 'normalized', ...
+                            'HorizontalAlignment', 'center', 'Color', th.textSecondary, 'FontSize', fontsz);
+                    end
+                    continue;
+                end
+                gSig_mn = T{fIdx_mn}.(gyroFld_mn)(tIND{fIdx_mn});
+                nSamp_mn = numel(gSig_mn);
+                mPoles_mn = 14;
+                try mp_mn = find(strcmp(SetupInfo{fIdx_mn}(:,1), 'motor_poles'));
+                    if ~isempty(mp_mn), mPoles_mn = str2double(SetupInfo{fIdx_mn}(mp_mn(1),2)); end
+                catch, end
+                if mPoles_mn < 2, mPoles_mn = 14; end
+                nEm_mn = 0;
+                for mi_mn = 0:7
+                    if isfield(T{fIdx_mn}, ['eRPM_' int2str(mi_mn) '_']), nEm_mn = mi_mn+1; end
+                end
+                rpmHz_mn = zeros(nSamp_mn, nEm_mn);
+                for mi_mn = 0:nEm_mn-1
+                    ef_mn = ['eRPM_' int2str(mi_mn) '_'];
+                    if isfield(T{fIdx_mn}, ef_mn)
+                        rpmHz_mn(:, mi_mn+1) = T{fIdx_mn}.(ef_mn)(tIND{fIdx_mn}) * 100 / (mPoles_mn/2) / 60;
+                    end
+                end
+                selCols_mn = rpmMotors_mn(rpmMotors_mn <= nEm_mn);
+                if isempty(selCols_mn), selCols_mn = 1:min(4, nEm_mn); end
+                nHarm_mn = 3;
+                winLen_mn = min(512, floor(nSamp_mn/4));
+                nWin_mn = floor(nSamp_mn / winLen_mn);
+                if nWin_mn < 2, nWin_mn = 1; winLen_mn = nSamp_mn; end
+                noiseVals_mn = NaN(nWin_mn, nHarm_mn);
+                lr_mn = A_lograte(fIdx_mn);
+                for wi_mn = 1:nWin_mn
+                    i1 = (wi_mn-1)*winLen_mn+1; i2 = min(wi_mn*winLen_mn, nSamp_mn);
+                    [pf_mn, pa_mn] = PSSpec2d(gSig_mn(i1:i2)', lr_mn, 1);
+                    mFreq_mn = mean(rpmHz_mn(i1:i2, selCols_mn), 'all');
+                    for hi_mn = 1:nHarm_mn
+                        ft_mn = mFreq_mn * hi_mn;
+                        if ft_mn > 0 && ft_mn < lr_mn*500 && ~isempty(pf_mn)
+                            noiseVals_mn(wi_mn, hi_mn) = interp1(pf_mn, pa_mn, ft_mn, 'linear', NaN);
+                        end
+                    end
+                end
+                avgN_mn = nanmean(noiseVals_mn, 1);
+                stdN_mn = nanstd(noiseVals_mn, 0, 1);
+                % pre-filter (dotted)
+                preFld_mn = ['gyroUnfilt_' int2str(ai-1) '_'];
+                hasPre_mn = isfield(T{fIdx_mn}, preFld_mn);
+                if ~hasPre_mn
+                    preFld_mn = ['debug_' int2str(ai-1) '_'];
+                    hasPre_mn = isfield(T{fIdx_mn}, preFld_mn) && exist('debugmode','var') && ...
+                        numel(debugmode) >= fIdx_mn && any(debugmode(fIdx_mn) == [3 6]);
+                end
+                if hasPre_mn
+                    preSig_mn = T{fIdx_mn}.(preFld_mn)(tIND{fIdx_mn});
+                    noisePre_mn = NaN(nWin_mn, nHarm_mn);
+                    for wi_mn2 = 1:nWin_mn
+                        i1p = (wi_mn2-1)*winLen_mn+1; i2p = min(wi_mn2*winLen_mn, nSamp_mn);
+                        [pfp_, pap_] = PSSpec2d(preSig_mn(i1p:i2p)', lr_mn, 1);
+                        mfp_ = mean(rpmHz_mn(i1p:i2p, selCols_mn), 'all');
+                        for hip_ = 1:nHarm_mn
+                            ftp_ = mfp_ * hip_;
+                            if ftp_ > 0 && ftp_ < lr_mn*500 && ~isempty(pfp_)
+                                noisePre_mn(wi_mn2, hip_) = interp1(pfp_, pap_, ftp_, 'linear', NaN);
+                            end
+                        end
+                    end
+                    avgPre_mn = nanmean(noisePre_mn, 1);
+                    stdPre_mn = nanstd(noisePre_mn, 0, 1);
+                    h_eb = errorbar(h_mn, nHarm_sel, avgPre_mn(nHarm_sel), stdPre_mn(nHarm_sel), 'o:');
+                    set(h_eb, 'Color', fCol_mn, 'LineWidth', rpmLw_mn, 'MarkerSize', 8);
+                    hold(h_mn, 'on');
+                end
+                % post-filter (solid)
+                h_eb = errorbar(h_mn, nHarm_sel, avgN_mn(nHarm_sel), stdN_mn(nHarm_sel), 'o-');
+                set(h_eb, 'Color', fCol_mn, 'LineWidth', rpmLw_mn+0.5, 'MarkerFaceColor', fCol_mn, 'MarkerSize', 8);
+                hold(h_mn, 'on');
+            catch
+                if fi_mn == 1
+                    text(0.5, 0.5, 'Error', 'Parent', h_mn, 'Units', 'normalized', ...
+                        'HorizontalAlignment', 'center', 'Color', th.textSecondary, 'FontSize', fontsz);
+                end
+            end
+        end
+        set(h_mn, 'XTick', 1:3, 'XTickLabel', {'1st','2nd','3rd'});
+        axis(h_mn, [0.5 3.5 -60 20]);
+        xlabel(h_mn, 'Motor Harmonic', 'fontweight', 'bold', 'Color', th.textPrimary);
+        ylabel(h_mn, [axLabel_mn{ai} ' | Avg Motor Noise (dB)'], 'fontweight', 'bold', 'Color', th.textPrimary);
+        if ai == axesOpt_mn(1)
+            fIdx1_mn = tmpFileVal_mn(1);
+            try
+                fwStr = ''; qStr = '';
+                fwRow = find(strcmp(SetupInfo{fIdx1_mn}(:,1), 'rpm_filter_weights'));
+                if ~isempty(fwRow), fwStr = SetupInfo{fIdx1_mn}{fwRow(1),2}; end
+                qRow = find(strcmp(SetupInfo{fIdx1_mn}(:,1), 'rpm_filter_q'));
+                if ~isempty(qRow), qStr = ['Q' SetupInfo{fIdx1_mn}{qRow(1),2}]; end
+                if ~isempty(fwStr) || ~isempty(qStr)
+                    fCol1_mn = multiLineCols(1,:);
+                    text(0.98, 0.95, ['Filter Weights | ' qStr], 'Parent', h_mn, 'Units', 'normalized', ...
+                        'HorizontalAlignment', 'right', 'Color', fCol1_mn, 'FontSize', fontsz-1, 'FontWeight', 'bold');
+                    text(0.98, 0.85, fwStr, 'Parent', h_mn, 'Units', 'normalized', ...
+                        'HorizontalAlignment', 'right', 'Color', fCol1_mn, 'FontSize', fontsz-1);
+                end
+            catch, end
+        end
+        grid(h_mn, 'on');
+        PSstyleAxes(h_mn, th);
+    end
+end
 
 allax = findobj(PSspecfig2, 'Type', 'axes');
 for axi = 1:numel(allax), PSstyleAxes(allax(axi), th); end

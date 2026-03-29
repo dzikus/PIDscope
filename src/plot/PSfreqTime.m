@@ -38,10 +38,13 @@ if exist('guiHandlesSpec3','var')
     try rpmShowEst = get(guiHandlesSpec3.rpmEstChk, 'Value'); catch, end
     try
         rpmMotors = [];
-        if get(guiHandlesSpec3.rpmMotor1, 'Value'), rpmMotors(end+1) = 1; end
-        if get(guiHandlesSpec3.rpmMotor2, 'Value'), rpmMotors(end+1) = 2; end
-        if get(guiHandlesSpec3.rpmMotor3, 'Value'), rpmMotors(end+1) = 3; end
-        if get(guiHandlesSpec3.rpmMotor4, 'Value'), rpmMotors(end+1) = 4; end
+        nMot_ = 4; try nMot_ = guiHandlesSpec3.nMotors; catch, end
+        for mi_ = 1:4
+            if get(guiHandlesSpec3.(sprintf('rpmMotor%d',mi_)), 'Value')
+                rpmMotors(end+1) = mi_;
+                if nMot_ > 4, rpmMotors(end+1) = mi_ + nMot_/2; end
+            end
+        end
     catch, rpmMotors = [1 2 3 4]; end
     try
         harmSel = get(guiHandlesSpec3.rpmHarmDd, 'Value');
@@ -78,6 +81,28 @@ if exist('debugmode','var') && exist('debugIdx','var') && exist('T','var') && ex
         if numel(debugIdx) >= k_, tmpRPM_ = debugIdx{k_}.RPM_FILTER; end
         if debugmode(k_) == tmpRPM_
             try rpmFilterData{k_} = [T{k_}.debug_0_(tIND{k_}), T{k_}.debug_1_(tIND{k_}), T{k_}.debug_2_(tIND{k_}), T{k_}.debug_3_(tIND{k_})];
+            catch, rpmFilterData{k_} = []; end
+        end
+        % eRPM fallback when RPM_FILTER debug mode not active
+        if (numel(rpmFilterData) < k_ || isempty(rpmFilterData{k_})) && isfield(T{k_}, 'eRPM_0_')
+            mPoles_ = 14;
+            try mp_ = find(strcmp(SetupInfo{k_}(:,1), 'motor_poles'));
+                if ~isempty(mp_), mPoles_ = str2double(SetupInfo{k_}(mp_(1),2)); end
+            catch, end
+            if mPoles_ < 2, mPoles_ = 14; end
+            try
+                nEm_ = 0;
+                for mi_ = 0:7
+                    if isfield(T{k_}, ['eRPM_' int2str(mi_) '_']), nEm_ = mi_+1; end
+                end
+                rpmHz_ = zeros(sum(tIND{k_}), nEm_);
+                for mi_ = 0:nEm_-1
+                    ef_ = ['eRPM_' int2str(mi_) '_'];
+                    if isfield(T{k_}, ef_)
+                        rpmHz_(:, mi_+1) = T{k_}.(ef_)(tIND{k_}) * 100 / (mPoles_/2) / 60;
+                    end
+                end
+                rpmFilterData{k_} = rpmHz_;
             catch, rpmFilterData{k_} = []; end
         end
     end
@@ -148,12 +173,8 @@ for i = 1 : 3
     end
 
     %% RPM filter overlay (motor frequencies + harmonics)
-    if ~isempty(rpmHarms) && ~isempty(rpmMotors) && exist('rpmFilterData','var') && exist('debugmode','var') && exist('debugIdx','var')
-        tmpRPMft = 46;
-        if numel(debugIdx) >= tmpFileVal3
-            tmpRPMft = debugIdx{tmpFileVal3}.RPM_FILTER;
-        end
-        if debugmode(tmpFileVal3) == tmpRPMft && numel(rpmFilterData) >= tmpFileVal3 && ~isempty(rpmFilterData{tmpFileVal3})
+    if ~isempty(rpmHarms) && ~isempty(rpmMotors) && exist('rpmFilterData','var')
+        if numel(rpmFilterData) >= tmpFileVal3 && ~isempty(rpmFilterData{tmpFileVal3})
             PSplotRPMOverlay(gca, rpmFilterData{tmpFileVal3}, size(specMat{i}, 2), size(specMat{i}, 1), F(end), 'time', 3, rpmMotors, rpmHarms, rpmLw);
         end
     end
