@@ -130,7 +130,15 @@ set(guiHandles.checkbox14, 'Value', 1);
 guiHandles.checkbox15=uicontrol(PSfig,'Style','checkbox','String','All','fontsize',fontsz,'TooltipString', ['Plot or clear all lines '],'ForegroundColor',[linec.col15],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox15],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), plotall_flag=get(guiHandles.checkbox15, ''Value''); PSplotLogViewer; end');
 rpmColors_ = th.sigRPM;
-rpmLabels_ = {'RPM 1', 'RPM 2', 'RPM 3', 'RPM 4'};
+nEmLV_ = 0;
+if exist('T','var') && ~isempty(T)
+    for mi_ = 4:7, if isfield(T{1}, ['eRPM_' int2str(mi_) '_']), nEmLV_ = mi_+1; end, end
+end
+if nEmLV_ > 4
+    rpmLabels_ = {sprintf('RPM 1/%d',nEmLV_/2+1), sprintf('RPM 2/%d',nEmLV_/2+2), sprintf('RPM 3/%d',nEmLV_/2+3), sprintf('RPM 4/%d',nEmLV_/2+4)};
+else
+    rpmLabels_ = {'RPM 1', 'RPM 2', 'RPM 3', 'RPM 4'};
+end
 rpmTip_ = 'Motor eRPM trace (Hz) on motor subplot';
 for rk_ = 1:4
     guiHandles.(['checkboxRPM' int2str(rk_)]) = uicontrol(PSfig,'Style','checkbox','String',rpmLabels_{rk_},'fontsize',fontsz,'TooltipString',rpmTip_,'ForegroundColor',rpmColors_{rk_},'BackgroundColor',bgcolor,...

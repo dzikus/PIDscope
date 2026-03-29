@@ -366,14 +366,20 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 hold(rpmAx, 'on');
 
                 rpmColors = th.sigRPM;
+                nEm_ = 0;
+                for mk = 0:7
+                    if isfield(T{fileIdx_}, ['eRPM_' int2str(mk) '_']), nEm_ = mk+1; end
+                end
                 rpmMax = 0;
-                for mk = 0:3
-                    if ~rpmEnabled_(mk+1), continue; end
+                for mk = 0:nEm_-1
+                    ci_ = mod(mk, 4) + 1;
+                    if ~rpmEnabled_(ci_), continue; end
                     fld = ['eRPM_' int2str(mk) '_'];
                     if isfield(T{fileIdx_}, fld)
                         raw = PSsmoothLV(PSfig, T{fileIdx_}, fileIdx_, fld, sFactor_);
                         hz = raw * 100 / (mPoles/2) / 60;
-                        plot(rpmAx, tSec_, hz, 'Color', rpmColors{mk+1}, 'LineWidth', lwVal_, 'LineStyle', ':', 'HitTest', 'off');
+                        ls_ = ':'; if mk >= 4, ls_ = '--'; end
+                        plot(rpmAx, tSec_, hz, 'Color', rpmColors{ci_}, 'LineWidth', lwVal_, 'LineStyle', ls_, 'HitTest', 'off');
                         rpmMax = max(rpmMax, max(hz));
                     end
                 end

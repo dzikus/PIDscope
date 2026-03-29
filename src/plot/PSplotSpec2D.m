@@ -155,14 +155,25 @@ if ~exist('delayDataReady','var') || ~delayDataReady
     try close(hw_delay); catch, end
 end
 
+tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
+tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
+tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
+
+% skip PSD recompute when only right-column controls changed
+needFFT_ = true;
+if exist('prevPsdKey_','var') && exist('freq2d2','var') && ~isempty(freq2d2) && ~updateSpec
+    if isequal(tmpSpecVal, prevPsdKey_.specVal) && isequal(tmpFileVal, prevPsdKey_.fileVal) && ...
+       tmpPSDVal == prevPsdKey_.psdVal && isequal(axesOptionsSpec, prevPsdKey_.axes)
+        needFFT_ = false;
+    end
+end
+
+if needFFT_
 clear s dat a RC smat amp2d2 freq2d2
 freq2d2 = {};
 amp2d2 = {};
 p=0;
 hw_fft = waitbar(0, 'computing FFT...');
-tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
-tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
-tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
 for k = 1 : length(tmpSpecVal)
     s = char(datSelectionString(tmpSpecVal(k)));
     for f = 1 : size(tmpFileVal,2)
@@ -218,12 +229,27 @@ for k = 1 : length(tmpSpecVal)
     end
 end
 try close(hw_fft); catch, end
+prevPsdKey_ = struct('specVal', tmpSpecVal, 'fileVal', tmpFileVal, 'psdVal', tmpPSDVal, 'axes', axesOptionsSpec);
+end
 
 figure(PSspecfig2);
 baselineYlines = [0 -50];
 multilineStyle = {'-' ; ':'; '--'};
 rpyLineStyle = {'-' ; '--'; ':'};
 
+% skip left-column rerender when only right-column controls changed
+tmpSmoothVal = get(guiHandlesSpec2.smoothFactor_select, 'Value');
+rightMode_chk_ = 1; try rightMode_chk_ = get(guiHandlesSpec2.rightColMode, 'Value'); catch, end
+leftKey_ = struct('specVal', tmpSpecVal, 'fileVal', tmpFileVal, 'psdVal', tmpPSDVal, ...
+    'axes', axesOptionsSpec, 'smooth', tmpSmoothVal, 'rightCol', rightMode_chk_);
+try leftKey_.clim1 = get(guiHandlesSpec2.climMax1_input, 'String');
+    leftKey_.clim2 = get(guiHandlesSpec2.climMax2_input, 'String');
+    leftKey_.delay = get(guiHandlesSpec2.Delay, 'Value');
+    leftKey_.combo = get(guiHandlesSpec2.RPYcomboSpec, 'Value');
+catch, end
+skipLeftRender_ = ~needFFT_ && exist('prevLeftKey_','var') && isequal(leftKey_, prevLeftKey_);
+
+if ~skipLeftRender_
 % cla instead of delete to avoid Qt rendering artifacts (stale white pixels)
 for di_=1:6, h_cla=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_cla), cla(h_cla); hold(h_cla,'off'); end; end
 h_del=findobj(PSspecfig2,'Type','axes','Tag','PSspec2_combo'); if ~isempty(h_del), delete(h_del); end
@@ -235,7 +261,6 @@ p = 0;
 tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
 tmpFileVal = get(guiHandlesSpec2.FileSelect, 'Value');
 tmpPSDVal = get(guiHandlesSpec2.checkboxPSD, 'Value');
-tmpSmoothVal = get(guiHandlesSpec2.smoothFactor_select, 'Value');
 for k = 1 : length(tmpSpecVal)
     s = char(datSelectionString(tmpSpecVal(k)));
     for f = 1 : size(tmpFileVal,2)
@@ -444,6 +469,11 @@ try
         try PSstyleLegend(h, th); catch, end
     end
 catch, end
+prevLeftKey_ = leftKey_;
+else
+    % right-column only: clear just axes 4-6
+    for di_=4:6, h_cla=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_cla), cla(h_cla); hold(h_cla,'off'); end; end
+end % skipLeftRender_
 
 
 % Motor Noise panels (right column, when rightColMode == 2)
@@ -481,104 +511,199 @@ if rightMode_final == 2
         rpmLw_mn = lwMap_(lwSel_);
     catch, end
 
+    % two-level cache: L1=FFT matrices (file/epoch), L2=interp results (motor sel)
+    fftKey_ = struct('fileVal', tmpFileVal_mn);
+    fftKey_.nSamp = zeros(1, numel(tmpFileVal_mn));
+    for fi_ = 1:numel(tmpFileVal_mn), fftKey_.nSamp(fi_) = sum(tIND{tmpFileVal_mn(fi_)}); end
+    fftCache_ = [];
+    try fftCache_ = getappdata(PSspecfig2, 'mnFftCache'); catch, end
+    fftHit_ = ~isempty(fftCache_) && isstruct(fftCache_) && isfield(fftCache_, 'key') && ...
+        isequal(fftCache_.key.fileVal, fftKey_.fileVal) && isequal(fftCache_.key.nSamp, fftKey_.nSamp);
+
+    if ~fftHit_
+        % L1: compute RPM Hz (all motors) + PSD matrices per file per axis
+        fftData_ = cell(numel(tmpFileVal_mn), 1);
+        nHarm_mn = 3;
+        for fi_mn = 1:numel(tmpFileVal_mn)
+            fIdx_mn = tmpFileVal_mn(fi_mn);
+            fd_ = struct('valid', false);
+            try
+                if ~isfield(T{fIdx_mn}, 'eRPM_0_'), fftData_{fi_mn} = fd_; continue; end
+                nSamp_ = sum(tIND{fIdx_mn});
+                mPoles_ = 14;
+                try mp_ = find(strcmp(SetupInfo{fIdx_mn}(:,1), 'motor_poles'));
+                    if ~isempty(mp_), mPoles_ = str2double(SetupInfo{fIdx_mn}(mp_(1),2)); end
+                catch, end
+                if mPoles_ < 2, mPoles_ = 14; end
+                nEm_ = 0;
+                for mi_ = 0:7
+                    if isfield(T{fIdx_mn}, ['eRPM_' int2str(mi_) '_']), nEm_ = mi_+1; end
+                end
+                rpmHz_ = zeros(nSamp_, nEm_);
+                for mi_ = 0:nEm_-1
+                    ef_ = ['eRPM_' int2str(mi_) '_'];
+                    if isfield(T{fIdx_mn}, ef_)
+                        rpmHz_(:, mi_+1) = T{fIdx_mn}.(ef_)(tIND{fIdx_mn}) * 100 / (mPoles_/2) / 60;
+                    end
+                end
+                winLen_ = min(512, floor(nSamp_/4));
+                nWin_ = floor(nSamp_ / winLen_);
+                if nWin_ < 2, nWin_ = 1; winLen_ = nSamp_; end
+                fd_.rpmHz = rpmHz_(1:nWin_*winLen_, :);
+                fd_.nEm = nEm_; fd_.nSamp = nSamp_; fd_.lr = A_lograte(fIdx_mn);
+                fd_.winLen = winLen_; fd_.nWin = nWin_;
+                hannW_ = hann(winLen_);
+                Fs_ = fd_.lr * 1000;
+                halfN_ = floor(winLen_/2) + 1;
+                fd_.halfN = halfN_;
+                fd_.df = Fs_ * (1) / winLen_;
+                fd_.Fs = Fs_;
+                fd_.psd = cell(1, 3);
+                fd_.prePsd = cell(1, 3);
+                fd_.hasPre = false(1, 3);
+                for ai_ = 1:3
+                    gyroFld_ = ['gyroADC_' int2str(ai_-1) '_'];
+                    if ~isfield(T{fIdx_mn}, gyroFld_), continue; end
+                    gSig_ = T{fIdx_mn}.(gyroFld_)(tIND{fIdx_mn});
+                    gSig_ = gSig_(:);
+                    sigMat_ = reshape(gSig_(1:nWin_*winLen_), winLen_, nWin_) .* hannW_;
+                    fftMat_ = fft(sigMat_);
+                    psdMat_ = abs(fftMat_(1:halfN_, :)).^2 / (Fs_ * winLen_);
+                    psdMat_(2:end-1, :) = 2 * psdMat_(2:end-1, :);
+                    fd_.psd{ai_} = 10*log10(psdMat_);
+                    % pre-filter
+                    preFld_ = ['gyroUnfilt_' int2str(ai_-1) '_'];
+                    hp_ = isfield(T{fIdx_mn}, preFld_);
+                    if ~hp_
+                        preFld_ = ['debug_' int2str(ai_-1) '_'];
+                        hp_ = isfield(T{fIdx_mn}, preFld_) && exist('debugmode','var') && ...
+                            numel(debugmode) >= fIdx_mn && any(debugmode(fIdx_mn) == [3 6]);
+                    end
+                    fd_.hasPre(ai_) = hp_;
+                    if hp_
+                        preSig_ = T{fIdx_mn}.(preFld_)(tIND{fIdx_mn});
+                        preSig_ = preSig_(:);
+                        preMat_ = reshape(preSig_(1:nWin_*winLen_), winLen_, nWin_) .* hannW_;
+                        prePsd_ = abs(fft(preMat_)(1:halfN_, :)).^2 / (Fs_ * winLen_);
+                        prePsd_(2:end-1, :) = 2 * prePsd_(2:end-1, :);
+                        fd_.prePsd{ai_} = 10*log10(prePsd_);
+                    end
+                end
+                fd_.valid = true;
+            catch
+            end
+            fftData_{fi_mn} = fd_;
+        end
+        fftS_ = struct(); fftS_.key = fftKey_; fftS_.data = fftData_;
+        setappdata(PSspecfig2, 'mnFftCache', fftS_);
+    else
+        fftData_ = fftCache_.data;
+    end
+
+    % L2: interp from cached PSD using current motor selection (cheap)
+    nHarm_mn = 3;
+    mnData_ = cell(numel(tmpFileVal_mn), 3);
+    for fi_mn = 1:numel(tmpFileVal_mn)
+        fd_ = fftData_{fi_mn};
+        if ~isstruct(fd_) || ~fd_.valid, continue; end
+        selCols_ = rpmMotors_mn(rpmMotors_mn <= fd_.nEm);
+        if isempty(selCols_), selCols_ = 1:min(4, fd_.nEm); end
+        rpmSel_ = fd_.rpmHz(:, selCols_);
+        winRpmMean_ = mean(reshape(mean(rpmSel_, 2), fd_.winLen, fd_.nWin), 1)';
+        wIdx_ = (1:fd_.nWin)';
+        for ai_ = 1:3
+            d_ = struct('valid', false, 'hasPre', fd_.hasPre(ai_), 'avgN', [], 'stdN', [], 'avgPre', [], 'stdPre', []);
+            if isempty(fd_.psd{ai_}), mnData_{fi_mn, ai_} = d_; continue; end
+            psd_ = fd_.psd{ai_};
+            noisePost_ = NaN(fd_.nWin, nHarm_mn);
+            for hi_ = 1:nHarm_mn
+                ft_ = winRpmMean_ * hi_;
+                bin_ = ft_ / fd_.df;
+                lo_ = floor(bin_) + 1;
+                frac_ = bin_ - floor(bin_);
+                ok_ = ft_ > 0 & lo_ >= 1 & lo_ < fd_.halfN;
+                vi_ = wIdx_(ok_);
+                if ~isempty(vi_)
+                    iL_ = sub2ind(size(psd_), lo_(ok_), vi_);
+                    iH_ = sub2ind(size(psd_), lo_(ok_)+1, vi_);
+                    noisePost_(vi_, hi_) = psd_(iL_) .* (1-frac_(ok_)) + psd_(iH_) .* frac_(ok_);
+                end
+            end
+            d_.avgN = nanmean(noisePost_, 1);
+            d_.stdN = nanstd(noisePost_, 0, 1);
+            if fd_.hasPre(ai_)
+                pp_ = fd_.prePsd{ai_};
+                noisePre_ = NaN(fd_.nWin, nHarm_mn);
+                for hi_ = 1:nHarm_mn
+                    ft_ = winRpmMean_ * hi_;
+                    bin_ = ft_ / fd_.df;
+                    lo_ = floor(bin_) + 1;
+                    frac_ = bin_ - floor(bin_);
+                    ok_ = ft_ > 0 & lo_ >= 1 & lo_ < fd_.halfN;
+                    vi_ = wIdx_(ok_);
+                    if ~isempty(vi_)
+                        iL_ = sub2ind(size(pp_), lo_(ok_), vi_);
+                        iH_ = sub2ind(size(pp_), lo_(ok_)+1, vi_);
+                        noisePre_(vi_, hi_) = pp_(iL_) .* (1-frac_(ok_)) + pp_(iH_) .* frac_(ok_);
+                    end
+                end
+                d_.avgPre = nanmean(noisePre_, 1);
+                d_.stdPre = nanstd(noisePre_, 0, 1);
+            end
+            d_.valid = true;
+            mnData_{fi_mn, ai_} = d_;
+        end
+    end
+
+    % plot from cached data
     for ai = axesOpt_mn
         stag_mn = sprintf('PSspec2_%d', ai+3);
         h_mn = findobj(PSspecfig2, 'Type', 'axes', 'Tag', stag_mn);
         if isempty(h_mn), h_mn = axes('Parent', PSspecfig2, 'Position', posInfo.Spec2Pos(ai+3,:), 'Tag', stag_mn);
         else cla(h_mn); set(h_mn, 'Position', posInfo.Spec2Pos(ai+3,:)); set(PSspecfig2, 'CurrentAxes', h_mn); title(h_mn, ''); xlabel(h_mn, ''); ylabel(h_mn, ''); end
-
         for fi_mn = 1:numel(tmpFileVal_mn)
-            fIdx_mn = tmpFileVal_mn(fi_mn);
             fCol_mn = multiLineCols(fi_mn, :);
-            try
-                gyroFld_mn = ['gyroADC_' int2str(ai-1) '_'];
-                if ~isfield(T{fIdx_mn}, gyroFld_mn) || ~isfield(T{fIdx_mn}, 'eRPM_0_')
-                    if fi_mn == 1
-                        text(0.5, 0.5, 'No RPM data', 'Parent', h_mn, 'Units', 'normalized', ...
-                            'HorizontalAlignment', 'center', 'Color', th.textSecondary, 'FontSize', fontsz);
-                    end
-                    continue;
-                end
-                gSig_mn = T{fIdx_mn}.(gyroFld_mn)(tIND{fIdx_mn});
-                nSamp_mn = numel(gSig_mn);
-                mPoles_mn = 14;
-                try mp_mn = find(strcmp(SetupInfo{fIdx_mn}(:,1), 'motor_poles'));
-                    if ~isempty(mp_mn), mPoles_mn = str2double(SetupInfo{fIdx_mn}(mp_mn(1),2)); end
-                catch, end
-                if mPoles_mn < 2, mPoles_mn = 14; end
-                nEm_mn = 0;
-                for mi_mn = 0:7
-                    if isfield(T{fIdx_mn}, ['eRPM_' int2str(mi_mn) '_']), nEm_mn = mi_mn+1; end
-                end
-                rpmHz_mn = zeros(nSamp_mn, nEm_mn);
-                for mi_mn = 0:nEm_mn-1
-                    ef_mn = ['eRPM_' int2str(mi_mn) '_'];
-                    if isfield(T{fIdx_mn}, ef_mn)
-                        rpmHz_mn(:, mi_mn+1) = T{fIdx_mn}.(ef_mn)(tIND{fIdx_mn}) * 100 / (mPoles_mn/2) / 60;
-                    end
-                end
-                selCols_mn = rpmMotors_mn(rpmMotors_mn <= nEm_mn);
-                if isempty(selCols_mn), selCols_mn = 1:min(4, nEm_mn); end
-                nHarm_mn = 3;
-                winLen_mn = min(512, floor(nSamp_mn/4));
-                nWin_mn = floor(nSamp_mn / winLen_mn);
-                if nWin_mn < 2, nWin_mn = 1; winLen_mn = nSamp_mn; end
-                noiseVals_mn = NaN(nWin_mn, nHarm_mn);
-                lr_mn = A_lograte(fIdx_mn);
-                for wi_mn = 1:nWin_mn
-                    i1 = (wi_mn-1)*winLen_mn+1; i2 = min(wi_mn*winLen_mn, nSamp_mn);
-                    [pf_mn, pa_mn] = PSSpec2d(gSig_mn(i1:i2)', lr_mn, 1);
-                    mFreq_mn = mean(rpmHz_mn(i1:i2, selCols_mn), 'all');
-                    for hi_mn = 1:nHarm_mn
-                        ft_mn = mFreq_mn * hi_mn;
-                        if ft_mn > 0 && ft_mn < lr_mn*500 && ~isempty(pf_mn)
-                            noiseVals_mn(wi_mn, hi_mn) = interp1(pf_mn, pa_mn, ft_mn, 'linear', NaN);
-                        end
-                    end
-                end
-                avgN_mn = nanmean(noiseVals_mn, 1);
-                stdN_mn = nanstd(noiseVals_mn, 0, 1);
-                % pre-filter (dotted)
-                preFld_mn = ['gyroUnfilt_' int2str(ai-1) '_'];
-                hasPre_mn = isfield(T{fIdx_mn}, preFld_mn);
-                if ~hasPre_mn
-                    preFld_mn = ['debug_' int2str(ai-1) '_'];
-                    hasPre_mn = isfield(T{fIdx_mn}, preFld_mn) && exist('debugmode','var') && ...
-                        numel(debugmode) >= fIdx_mn && any(debugmode(fIdx_mn) == [3 6]);
-                end
-                if hasPre_mn
-                    preSig_mn = T{fIdx_mn}.(preFld_mn)(tIND{fIdx_mn});
-                    noisePre_mn = NaN(nWin_mn, nHarm_mn);
-                    for wi_mn2 = 1:nWin_mn
-                        i1p = (wi_mn2-1)*winLen_mn+1; i2p = min(wi_mn2*winLen_mn, nSamp_mn);
-                        [pfp_, pap_] = PSSpec2d(preSig_mn(i1p:i2p)', lr_mn, 1);
-                        mfp_ = mean(rpmHz_mn(i1p:i2p, selCols_mn), 'all');
-                        for hip_ = 1:nHarm_mn
-                            ftp_ = mfp_ * hip_;
-                            if ftp_ > 0 && ftp_ < lr_mn*500 && ~isempty(pfp_)
-                                noisePre_mn(wi_mn2, hip_) = interp1(pfp_, pap_, ftp_, 'linear', NaN);
-                            end
-                        end
-                    end
-                    avgPre_mn = nanmean(noisePre_mn, 1);
-                    stdPre_mn = nanstd(noisePre_mn, 0, 1);
-                    h_eb = errorbar(h_mn, nHarm_sel, avgPre_mn(nHarm_sel), stdPre_mn(nHarm_sel), 'o:');
-                    set(h_eb, 'Color', fCol_mn, 'LineWidth', rpmLw_mn, 'MarkerSize', 8);
-                    hold(h_mn, 'on');
-                end
-                % post-filter (solid)
-                h_eb = errorbar(h_mn, nHarm_sel, avgN_mn(nHarm_sel), stdN_mn(nHarm_sel), 'o-');
-                set(h_eb, 'Color', fCol_mn, 'LineWidth', rpmLw_mn+0.5, 'MarkerFaceColor', fCol_mn, 'MarkerSize', 8);
-                hold(h_mn, 'on');
-            catch
+            d_ = mnData_{fi_mn, ai};
+            if isempty(d_) || ~isstruct(d_) || ~d_.valid
                 if fi_mn == 1
-                    text(0.5, 0.5, 'Error', 'Parent', h_mn, 'Units', 'normalized', ...
+                    text(0.5, 0.5, 'No RPM data', 'Parent', h_mn, 'Units', 'normalized', ...
                         'HorizontalAlignment', 'center', 'Color', th.textSecondary, 'FontSize', fontsz);
                 end
+                continue;
+            end
+            if d_.hasPre
+                h_eb = errorbar(h_mn, nHarm_sel, d_.avgPre(nHarm_sel), d_.stdPre(nHarm_sel), 'o:');
+                set(h_eb, 'Color', fCol_mn, 'LineWidth', rpmLw_mn, 'MarkerSize', 8);
+                hold(h_mn, 'on');
+            end
+            h_eb = errorbar(h_mn, nHarm_sel, d_.avgN(nHarm_sel), d_.stdN(nHarm_sel), 'o-');
+            set(h_eb, 'Color', fCol_mn, 'LineWidth', rpmLw_mn+0.5, 'MarkerFaceColor', fCol_mn, 'MarkerSize', 8);
+            hold(h_mn, 'on');
+        end
+        harmLabels_ = {'1st','2nd','3rd'};
+        set(h_mn, 'XTick', nHarm_sel, 'XTickLabel', harmLabels_(nHarm_sel));
+        % auto-scale Y to data + error bars
+        yVals_ = [];
+        yErr_ = [];
+        for fi2_ = 1:numel(tmpFileVal_mn)
+            d2_ = mnData_{fi2_, ai};
+            if isempty(d2_) || ~isstruct(d2_) || ~d2_.valid, continue; end
+            yVals_ = [yVals_; d2_.avgN(nHarm_sel)(:)];
+            yErr_ = [yErr_; d2_.stdN(nHarm_sel)(:)];
+            if d2_.hasPre
+                yVals_ = [yVals_; d2_.avgPre(nHarm_sel)(:)];
+                yErr_ = [yErr_; d2_.stdPre(nHarm_sel)(:)];
             end
         end
-        set(h_mn, 'XTick', 1:3, 'XTickLabel', {'1st','2nd','3rd'});
-        axis(h_mn, [0.5 3.5 -60 20]);
+        ok_ = isfinite(yVals_) & isfinite(yErr_);
+        if any(ok_)
+            yLo_ = min(yVals_(ok_) - yErr_(ok_));
+            yHi_ = max(yVals_(ok_) + yErr_(ok_));
+            yPad_ = max(3, (yHi_ - yLo_) * 0.15);
+            axis(h_mn, [min(nHarm_sel)-0.5 max(nHarm_sel)+0.5 yLo_-yPad_ yHi_+yPad_]);
+        else
+            axis(h_mn, [min(nHarm_sel)-0.5 max(nHarm_sel)+0.5 -60 20]);
+        end
         xlabel(h_mn, 'Motor Harmonic', 'fontweight', 'bold', 'Color', th.textPrimary);
         ylabel(h_mn, [axLabel_mn{ai} ' | Avg Motor Noise (dB)'], 'fontweight', 'bold', 'Color', th.textPrimary);
         if ai == axesOpt_mn(1)
