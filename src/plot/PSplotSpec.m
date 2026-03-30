@@ -98,7 +98,7 @@ set(guiHandlesSpec.climMax_input4, 'String', num2str(climScale(psdIdx, 4)));
 
 %%
 
-s1={'';'gyroADC';'debug';'piderr';'setpoint';'axisP';'axisD';'axisDpf';'pidsum'};
+s1={'';'gyroADC';'gyroPrefilt';'piderr';'setpoint';'axisP';'axisD';'axisDpf';'pidsum'};
 
 datSelectionString=[s1];
 

@@ -200,6 +200,18 @@ try
                     gyro_debug_axis(fcnt) = 0;
                 end
 
+                % BF 4.5+: gyroUnfilt → gyroPrefilt; fallback to debug if GYRO_SCALED
+                for ax_ = 0:2
+                    uf_ = ['gyroUnfilt_' int2str(ax_) '_'];
+                    pf_ = ['gyroPrefilt_' int2str(ax_) '_'];
+                    if isfield(T{fcnt}, uf_)
+                        T{fcnt}.(pf_) = T{fcnt}.(uf_);
+                    elseif debugmode(fcnt) == debugIdx{fcnt}.GYRO_SCALED && debugIdx{fcnt}.GYRO_SCALED > 0
+                        df_ = ['debug_' int2str(ax_) '_'];
+                        if isfield(T{fcnt}, df_), T{fcnt}.(pf_) = T{fcnt}.(df_); end
+                    end
+                end
+
                 try
                     r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));
                     p = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'pitchPID')),2));

@@ -17,7 +17,7 @@ set(guiHandlesSpec2.climMax2_input, 'String', num2str(climScale2(get(guiHandlesS
 
 %%
 
-s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'axisF';'pidsum';'motorAvg'};
+s1={'gyroADC';'gyroPrefilt';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'axisF';'pidsum';'motorAvg'};
 if isfield(T{1}, 'testSignal_0_'), s1{end+1} = 'testSignal'; end
 
 datSelectionString=[s1];
@@ -65,7 +65,11 @@ if ~exist('delayDataReady','var') || ~delayDataReady
         maxlag=round(30000/Fs);
 
         try
-            pg = smooth(T{k}.debug_0_(tIND{k}),50);
+            if isfield(T{k}, 'gyroPrefilt_0_')
+                pg = smooth(T{k}.gyroPrefilt_0_(tIND{k}),50);
+            else
+                pg = smooth(T{k}.debug_0_(tIND{k}),50);
+            end
         catch
             pg = [];
         end
@@ -571,14 +575,9 @@ if rightMode_final == 2
                     psdMat_ = abs(fftMat_(1:halfN_, :)).^2 / (Fs_ * winLen_);
                     psdMat_(2:end-1, :) = 2 * psdMat_(2:end-1, :);
                     fd_.psd{ai_} = 10*log10(psdMat_);
-                    % pre-filter
-                    preFld_ = ['gyroUnfilt_' int2str(ai_-1) '_'];
+                    % pre-filter (gyroPrefilt synthesized in PSload)
+                    preFld_ = ['gyroPrefilt_' int2str(ai_-1) '_'];
                     hp_ = isfield(T{fIdx_mn}, preFld_);
-                    if ~hp_
-                        preFld_ = ['debug_' int2str(ai_-1) '_'];
-                        hp_ = isfield(T{fIdx_mn}, preFld_) && exist('debugmode','var') && ...
-                            numel(debugmode) >= fIdx_mn && any(debugmode(fIdx_mn) == [3 6]);
-                    end
                     fd_.hasPre(ai_) = hp_;
                     if hp_
                         preSig_ = T{fIdx_mn}.(preFld_)(tIND{fIdx_mn});

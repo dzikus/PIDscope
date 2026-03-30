@@ -23,7 +23,7 @@ else
     fLim_freqTime = 1000;
 end
 
-s1={'gyroADC';'debug';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'pidsum'};
+s1={'gyroADC';'gyroPrefilt';'axisD';'axisDpf';'axisP';'piderr';'setpoint';'pidsum'};
 datSelectionString=[s1];
 axisLabel ={'Roll'; 'Pitch' ; 'Yaw'};
 tmpFileVal3 = get(guiHandlesSpec3.FileSelect, 'Value');
