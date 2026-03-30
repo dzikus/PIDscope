@@ -115,12 +115,23 @@ title(axGyro, 'Gyro Noise');
 h_leg = legend(axGyro, gyroAxLbl, 'Location', 'northeast');
 try PSstyleLegend(h_leg, th); catch, end
 
-% --- MID LEFT: Motor-Gyro coherence ---
+% --- MID LEFT: Motor-Gyro coherence (pre-compute all 3 axes) ---
 axCoh = axes('Parent', fig, 'Units', 'normalized', 'Position', [.06 .39 .42 .25]);
 dat.axCoh = axCoh;
-plotCoherence(axCoh, motorData, gyroData{1}, nMotors, mCol, motorLbl, Fs, fMax, 'Roll');
+cohCache = cell(3, 1);
+for gi_ = 1:3
+    cc_ = struct(); cc_.Cxy = cell(nMotors, 1);
+    gdat_ac = gyroData{gi_} - mean(gyroData{gi_});
+    for mi_ = 1:nMotors
+        mdat_ac = motorData{mi_} - mean(motorData{mi_});
+        [cc_.Cxy{mi_}, cc_.f] = mscohere_simple(mdat_ac, gdat_ac, Fs, 1024);
+    end
+    cohCache{gi_} = cc_;
+end
+dat.cohCache = cohCache;
+plotCohFromCache(axCoh, cohCache{1}, nMotors, mCol, motorLbl, fMax, 'Roll');
 
-% gyro axis dropdown (right of title, inside plot area)
+% gyro axis dropdown
 uicontrol(fig, 'Style', 'popupmenu', 'String', {'Roll', 'Pitch', 'Yaw'}, ...
     'Units', 'normalized', 'Position', [.06 .64 .10 .025], ...
     'FontSize', fontsz, 'Callback', {@cohAxisCb, fig});
@@ -177,21 +188,16 @@ end
 function cohAxisCb(src, ~, fig)
     dat = getappdata(fig, 'mndat');
     gIdx = get(src, 'Value');
-    gdat = dat.gyroData{gIdx};
-    axLbl = dat.gyroAxLbl{gIdx};
-    plotCoherence(dat.axCoh, dat.motorData, gdat, dat.nMotors, ...
-        dat.mCol{1}, dat.motorLbl{1}, dat.Fs, dat.fMax, axLbl);
+    plotCohFromCache(dat.axCoh, dat.cohCache{gIdx}, dat.nMotors, ...
+        dat.mCol{1}, dat.motorLbl{1}, dat.fMax, dat.gyroAxLbl{gIdx});
 end
 
 
-function plotCoherence(ax, motorData, gdat, nMotors, mCol, motorLbl, Fs, fMax, axLabel)
+function plotCohFromCache(ax, cc, nMotors, mCol, motorLbl, fMax, axLabel)
     cla(ax);
     thm = PStheme();
-    gdat_ac = gdat - mean(gdat);
     for m = 1:nMotors
-        mdat = motorData{m} - mean(motorData{m});
-        [Cxy, fCoh] = mscohere_simple(mdat, gdat_ac, Fs, 1024);
-        plot(ax, fCoh, Cxy, 'Color', mCol{m}, 'LineWidth', 1.0);
+        plot(ax, cc.f, cc.Cxy{m}, 'Color', mCol{m}, 'LineWidth', 1.0);
         hold(ax, 'on');
     end
     hold(ax, 'off');
