@@ -13,7 +13,9 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 TooltipString_specRun=['Run current spectral configuration'];
 TooltipString_cmap=['Choose from a selection of colormaps'];
 TooltipString_smooth=['Choose amount of smoothing'];
-TooltipString_user=['Choose the variable you wish to plot'];
+TooltipString_user=['Choose signal(s) to plot. Select up to 2.' ...
+    newline, 'Gyro prefilt = pre-filter gyro (dotted line).' ...
+    newline, 'BF 4.5+: uses gyroUnfilt (logged by default). Older BF: requires debug_mode = GYRO_SCALED.'];
 TooltipString_sub100=['Zoom data to show sub 100Hz details',...
     newline, 'Typically used to see propwash or mid-throttle vibration in e.g. Gyro/Pterm/PIDerror'];
 

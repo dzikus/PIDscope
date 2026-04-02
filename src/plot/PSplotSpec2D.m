@@ -290,7 +290,9 @@ for k = 1 : length(tmpSpecVal)
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
                         lsty = multilineStyle{k}; if isTS, lsty = '-'; end
-                        set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',lsty)
+                        lw_ = get(guiHandles.linewidth, 'Value')/2;
+                        if k > 1, lw_ = lw_ * 0.6; end
+                        set(h, 'linewidth', lw_,'linestyle',lsty)
                         set(h2,'fontsize',fontsz)
                         set(h,'Color',[lineCol])
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
@@ -333,7 +335,9 @@ for k = 1 : length(tmpSpecVal)
                         h=plot(freq2d2{p}.(ff), smooth(amp2d2{p}.(ff), log10(size(amp2d2{p}.(ff),1)) * (tmpSmoothVal^3), 'lowess')); hold on
                         hold on
                         lsty = multilineStyle{k}; if isTS, lsty = '-'; end
-                        set(h, 'linewidth', get(guiHandles.linewidth, 'Value')/2,'linestyle',lsty)
+                        lw_ = get(guiHandles.linewidth, 'Value')/2;
+                        if k > 1, lw_ = lw_ * 0.6; end
+                        set(h, 'linewidth', lw_,'linestyle',lsty)
                         set(h2,'fontsize',fontsz)
                         set(h,'Color',[lineCol])
                         m = (A_lograte(tmpFileVal(f)) * 1000) / 2;
@@ -475,6 +479,24 @@ try
         try PSstyleLegend(h, th); catch, end
     end
 catch, end
+% warn if "Gyro prefilt" selected but no data available
+if any(tmpSpecVal == 2)
+    hasPF_ = false;
+    for fi_ = 1:size(tmpFileVal,2)
+        if isfield(T{tmpFileVal(fi_)}, 'gyroPrefilt_0_'), hasPF_ = true; break; end
+    end
+    if ~hasPF_
+        delete(findobj(PSspecfig2, 'Tag', 'prefiltWarn'));
+        axW_ = findobj(PSspecfig2, 'Type', 'axes', 'Tag', 'PSspec2_1');
+        if ~isempty(axW_)
+            text(axW_, 0.5, 0.5, {'No pre-filter gyro data.', 'Requires gyroUnfilt (BF 4.5+) or debug\_mode = GYRO\_SCALED.'}, ...
+                'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontSize', fontsz+1, ...
+                'Color', [.8 .3 .3], 'Tag', 'prefiltWarn');
+        end
+    else
+        delete(findobj(PSspecfig2, 'Tag', 'prefiltWarn'));
+    end
+end
 prevLeftKey_ = leftKey_;
 else
     % right-column only: clear just axes 4-6
