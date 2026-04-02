@@ -252,6 +252,8 @@ try leftKey_.clim1 = get(guiHandlesSpec2.climMax1_input, 'String');
     leftKey_.combo = get(guiHandlesSpec2.RPYcomboSpec, 'Value');
 catch, end
 skipLeftRender_ = ~needFFT_ && exist('prevLeftKey_','var') && isequal(leftKey_, prevLeftKey_);
+% invalidate if axes were deleted externally
+if skipLeftRender_ && isempty(findobj(PSspecfig2, 'Type', 'axes', 'Tag', 'PSspec2_1')), skipLeftRender_ = false; end
 
 if ~skipLeftRender_
 % cla instead of delete to avoid Qt rendering artifacts (stale white pixels)

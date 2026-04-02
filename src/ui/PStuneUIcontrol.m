@@ -72,12 +72,19 @@ posInfo.period=              [cpL+cpM yTop-rh hw rh];
 posInfo.markup=              [cpL+cpW/2 yTop-rh hw rh]; yTop=yTop-rh-gap;
 posInfo.smooth_tuning=       [cpL+cpM yTop-ddh fw/2-gap ddh];
 posInfo.srLatency=           [cpL+cpM+fw/2 yTop-ddh fw/2 ddh]; yTop=yTop-ddh-gap;
+posInfo.subsample=           [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
+w3_ = (fw - 2*gap) / 3;
+posInfo.minRateTxt=          [cpL+cpM yTop-rhs w3_ rhs];
+posInfo.minRateInput=        [cpL+cpM+w3_+gap yTop-rh w3_ rh];
+posInfo.maxRateInput=        [cpL+cpM+2*(w3_+gap) yTop-rh w3_ rh]; yTop=yTop-rh-gap;
+posInfo.snapManeuver=        [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
 posInfo.plotR=               [cpL+cpM yTop-rh cbW rh];
 posInfo.plotP=               [cpL+cpM+cbW yTop-rh cbW rh];
 posInfo.plotY=               [cpL+cpM+2*cbW yTop-rh cbW rh]; yTop=yTop-rh-gap;
 posInfo.RPYcombo=            [cpL+cpM yTop-rh fw/2-gap rh];
 posInfo.rawTraces=           [cpL+cpM+fw/2 yTop-rh fw/2 rh]; yTop=yTop-rh-gap;
 posInfo.Ycorrection=         [cpL+cpM yTop-rh fw rh]; yTop=yTop-rh-gap;
+posInfo.bfSliders=           [cpL+cpM yTop-ddh fw ddh]; yTop=yTop-ddh-gap;
 posInfo.maxYStepInput=       [cpL+cpM yTop-rh cpW/3 rh];
 posInfo.maxYStepTxt=         [cpL+cpW/3+cpM yTop-rhs cpW/2 rhs];
 
@@ -88,11 +95,11 @@ guiHandlesTune.tuneCrtlpanel = uipanel('Title','select files (max 10)','FontSize
               'Position',[cpL yTop-rh-gap cpW vPos-(yTop-rh-gap)+cpTitleH+cpMv]);
 
 guiHandlesTune.run4 = uicontrol(PStunefig,'string','Run','fontsize',fontsz,'TooltipString',[TooltipString_steprun],'units','normalized','Position',[posInfo.run4],...
-    'callback','PStuningParams;'); 
+    'callback','updateStep = 0; PStuningParams;');
 set(guiHandlesTune.run4, 'ForegroundColor', colRun);
 
 guiHandlesTune.fileListWindowStep = uicontrol(PStunefig,'Style','listbox','string',[fnameMaster],'max',10,'min',1,...
-    'fontsize',fontsz,'TooltipString', [TooltipString_fileListWindowStep],'units','normalized','Position', [posInfo.fileListWindowStep],'callback','@selection2;');
+    'fontsize',fontsz,'TooltipString', [TooltipString_fileListWindowStep],'units','normalized','Position', [posInfo.fileListWindowStep]);
 set(guiHandlesTune.fileListWindowStep, 'Value', 1);
 
 guiHandlesTune.saveFig4 = uicontrol(PStunefig,'string','Save Fig','fontsize',fontsz,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig4],...
@@ -112,18 +119,38 @@ guiHandlesTune.smoothFactor_select = uicontrol(PStunefig,'style','popupmenu','st
      'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.smoothFactor_select, 'Value', 1);
 guiHandlesTune.srLatency = uicontrol(PStunefig,'style','popupmenu','string',{'SR Latency' 'Xcorr Latency'},'fontsize',fontsz,'TooltipString', 'Latency measurement method', 'units','normalized','Position',[posInfo.srLatency],...
-     'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+     'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+
+guiHandlesTune.subsample = uicontrol(PStunefig,'style','popupmenu','string',{'sub auto' 'sub low (fastest)' 'sub med-low' 'sub medium' 'sub med-high' 'sub high (slowest)'},...
+    'fontsize',fontsz,'TooltipString', [TooltipString_steprun], 'units','normalized','Position',[posInfo.subsample],...
+    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.subsample, 'Value', 1);
+
+guiHandlesTune.minRateTxt = uicontrol(PStunefig,'style','text','string','deg/s','fontsize',fontsz,...
+    'TooltipString', [TooltipString_minRate], 'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.minRateTxt]);
+guiHandlesTune.minRateInput = uicontrol(PStunefig,'style','edit','string','40','fontsize',fontsz,...
+    'TooltipString', [TooltipString_minRate], 'units','normalized','Position',[posInfo.minRateInput],...
+    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+guiHandlesTune.maxRateInput = uicontrol(PStunefig,'style','edit','string','500','fontsize',fontsz,...
+    'TooltipString', [TooltipString_maxRate], 'units','normalized','Position',[posInfo.maxRateInput],...
+    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+
+guiHandlesTune.snapManeuver = uicontrol(PStunefig,'Style','checkbox','String','Snap maneuvers','fontsize',fontsz,...
+    'TooltipString', [TooltipString_FastStepResp], 'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.snapManeuver],...
+    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.snapManeuver, 'Value', 0);
 
 guiHandlesTune.plotR =uicontrol(PStunefig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisRoll,'Position',[posInfo.plotR],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisRoll,'Position',[posInfo.plotR],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.plotR, 'Value', 1);
 
 guiHandlesTune.plotP =uicontrol(PStunefig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisPitch,'Position',[posInfo.plotP],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisPitch,'Position',[posInfo.plotP],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.plotP, 'Value', 1);
 
 guiHandlesTune.plotY =uicontrol(PStunefig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisYaw,'Position',[posInfo.plotY],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
-set(guiHandlesTune.plotY, 'Value', 0);
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisYaw,'Position',[posInfo.plotY],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+set(guiHandlesTune.plotY, 'Value', 1);
 
 guiHandlesTune.clearPlots = uicontrol(PStunefig,'string','Reset','fontsize',fontsz,'TooltipString',[TooltipString_clearPlot],'units','normalized','Position',[posInfo.clearPlots],...
     'callback','set(guiHandlesTune.clearPlots, ''Value'', 1); set(guiHandlesTune.clearPlots, ''FontWeight'', ''bold''); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); set(PStunefig, ''pointer'', ''arrow'');'); 
@@ -134,17 +161,21 @@ guiHandlesTune.Ycorrection =uicontrol(PStunefig,'Style','checkbox','String','Y c
 set(guiHandlesTune.Ycorrection, 'Value', 0);
 
 guiHandlesTune.RPYcombo =uicontrol(PStunefig,'Style','checkbox','String','Single Panel','fontsize',fontsz,'TooltipString', ['Plot RPY in same panel '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.RPYcombo],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.RPYcombo],'callback', 'delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.RPYcombo, 'Value', 0);
 
 guiHandlesTune.rawTraces =uicontrol(PStunefig,'Style','checkbox','String','Raw','fontsize',fontsz,'TooltipString', ['Show individual segment traces'],...
     'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.rawTraces],...
-    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 set(guiHandlesTune.rawTraces, 'Value', 0);
+
+guiHandlesTune.bfSliders =uicontrol(PStunefig,'Style','popupmenu','String',{'Peak-Latency' 'BF sliders'},'fontsize',fontsz,'TooltipString', ['Switch between Peak/Latency scatter and BF slider positions'],...
+    'units','normalized','Position',[posInfo.bfSliders],...
+    'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 
 guiHandlesTune.maxYStepTxt = uicontrol(PStunefig,'style','text','string','Y max ','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYStepTxt]);
 guiHandlesTune.maxYStepInput = uicontrol(PStunefig,'style','edit','string','1.75','fontsize',fontsz,'TooltipString', ['Y scale max'],'units','normalized','Position',[posInfo.maxYStepInput],...
-     'callback','@textinput_call3; set(guiHandlesTune.clearPlots, ''Value'', 1); fcntSR = 0; PStuningParams; set(guiHandlesTune.clearPlots, ''Value'', 0); set(guiHandlesTune.clearPlots, ''FontWeight'', ''normal''); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
+     'callback','@textinput_call3; delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 1; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 tuneCrtlpanel_init = true;
 end % ishandle(tuneCrtlpanel)
 
@@ -163,23 +194,32 @@ cpI{end+1} = struct('h', guiHandlesTune.period, 'type','left', 'row',0, 'col',0,
 cpI{end+1} = struct('h', guiHandlesTune.markup, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.smoothFactor_select, 'type','left', 'row',0, 'col',0, 'hpx',ddh_px);
 cpI{end+1} = struct('h', guiHandlesTune.srLatency, 'type','right', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesTune.subsample, 'type','full', 'row',0, 'col',0, 'hpx',ddh_px);
+cpI{end+1} = struct('h', guiHandlesTune.minRateTxt, 'type','cb', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.minRateInput, 'type','cb', 'row',0, 'col',1, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.maxRateInput, 'type','cb_end', 'row',0, 'col',2, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.snapManeuver, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.plotR, 'type','cb', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.plotP, 'type','cb', 'row',0, 'col',1, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.plotY, 'type','cb_end', 'row',0, 'col',2, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.RPYcombo, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.rawTraces, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.Ycorrection, 'type','full', 'row',0, 'col',0, 'hpx',rh_px);
+cpI{end+1} = struct('h', guiHandlesTune.bfSliders, 'type','full', 'row',0, 'col',0, 'hpx',ddh_px);
 cpI{end+1} = struct('h', guiHandlesTune.maxYStepInput, 'type','left', 'row',0, 'col',0, 'hpx',rh_px);
 cpI{end+1} = struct('h', guiHandlesTune.maxYStepTxt, 'type','right', 'row',0, 'col',0, 'hpx',rh_px);
 setappdata(PStunefig, 'PSplotGrid', struct('plotL',plotLt, 'colGap',colGapT, ...
     'ncols',4, 'rows',rows, 'rowH',0.245, 'margin',0.02, 'colWidthFracs',colFracs));
 PSregisterResize(PStunefig, cpPx, cpI, 'seq');
 
-try set(guiHandlesTune.plotR, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotR')))), catch, set(guiHandlesTune.plotR, 'Value', 1), end
-try set(guiHandlesTune.plotP, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotP')))), catch, set(guiHandlesTune.plotP, 'Value', 1), end
-try set(guiHandlesTune.plotY, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-plotY')))), catch, set(guiHandlesTune.plotY, 'Value', 1), end
-try set(guiHandlesTune.RPYcombo, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-SinglePanel')))), catch, set(guiHandlesTune.RPYcombo, 'Value', 0), end
-try set(guiHandlesTune.maxYStepInput, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'StepResp-Ymax'))))), catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-plotR')); if ~isempty(idx_), set(guiHandlesTune.plotR,'Value',defaults.Values(idx_)); end, catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-plotP')); if ~isempty(idx_), set(guiHandlesTune.plotP,'Value',defaults.Values(idx_)); end, catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-plotY')); if ~isempty(idx_), set(guiHandlesTune.plotY,'Value',defaults.Values(idx_)); end, catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-SinglePanel')); if ~isempty(idx_), set(guiHandlesTune.RPYcombo,'Value',defaults.Values(idx_)); end, catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-Ymax')); if ~isempty(idx_), set(guiHandlesTune.maxYStepInput,'String',num2str(defaults.Values(idx_))); end, catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-Subsample')); if ~isempty(idx_), set(guiHandlesTune.subsample,'Value',defaults.Values(idx_)); end, catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-MinRate')); if ~isempty(idx_), set(guiHandlesTune.minRateInput,'String',num2str(defaults.Values(idx_))); end, catch, end
+try idx_=find(strcmp(defaults.Parameters,'StepResp-MaxRate')); if ~isempty(idx_), set(guiHandlesTune.maxRateInput,'String',num2str(defaults.Values(idx_))); end, catch, end
 
 else
     warndlg('Please select file(s)');

@@ -36,7 +36,7 @@ end
 % clear secondary figure and panel handles
 clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp;
 clear errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel;
-clear freqTimeCrtlpanel tuneCrtlpanel;
+clear freqTimeCrtlpanel tuneCrtlpanel fcntSR;
 
 % reset UI
 set(guiHandles.FileNum, 'String', ' ');
