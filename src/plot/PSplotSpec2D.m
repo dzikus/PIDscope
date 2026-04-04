@@ -256,8 +256,16 @@ skipLeftRender_ = ~needFFT_ && exist('prevLeftKey_','var') && isequal(leftKey_, 
 if skipLeftRender_ && isempty(findobj(PSspecfig2, 'Type', 'axes', 'Tag', 'PSspec2_1')), skipLeftRender_ = false; end
 
 if ~skipLeftRender_
-% cla instead of delete to avoid Qt rendering artifacts (stale white pixels)
-for di_=1:6, h_cla=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_cla), cla(h_cla); hold(h_cla,'off'); end; end
+% cla active panels, delete unchecked ones so they don't linger at old positions
+for di_=1:3
+    for si_=[di_ di_+3]
+        h_cla=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',si_));
+        if ~isempty(h_cla)
+            if any(axesOptionsSpec == di_), cla(h_cla); hold(h_cla,'off');
+            else delete(h_cla); end
+        end
+    end
+end
 h_del=findobj(PSspecfig2,'Type','axes','Tag','PSspec2_combo'); if ~isempty(h_del), delete(h_del); end
 h_del=findobj(PSspecfig2,'Type','axes','Tag','legend'); if ~isempty(h_del), delete(h_del); end
 %%%%% plot 2d amp spec
