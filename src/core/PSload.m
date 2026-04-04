@@ -264,6 +264,17 @@ try
                     end
                 end
 
+                % gyroUnfilt -> gyroADC fallback (old BF logs lack gyroADC)
+                for ax = 0:2
+                    adc = sprintf('gyroADC_%d_', ax);
+                    uf = sprintf('gyroUnfilt_%d_', ax);
+                    if ~isfield(T{fcnt}, adc) && isfield(T{fcnt}, uf)
+                        T{fcnt}.(adc) = T{fcnt}.(uf);
+                    elseif ~isfield(T{fcnt}, adc)
+                        T{fcnt}.(adc) = zeros(length(T{fcnt}.loopIteration), 1);
+                    end
+                end
+
                 isArduPilot = strcmpi(sfext, '.bin');
 
                 Nsamples = length(T{fcnt}.loopIteration);

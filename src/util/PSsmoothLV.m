@@ -9,11 +9,13 @@ if isempty(sc) || ~isfield(sc, 'fIdx') || sc.fIdx ~= fileIdx
     sc = struct('fIdx', fileIdx);
 end
 
+if ~isfield(Tfile, fieldName), y = []; return; end
+
 cacheKey = [fieldName '_s' int2str(sFactor)];
 if isfield(sc, cacheKey)
     y = sc.(cacheKey);
     if numel(y) == numel(Tfile.(fieldName)), return; end
-    sc = struct('fIdx', fileIdx);  % stale cache — different data length
+    sc = struct('fIdx', fileIdx);  % stale cache - different data length
 end
 
 raw = Tfile.(fieldName);
