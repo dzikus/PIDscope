@@ -198,7 +198,33 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                     set(h,'Color','w','fontsize',fontsz,'fontweight','bold');
                 end  
                 h=text(xticks(1)+1,(size(ampmat{p},2)-30)+1,axLabel{c2(p)});
-                set(h,'Color',[1 1 1],'fontsize',fontsz,'fontweight','bold')                       
+                set(h,'Color',[1 1 1],'fontsize',fontsz,'fontweight','bold')
+                % TPA diagnostic annotation
+                if (c2(p) == 1 || c2(p) == 2) && ~isempty(smat{p}) && any(strcmp(smat{p}, {'gyroADC','gyroPrefilt','piderr'}))
+                    try
+                        freqAx_ = [];
+                        for rr_ = 1:size(freq{p},1)
+                            if any(freq{p}(rr_,:) > 0), freqAx_ = freq{p}(rr_,:); break; end
+                        end
+                        if ~isempty(freqAx_)
+                            [tpaF_, tpaOn_, tpaR_] = PStpaDetect(ampmat{p}, freqAx_, tmpPSDVal);
+                            if tpaF_
+                                tpaRate_ = 0;
+                                tmpFK_ = get(guiHandlesSpec.FileSelect{c1(p)}, 'Value');
+                                try idx_ = find(strcmp(SetupInfo{tmpFK_}(:,1), 'tpa_rate'));
+                                    if ~isempty(idx_), tpaRate_ = str2double(SetupInfo{tmpFK_}(idx_(1),2)); end
+                                catch, end
+                                if tpaRate_ == 0
+                                    tpaStr_ = sprintf('TPA: +%ddB >%d%%thr', round(tpaR_), tpaOn_);
+                                else
+                                    tpaStr_ = sprintf('TPA active, +%ddB', round(tpaR_));
+                                end
+                                h = text(36, (size(ampmat{p},2)-30)+5, tpaStr_);
+                                set(h, 'Color', [1 .85 0], 'fontsize', fontsz, 'fontweight', 'bold', 'Tag', 'tpaDiag');
+                            end
+                        end
+                    catch, end
+                end
             else % full scaling
                 xticks=round([1 size(ampmat{p},1)/5:size(ampmat{p},1)/5:size(ampmat{p},1)]);
                 yticks=round([1:(size(ampmat{p},2))/10:size(ampmat{p},2) size(ampmat{p},2)]);
@@ -222,7 +248,33 @@ if get(guiHandlesSpec.checkbox2d, 'Value')==0 && ~isempty(ampmat)
                     set(h,'Color','w','fontsize',fontsz,'fontweight','bold');
                 end    
                 h=text(xticks(1)+1,size(ampmat{p},2)*.04,axLabel{c2(p)});
-                set(h,'Color',[1 1 1],'fontsize',fontsz,'fontweight','bold')   
+                set(h,'Color',[1 1 1],'fontsize',fontsz,'fontweight','bold')
+                % TPA diagnostic annotation (full scale)
+                if (c2(p) == 1 || c2(p) == 2) && ~isempty(smat{p}) && any(strcmp(smat{p}, {'gyroADC','gyroPrefilt','piderr'}))
+                    try
+                        freqAx_ = [];
+                        for rr_ = 1:size(freq{p},1)
+                            if any(freq{p}(rr_,:) > 0), freqAx_ = freq{p}(rr_,:); break; end
+                        end
+                        if ~isempty(freqAx_)
+                            [tpaF_, tpaOn_, tpaR_] = PStpaDetect(ampmat{p}, freqAx_, tmpPSDVal);
+                            if tpaF_
+                                tpaRate_ = 0;
+                                tmpFK_ = get(guiHandlesSpec.FileSelect{c1(p)}, 'Value');
+                                try idx_ = find(strcmp(SetupInfo{tmpFK_}(:,1), 'tpa_rate'));
+                                    if ~isempty(idx_), tpaRate_ = str2double(SetupInfo{tmpFK_}(idx_(1),2)); end
+                                catch, end
+                                if tpaRate_ == 0
+                                    tpaStr_ = sprintf('TPA: +%ddB >%d%%thr', round(tpaR_), tpaOn_);
+                                else
+                                    tpaStr_ = sprintf('TPA active, +%ddB', round(tpaR_));
+                                end
+                                h = text(36, size(ampmat{p},2)*.22, tpaStr_);
+                                set(h, 'Color', [1 .85 0], 'fontsize', fontsz, 'fontweight', 'bold', 'Tag', 'tpaDiag');
+                            end
+                        end
+                    catch, end
+                end
             end
             
                         
