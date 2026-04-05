@@ -97,6 +97,7 @@ th.btnStop       = [.70 0 0];       % stop - crimson
 % signal colors (bright for dark bg)
 th.sigDebug     = [.50 .50 .50];
 th.sigGyro      = [.85 .85 .85];
+th.sigGyroPrefilt = [.65 .65 .65];
 th.sigPterm     = [.20 .85 .20];
 th.sigIterm     = [.90 .75 .20];
 th.sigDprefilt  = [.45 .80 .95];

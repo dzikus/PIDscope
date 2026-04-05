@@ -29,6 +29,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
     if plotall_flag>=0
         allVal = get(guiHandles.checkbox15, 'Value');
         set(guiHandles.checkbox0, 'Value', allVal);
+        try set(guiHandles.checkboxGyroPF, 'Value', allVal); catch, end
         set(guiHandles.checkbox1, 'Value', allVal);
         set(guiHandles.checkbox2, 'Value', allVal);
         set(guiHandles.checkbox3, 'Value', allVal);
@@ -73,6 +74,13 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
             if ~hasERPM_, set(guiHandles.(['checkboxRPM' int2str(rk_)]), 'Value', 0); end
         catch, end
     end
+
+    % enable/disable Gyro(pf) checkbox based on gyroPrefilt data
+    hasPF_ = exist('T','var') && iscell(T) && numel(T) >= fileIdx && isfield(T{fileIdx}, 'gyroPrefilt_0_');
+    pfEn_ = 'off'; if hasPF_, pfEn_ = 'on'; end
+    try set(guiHandles.checkboxGyroPF, 'Enable', pfEn_);
+        if ~hasPF_, set(guiHandles.checkboxGyroPF, 'Value', 0); end
+    catch, end
 
     % Update Debug checkbox label for RC_INTERPOLATION mode (version-aware)
     tmpRCidx = RC_INTERPOLATION; % global default
@@ -218,6 +226,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
                 tSec = tta{fileIdx}/us2sec;
                 if get(guiHandles.checkbox0, 'Value'), try hch1=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['debug_' int2str(ii-1) '_'], sFactor));hold on;set(hch1,'color', [linec.col0],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), catch, end, end
+                try if get(guiHandles.checkboxGyroPF, 'Value'), try hchPF=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['gyroPrefilt_' int2str(ii-1) '_'], sFactor));hold on;set(hchPF,'color', [linec.colGyroPF],'LineWidth',lwVal,'linestyle','--'), catch, end, end, catch, end
                 if get(guiHandles.checkbox1, 'Value'), try hch2=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['gyroADC_' int2str(ii-1) '_'], sFactor));hold on;set(hch2,'color', [linec.col1],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), catch, end, end
                 if get(guiHandles.checkbox2, 'Value'), try hch3=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['axisP_' int2str(ii-1) '_'], sFactor));hold on;set(hch3,'color', [linec.col2],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), catch, end, end
                 if get(guiHandles.checkbox3, 'Value'), try hch4=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, ['axisI_' int2str(ii-1) '_'], sFactor));hold on;set(hch4,'color', [linec.col3],'LineWidth',lwVal,'linestyle',[lnstyle{cntLV}]), catch, end, end

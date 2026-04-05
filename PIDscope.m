@@ -236,6 +236,7 @@ ColorSet=[th.sigDebug;...     % Debug
 for k=0:15
     linec.(['col' int2str(k)]) = ColorSet(k+1,:);
 end
+linec.colGyroPF = th.sigGyroPrefilt;
 
 %%% tooltips
 TooltipString_files=['Select the .BBL or .BFL file you wish to analyze. '];

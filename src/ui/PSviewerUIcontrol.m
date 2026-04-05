@@ -17,7 +17,7 @@ chkEdtW = chkEdtW_px/figW; chkTxtW = chkTxtW_px/figW;
 tbOff = 40/figH;
 chkRow1 = 1 - tbOff;  chkRow2 = chkRow1 - rs;
 chkX = 0.10;
-posInfo.checkbox0=[chkX chkRow1 chkW chkH];
+posInfo.checkboxGyroPF=[chkX chkRow1 chkW chkH];
 posInfo.checkbox1=[chkX chkRow2 chkW chkH];     chkX=chkX+chkW;
 posInfo.checkbox2=[chkX chkRow1 chkW chkH];
 posInfo.checkbox3=[chkX chkRow2 chkW chkH];      chkX=chkX+chkW;
@@ -33,7 +33,8 @@ posInfo.checkbox11=[chkX chkRow1 chkMotW chkH];
 posInfo.checkbox10=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 posInfo.checkbox14=[chkX chkRow1 chkMotW chkH];
 posInfo.checkboxTS=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
-posInfo.checkbox15=[chkX chkRow1 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkbox15=[chkX chkRow1 chkMotW chkH];
+posInfo.checkbox0=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
 chkRpmW_px = 80; chkRpmW = chkRpmW_px/figW;
 posInfo.checkboxRPM4=[chkX chkRow1 chkRpmW chkH];
 posInfo.checkboxRPM3=[chkX chkRow2 chkRpmW chkH];      chkX=chkX+chkRpmW;
@@ -78,6 +79,8 @@ checkpanel = uipanel('Title','','FontSize',fontsz,...
              'HighlightColor',panelBorder,...
              'Position',[0.096 chkRow2-cpMv chkPanelW chkRow1+rh+cpMv-chkRow2+cpMv]);
 
+guiHandles.checkboxGyroPF=uicontrol(PSfig,'Style','checkbox','String','Gyro(pf)','fontsize',fontsz,'ForegroundColor',[linec.colGyroPF],'BackgroundColor',bgcolor,...
+    'units','normalized','Position',[posInfo.checkboxGyroPF],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 guiHandles.checkbox0=uicontrol(PSfig,'Style','checkbox','String','Debug','fontsize',fontsz,'ForegroundColor',[linec.col0],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox0],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 guiHandles.checkbox1=uicontrol(PSfig,'Style','checkbox','String','Gyro','fontsize',fontsz,'ForegroundColor',[linec.col1],'BackgroundColor',bgcolor,...
@@ -159,7 +162,7 @@ guiHandles.nCols_input = uicontrol(PSfig,'style','edit','string',int2str(nLineCo
 
 % Register checkbox bar for pixel-based resize
 chkBarItems = {};
-chkBarItems{end+1} = struct('h', guiHandles.checkbox0, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxGyroPF, 'wpx', chkW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.checkbox1, 'wpx', chkW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.checkbox2, 'wpx', chkW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.checkbox3, 'wpx', chkW_px, 'row', 2, 'advance', true);
@@ -175,7 +178,8 @@ chkBarItems{end+1} = struct('h', guiHandles.checkbox11, 'wpx', chkMotW_px, 'row'
 chkBarItems{end+1} = struct('h', guiHandles.checkbox10, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.checkbox14, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.checkboxTS, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
-chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 1, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox0, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.checkboxRPM4, 'wpx', chkRpmW_px, 'row', 1, 'advance', false);
 chkBarItems{end+1} = struct('h', guiHandles.checkboxRPM3, 'wpx', chkRpmW_px, 'row', 2, 'advance', true);
 chkBarItems{end+1} = struct('h', guiHandles.checkboxRPM2, 'wpx', chkRpmW_px, 'row', 1, 'advance', false);
