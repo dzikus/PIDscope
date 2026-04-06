@@ -507,8 +507,10 @@ if any(tmpSpecVal == 2)
 end
 prevLeftKey_ = leftKey_;
 else
-    % right-column only: clear just axes 4-6
-    for di_=4:6, h_cla=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_cla), cla(h_cla); hold(h_cla,'off'); end; end
+    % right-column only: clear axes 4-6 when Motor Noise will repopulate
+    if rightMode_chk_ == 2
+        for di_=4:6, h_cla=findobj(PSspecfig2,'Type','axes','Tag',sprintf('PSspec2_%d',di_)); if ~isempty(h_cla), cla(h_cla); hold(h_cla,'off'); end; end
+    end
 end % skipLeftRender_
 
 
