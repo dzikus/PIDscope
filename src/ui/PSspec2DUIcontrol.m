@@ -133,7 +133,8 @@ sA={'Gyro','Gyro prefilt','Dterm','Dterm prefilt','Pterm','PID error','Set point
 if isfield(T{1}, 'testSignal_0_'), sA{end+1} = 'Test Signal'; end
 
 guiHandlesSpec2.SpecList = uicontrol(PSspecfig2,'Style','listbox','string',[sA],'max',3,'min',1, 'fontsize',fontsz, 'TooltipString',[TooltipString_user],'units','normalized','Position', [posInfo.TermListWindowSpec], 'callback', 'if length(get(guiHandlesSpec2.SpecList, ''Value'')) > 2, set(guiHandlesSpec2.SpecList, ''Value'', 1); end;');
-set(guiHandlesSpec2.SpecList, 'Value', [1 2]);
+specDef_ = [1]; if isfield(T{1}, 'gyroPrefilt_0_'), specDef_ = [1 2]; end
+set(guiHandlesSpec2.SpecList, 'Value', specDef_);
  
 guiHandlesSpec2.FileSelect = uicontrol(PSspecfig2,'Style','listbox','string',[fnameMaster],'max', 10, 'min', 1, 'fontsize',fontsz,'TooltipString',[TooltipString_user],'units','normalized','Position', [posInfo.fileListWindowSpec], 'callback', 'if length(get(guiHandlesSpec2.FileSelect, ''Value'')) > 10, set(guiHandlesSpec2.FileSelect, ''Value'', 1); end;');
 
@@ -264,7 +265,11 @@ setappdata(PSspecfig2, 'PSplotGrid', struct('plotL',plotL2, 'colGap',colGap2, ..
     'ncols',2, 'rows',rows, 'rowH',0.25, 'margin',0.04));
 PSregisterResize(PSspecfig2, cpPx, cpI, 'seq');
 
-try set(guiHandlesSpec2.SpecList, 'Value', [defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term1'))) defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term2')))]), catch, set(guiHandlesSpec2.SpecList, 'Value', [1 2]), end
+try specSaved_ = [defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term1'))) defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-term2')))];
+    if ~isfield(T{1}, 'gyroPrefilt_0_'), specSaved_(specSaved_ == 2) = []; end
+    if isempty(specSaved_), specSaved_ = 1; end
+    set(guiHandlesSpec2.SpecList, 'Value', specSaved_);
+catch, set(guiHandlesSpec2.SpecList, 'Value', specDef_), end
 try set(guiHandlesSpec2.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-smoothing')))), catch, set(guiHandlesSpec2.smoothFactor_select, 'Value', 3), end
 try set(guiHandlesSpec2.Delay, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-delay')))), catch, set(guiHandlesSpec2.Delay, 'Value', 1), end
 try set(guiHandlesSpec2.plotR, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'spec2D-plotR')))), catch, set(guiHandlesSpec2.plotR, 'Value', 1), end

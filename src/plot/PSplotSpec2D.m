@@ -504,6 +504,8 @@ if any(tmpSpecVal == 2)
     else
         delete(findobj(PSspecfig2, 'Tag', 'prefiltWarn'));
     end
+else
+    delete(findobj(PSspecfig2, 'Tag', 'prefiltWarn'));
 end
 prevLeftKey_ = leftKey_;
 else
