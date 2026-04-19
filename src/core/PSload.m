@@ -245,7 +245,11 @@ try
                     T{fcnt}.setpoint_0_ = T{fcnt}.axisRate_0_;
                     T{fcnt}.setpoint_1_ = T{fcnt}.axisRate_1_;
                     T{fcnt}.setpoint_2_ = T{fcnt}.axisRate_2_;
-                    T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
+                    if isfield(T{fcnt}, 'rcData_3_')
+                        T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
+                    else
+                        T{fcnt}.setpoint_3_ = zeros(length(T{fcnt}.loopIteration), 1);
+                    end
                 end
                 if isRF % setpoint_3_ is collective, use rcCommand[4] as throttle
                     if isfield(T{fcnt}, 'rcCommand_4_')

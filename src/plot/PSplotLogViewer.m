@@ -280,7 +280,7 @@ if exist('fnameMaster','var') && ~isempty(fnameMaster)
                 if get(guiHandles.checkbox12, 'Value'), try hch17=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_6_', sFactor));hold on;set(hch17,'color', [linec.col12],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
                 if get(guiHandles.checkbox13, 'Value'), try hch18=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'motor_7_', sFactor));hold on;set(hch18,'color', [linec.col13],'LineWidth',lwVal, 'LineStyle', '--'), catch, end, end
 
-                if get(guiHandles.checkbox14, 'Value'), hch19=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'setpoint_3_', sFactor, 0.1));hold on;set(hch19,'color', [linec.col14],'LineWidth',lwVal), end
+                if get(guiHandles.checkbox14, 'Value'), try hch19=plot(tSec, PSsmoothLV(PSfig, T{fileIdx}, fileIdx, 'setpoint_3_', sFactor, 0.1));hold on;set(hch19,'color', [linec.col14],'LineWidth',lwVal), catch, end, end
 
                 axis([0 xmax 0 100])
                 set(gca,'Color',th.axesBg);
