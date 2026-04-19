@@ -8,6 +8,16 @@ if ~isfield(data, 'RATE')
     error('No RATE messages in log - enable LOG_BITMASK bit 1 (ATTITUDE_FAST)');
 end
 
+% Older AP firmware (pre-2017) used TimeMS instead of TimeUS
+msgNames = fieldnames(data);
+for mi = 1:numel(msgNames)
+    m = data.(msgNames{mi});
+    if isstruct(m) && ~isfield(m, 'TimeUS') && isfield(m, 'TimeMS')
+        m.TimeUS = double(m.TimeMS) * 1000;
+        data.(msgNames{mi}) = m;
+    end
+end
+
 rate = data.RATE;
 N = length(rate.TimeUS);
 

@@ -109,13 +109,22 @@ end
 % nested function to parse PARM (has string fields, can't fully vectorize)
     function parse_parms(payloads, nMsg, fstr, ~)
         layout = field_layout(fstr);
+        nameIdx = 0; valIdx = 0;
+        for li = 1:length(layout)
+            t = layout(li).type;
+            if nameIdx == 0 && any(t == 'NZna'), nameIdx = li; end
+            if valIdx == 0 && any(t == 'fe'), valIdx = li; end
+        end
+        if nameIdx == 0 || valIdx == 0, return; end
         for m = 1:nMsg
-            row = payloads(m, :);
-            pname = deblank(char(row(layout(2).off : layout(2).off + layout(2).sz - 1)));
-            pname(pname == 0) = [];
-            pname = regexprep(pname, '[^a-zA-Z0-9_]', '_');
-            if isempty(pname), continue; end
-            vbytes = row(layout(3).off : layout(3).off + 3);
+            rawBytes = payloads(m, layout(nameIdx).off : layout(nameIdx).off + layout(nameIdx).sz - 1);
+            rawBytes = rawBytes(rawBytes ~= 0 & rawBytes < 128);
+            pname = deblank(char(rawBytes));
+            pname(~((pname>='a'&pname<='z')|(pname>='A'&pname<='Z')|(pname>='0'&pname<='9')|pname=='_')) = '_';
+            if isempty(pname) || ~(isletter(pname(1)) || pname(1) == '_')
+                continue;
+            end
+            vbytes = payloads(m, layout(valIdx).off : layout(valIdx).off + 3);
             parms.(pname) = double(typecast(uint8(vbytes), 'single'));
         end
     end

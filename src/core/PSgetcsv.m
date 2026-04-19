@@ -28,7 +28,8 @@ if strcmpi(fext, '.bin')
 elseif strcmpi(fext, '.json')
     [headerFile, csvFile] = PSquicJson2csv(filename, outdir);
     filename = headerFile;
-    files(1).name = csvFile;
+    [~, csvName, csvExt] = fileparts(csvFile);
+    files(1).name = [csvName csvExt];
     fnums = 1;
 elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
 
