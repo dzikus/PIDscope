@@ -64,6 +64,7 @@ if ~isempty(failed_files)
     fprintf('  - %s\n', failed_files{i});
   end
   fprintf('\nSOME TESTS FAILED\n');
+  exit(1);
 else
   fprintf('\nALL TESTS PASSED\n');
 end

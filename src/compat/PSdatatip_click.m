@@ -51,7 +51,7 @@ function PSdatatip_click(ax)
   x = cp(1,1);
   y = cp(1,2);
 
-  % Check if click is within axes limits
+  
   xl = get(ax, 'XLim');
   yl = get(ax, 'YLim');
   if x < xl(1) || x > xl(2) || y < yl(1) || y > yl(2)
@@ -77,7 +77,7 @@ function PSdatatip_click(ax)
       img_obj = ch;
       break  % image takes priority (heatmap background)
     elseif strcmp(t, 'line')
-      % Check if line has visible data
+      
       xd = get(ch, 'XData');
       yd = get(ch, 'YData');
       if isempty(xd) || length(xd) < 2, continue; end
@@ -108,7 +108,8 @@ function PSdatatip_click(ax)
   if isempty(obj_type), return; end
 
   % Format output text and annotation position
-  fontsz = 12;
+  th = PStheme();
+  fontsz = th.fontsz;
   txt = {};
   ann_x = x;
   ann_y = y;
@@ -201,7 +202,7 @@ function PSdatatip_click(ax)
 
   % Show annotation
   text(ann_x, ann_y, txt, 'Parent', ax, 'Tag', 'PSdatatip', ...
-       'BackgroundColor', [1 1 0.88], 'EdgeColor', [0.3 0.3 0.3], ...
+       'BackgroundColor', th.datatipBg, 'EdgeColor', th.gridColor, ...
        'FontSize', fontsz, 'FontWeight', 'bold', ...
        'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', ...
        'Margin', 4, 'Clipping', 'on');

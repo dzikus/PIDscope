@@ -9,45 +9,78 @@
 % ----------------------------------------------------------------------------------  
     
 
-posInfo.checkbox0=[.1 .965 .1 .025];
-posInfo.checkbox1=[.1 .94 .1 .025];
-posInfo.checkbox2=[.18 .965 .1 .025];
-posInfo.checkbox3=[.18 .94 .1 .025];
-posInfo.checkbox4=[.26 .965 .1 .025];
-posInfo.checkbox5=[.26 .94 .1 .025];
-posInfo.checkbox6=[.34 .965 .1 .025];
-posInfo.checkbox7=[.34 .94 .1 .025];
-posInfo.checkbox8=[.42 .965 .1 .025];
-posInfo.checkbox9=[.42 .94 .1 .025];
-posInfo.checkbox13=[.50 .965 .06 .025];%m4
-posInfo.checkbox12=[.50 .94 .06 .025];%m3
-posInfo.checkbox11=[.58 .965 .06 .025];%m2
-posInfo.checkbox10=[.58 .94 .06 .025]; %m1
-posInfo.checkbox14=[.66 .965 .06 .025];
-posInfo.checkbox15=[.66 .94 .06 .025];
+% Checkbox bar — pixel sizes (constant across resizes)
+chkW_px = 130; chkMotW_px = 100; chkEdtW_px = 45; chkTxtW_px = 65;
+figPos = get(PSfig, 'Position'); figW = figPos(3); figH = figPos(4);
+chkW = chkW_px/figW; chkH = rh; chkMotW = chkMotW_px/figW;
+chkEdtW = chkEdtW_px/figW; chkTxtW = chkTxtW_px/figW;
+tbOff = 40/figH;
+chkRow1 = 1 - tbOff;  chkRow2 = chkRow1 - rs;
+chkX = 0.10;
+posInfo.checkboxGyroPF=[chkX chkRow1 chkW chkH];
+posInfo.checkbox1=[chkX chkRow2 chkW chkH];     chkX=chkX+chkW;
+posInfo.checkbox2=[chkX chkRow1 chkW chkH];
+posInfo.checkbox3=[chkX chkRow2 chkW chkH];      chkX=chkX+chkW;
+posInfo.checkbox4=[chkX chkRow1 chkW chkH];
+posInfo.checkbox5=[chkX chkRow2 chkW chkH];      chkX=chkX+chkW;
+posInfo.checkbox6=[chkX chkRow1 chkW chkH];
+posInfo.checkbox7=[chkX chkRow2 chkW chkH];      chkX=chkX+chkW;
+posInfo.checkbox8=[chkX chkRow1 chkW chkH];
+posInfo.checkbox9=[chkX chkRow2 chkW chkH];      chkX=chkX+chkW;
+posInfo.checkbox13=[chkX chkRow1 chkMotW chkH];
+posInfo.checkbox12=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkbox11=[chkX chkRow1 chkMotW chkH];
+posInfo.checkbox10=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkbox14=[chkX chkRow1 chkMotW chkH];
+posInfo.checkboxTS=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
+posInfo.checkbox15=[chkX chkRow1 chkMotW chkH];
+posInfo.checkbox0=[chkX chkRow2 chkMotW chkH];      chkX=chkX+chkMotW;
+chkRpmW_px = 80; chkRpmW = chkRpmW_px/figW;
+posInfo.checkboxRPM4=[chkX chkRow1 chkRpmW chkH];
+posInfo.checkboxRPM3=[chkX chkRow2 chkRpmW chkH];      chkX=chkX+chkRpmW;
+posInfo.checkboxRPM2=[chkX chkRow1 chkRpmW chkH];
+posInfo.checkboxRPM1=[chkX chkRow2 chkRpmW chkH];      chkX=chkX+chkRpmW;
 
-posInfo.maxYtext = [.70 .965 .04 .025];
-posInfo.maxYinput = [.735 .965 .025 .025];
+posInfo.maxYtext =  [chkX chkRow1 chkTxtW chkH];
+posInfo.maxYinput = [chkX+chkTxtW chkRow1 chkEdtW chkH];
+posInfo.nCols_text =  [chkX chkRow2 chkTxtW chkH];
+posInfo.nCols_input = [chkX+chkTxtW chkRow2 chkEdtW chkH];
 
-posInfo.nCols_text = [.70 .94 .04 .025];
-posInfo.nCols_input = [.735 .94 .025 .025];
+% Plot positions — right edge stops at CP left edge
+plotL = 0.095; plotGap = 0.01;
+dynCpL = getappdata(PSfig, 'PScpL'); if isempty(dynCpL), dynCpL = cpL; end
+plotW = dynCpL - plotL - plotGap;
 
-posInfo.YTstick = [cpL+.005 vPos-0.39 .05 .085];
-posInfo.RPstick = [cpL+cpW/2 vPos-0.39 .05 .085];
+% Stick overlay — directly below Control Panel
+stickGap = cpM;
+stickW = (cpW - stickGap) / 2; stickH = stickW * 1.3;
+try cpBot = get(controlpanel,'Position'); cpBot = cpBot(2); catch, cpBot = vPos - rs*14 - cpMv; end
+stickY = max(0.01, cpBot - stickH - cpMv);
+posInfo.YTstick = [cpL              stickY  stickW  stickH];
+posInfo.RPstick = [cpL+stickW+stickGap  stickY  stickW  stickH];
+sliderW = dynCpL - 0.0826 - 0.005;
+posInfo.slider = [0.0826 chkRow2-2*cpMv-0.02 sliderW 0.02];
+plotTop = posInfo.slider(2) - 0.005;
+gapV = 0.005;
+linepos4H = 0.11;
+plotH = (plotTop - 0.1 - linepos4H - 4*gapV) / 3;
+posInfo.linepos1=[plotL plotTop-plotH plotW plotH];
+posInfo.linepos2=[plotL plotTop-2*plotH-gapV plotW plotH];
+posInfo.linepos3=[plotL plotTop-3*plotH-2*gapV plotW plotH];
+posInfo.linepos4=[plotL 0.1 plotW linepos4H];
 
-posInfo.linepos1=[0.095 0.685 0.77 0.21];
-posInfo.linepos2=[0.095 0.47 0.77 0.21];
-posInfo.linepos3=[0.095 0.255 0.77 0.21];
-
-posInfo.linepos4=[0.095 0.1 0.77 0.11];%
-
-fullszPlot = [0.095 0.255 0.77 0.63];
+fullszPlot = [plotL posInfo.linepos3(2) plotW plotTop-posInfo.linepos3(2)];
 
 
+if ~exist('checkpanel','var') || ~ishandle(checkpanel)
+chkPanelW = chkX + chkTxtW + chkEdtW + cpM - 0.096;
 checkpanel = uipanel('Title','','FontSize',fontsz,...
-             'BackgroundColor',[.95 .95 .95],...
-             'Position',[.096 .932 .68 .065]);        
+             'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+             'HighlightColor',panelBorder,...
+             'Position',[0.096 chkRow2-cpMv chkPanelW chkRow1+rh+cpMv-chkRow2+cpMv]);
 
+guiHandles.checkboxGyroPF=uicontrol(PSfig,'Style','checkbox','String','Gyro(pf)','fontsize',fontsz,'ForegroundColor',[linec.colGyroPF],'BackgroundColor',bgcolor,...
+    'units','normalized','Position',[posInfo.checkboxGyroPF],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 guiHandles.checkbox0=uicontrol(PSfig,'Style','checkbox','String','Debug','fontsize',fontsz,'ForegroundColor',[linec.col0],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox0],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 guiHandles.checkbox1=uicontrol(PSfig,'Style','checkbox','String','Gyro','fontsize',fontsz,'ForegroundColor',[linec.col1],'BackgroundColor',bgcolor,...
@@ -70,14 +103,24 @@ guiHandles.checkbox9=uicontrol(PSfig,'Style','checkbox','String','PID error','fo
     'units','normalized','Position',[posInfo.checkbox9],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 guiHandles.checkbox10=uicontrol(PSfig,'Style','checkbox','String','Motor 1','fontsize',fontsz,'ForegroundColor',[linec.col10],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox10],'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA), PSplotLogViewer; end');
-guiHandles.checkbox11=uicontrol(PSfig,'Style','checkbox','String','Motor 2','fontsize',fontsz,'ForegroundColor',[linec.col11],'BackgroundColor',bgcolor,...
+m2lbl='Motor 2'; m3lbl='Motor 3'; m4lbl='Motor 4';
+rfMot = getappdata(PSfig, 'rfMotorCount');
+if ~isempty(rfMot)
+    si = 1;
+    if rfMot < 2, m2lbl = ['Servo ' int2str(si)]; si=si+1; end
+    if rfMot < 3, m3lbl = ['Servo ' int2str(si)]; si=si+1; end
+    if rfMot < 4, m4lbl = ['Servo ' int2str(si)]; end
+end
+guiHandles.checkbox11=uicontrol(PSfig,'Style','checkbox','String',m2lbl,'fontsize',fontsz,'ForegroundColor',[linec.col11],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox11],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
-guiHandles.checkbox12=uicontrol(PSfig,'Style','checkbox','String','Motor 3','fontsize',fontsz,'ForegroundColor',[linec.col12],'BackgroundColor',bgcolor,...
+guiHandles.checkbox12=uicontrol(PSfig,'Style','checkbox','String',m3lbl,'fontsize',fontsz,'ForegroundColor',[linec.col12],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox12],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
-guiHandles.checkbox13=uicontrol(PSfig,'Style','checkbox','String','Motor 4','fontsize',fontsz,'ForegroundColor',[linec.col13],'BackgroundColor',bgcolor,...
+guiHandles.checkbox13=uicontrol(PSfig,'Style','checkbox','String',m4lbl,'fontsize',fontsz,'ForegroundColor',[linec.col13],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox13],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 guiHandles.checkbox14=uicontrol(PSfig,'Style','checkbox','String','Throttle','fontsize',fontsz,'ForegroundColor',[linec.col14],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox14],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+guiHandles.checkboxTS=uicontrol(PSfig,'Style','checkbox','String','Test Signal','fontsize',fontsz,'ForegroundColor',th.btnDash5,'BackgroundColor',bgcolor,...
+    'units','normalized','Position',[posInfo.checkboxTS],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 set(guiHandles.checkbox1, 'Value', 1);
 set(guiHandles.checkbox7, 'Value', 1);
@@ -89,12 +132,148 @@ set(guiHandles.checkbox14, 'Value', 1);
 
 guiHandles.checkbox15=uicontrol(PSfig,'Style','checkbox','String','All','fontsize',fontsz,'TooltipString', ['Plot or clear all lines '],'ForegroundColor',[linec.col15],'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.checkbox15],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), plotall_flag=get(guiHandles.checkbox15, ''Value''); PSplotLogViewer; end');
+rpmColors_ = th.sigRPM;
+nEmLV_ = 0;
+if exist('T','var') && ~isempty(T)
+    for mi_ = 4:7, if isfield(T{1}, ['eRPM_' int2str(mi_) '_']), nEmLV_ = mi_+1; end, end
+end
+if nEmLV_ > 4
+    rpmLabels_ = {sprintf('RPM 1/%d',nEmLV_/2+1), sprintf('RPM 2/%d',nEmLV_/2+2), sprintf('RPM 3/%d',nEmLV_/2+3), sprintf('RPM 4/%d',nEmLV_/2+4)};
+else
+    rpmLabels_ = {'RPM 1', 'RPM 2', 'RPM 3', 'RPM 4'};
+end
+rpmTip_ = 'Motor eRPM trace (Hz) on motor subplot';
+for rk_ = 1:4
+    guiHandles.(['checkboxRPM' int2str(rk_)]) = uicontrol(PSfig,'Style','checkbox','String',rpmLabels_{rk_},'fontsize',fontsz,'TooltipString',rpmTip_,'ForegroundColor',rpmColors_{rk_},'BackgroundColor',bgcolor,...
+        'units','normalized','Position',[posInfo.(['checkboxRPM' int2str(rk_)])],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+end
  
 TooltipString_FileNum=['Select the file you wish to plot in the logviewer. '];
-guiHandles.FileNum = uicontrol(PSfig,'Style','popupmenu','string',[fnameMaster],'TooltipString', [TooltipString_FileNum],...
-    'fontsize',fontsz, 'units','normalized','Position', [posInfo.fnameAText],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), try set(zoom, ''Enable'',''off''); catch, end, expandON=0; PSplotLogViewer; if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), try, [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; catch, end, end, end');
+set(guiHandles.FileNum, 'string', fnameMaster, 'TooltipString', TooltipString_FileNum,...
+    'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), try set(zoom, ''Enable'',''off''); catch, end, expandON=0; PSplotLogViewer; if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), try, [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; catch, end, end, end');
+maxY_textToolTip = ['+/- Scaling factor for the Y axis in degs/s'];
+guiHandles.maxY_text = uicontrol(PSfig,'style','text','string','y scale','fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYtext]);
+guiHandles.maxY_input = uicontrol(PSfig,'style','edit','string',int2str(maxY),'fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','Position',[posInfo.maxYinput],...
+     'callback','PSplotLogViewer; ');
 
-            
+guiHandles.nCols_text = uicontrol(PSfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.nCols_text]);
+guiHandles.nCols_input = uicontrol(PSfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','Position',[posInfo.nCols_input],...
+     'callback','if str2double(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2double(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PSlinecmap(str2double(get(guiHandles.nCols_input, ''String''))); ');
+
+% Register checkbox bar for pixel-based resize
+chkBarItems = {};
+chkBarItems{end+1} = struct('h', guiHandles.checkboxGyroPF, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox1, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox2, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox3, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox4, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox5, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox6, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox7, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox8, 'wpx', chkW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox9, 'wpx', chkW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox13, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox12, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox11, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox10, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox14, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxTS, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox15, 'wpx', chkMotW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkbox0, 'wpx', chkMotW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxRPM4, 'wpx', chkRpmW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxRPM3, 'wpx', chkRpmW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxRPM2, 'wpx', chkRpmW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.checkboxRPM1, 'wpx', chkRpmW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.maxY_text, 'wpx', chkTxtW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.nCols_text, 'wpx', chkTxtW_px, 'row', 2, 'advance', true);
+chkBarItems{end+1} = struct('h', guiHandles.maxY_input, 'wpx', chkEdtW_px, 'row', 1, 'advance', false);
+chkBarItems{end+1} = struct('h', guiHandles.nCols_input, 'wpx', chkEdtW_px, 'row', 2, 'advance', true);
+chkBarData = struct('x0', 0.10, 'items', {chkBarItems}, 'panel', checkpanel);
+if exist('guiHandles','var') && isfield(guiHandles, 'slider') && ishandle(guiHandles.slider)
+    chkBarData.slider = guiHandles.slider;
+end
+setappdata(PSfig, 'PScheckboxBar', chkBarData);
+
+% Stick overlay — persistent axes + uicontrol labels
+th_ = PStheme();
+bCol = th_.axesFg;
+guiHandles.stickAxYT = axes('Parent', PSfig, 'Position', posInfo.YTstick, ...
+    'xlim',[-500 500], 'ylim',[0 100], ...
+    'xtick',[], 'ytick',[], 'Color',th_.axesBg, ...
+    'XColor',th_.axesBg, 'YColor',th_.axesBg, ...
+    'TickLength',[0 0], 'Box','off');
+line([0 0],[-500 600],'Parent',guiHandles.stickAxYT,'Color',th_.gridColor,'HitTest','off');
+line([-500 500],[50 50],'Parent',guiHandles.stickAxYT,'Color',th_.gridColor,'HitTest','off');
+line([-500 500 500 -500 -500],[0 0 100 100 0],'Parent',guiHandles.stickAxYT, ...
+    'Color',bCol,'LineWidth',1,'HitTest','off');
+text(-470, 90, 'T/Y', 'Parent',guiHandles.stickAxYT, 'Color',th_.textSecondary, ...
+    'FontSize',max(6,fontsz-2), 'FontWeight','bold', 'HitTest','off');
+guiHandles.stickDotYT = line(NaN,NaN, 'Parent',guiHandles.stickAxYT, ...
+    'Marker','o', 'Color',th_.textPrimary, 'MarkerFaceColor',th_.textPrimary, ...
+    'MarkerSize',6, 'LineStyle','none', 'HitTest','off');
+
+guiHandles.stickAxRP = axes('Parent', PSfig, 'Position', posInfo.RPstick, ...
+    'xlim',[-500 500], 'ylim',[-500 500], ...
+    'xtick',[], 'ytick',[], 'Color',th_.axesBg, ...
+    'XColor',th_.axesBg, 'YColor',th_.axesBg, ...
+    'TickLength',[0 0], 'Box','off');
+line([0 0],[-500 500],'Parent',guiHandles.stickAxRP,'Color',th_.gridColor,'HitTest','off');
+line([-500 500],[0 0],'Parent',guiHandles.stickAxRP,'Color',th_.gridColor,'HitTest','off');
+line([-500 500 500 -500 -500],[-500 -500 500 500 -500],'Parent',guiHandles.stickAxRP, ...
+    'Color',bCol,'LineWidth',1,'HitTest','off');
+text(-470, 420, 'R/P', 'Parent',guiHandles.stickAxRP, 'Color',th_.textSecondary, ...
+    'FontSize',max(6,fontsz-2), 'FontWeight','bold', 'HitTest','off');
+guiHandles.stickDotRP = line(NaN,NaN, 'Parent',guiHandles.stickAxRP, ...
+    'Marker','o', 'Color',th_.textPrimary, 'MarkerFaceColor',th_.textPrimary, ...
+    'MarkerSize',6, 'LineStyle','none', 'HitTest','off');
+
+% Text labels below sticks (uicontrol — exact pixel positioning, no overlap)
+oFsz = max(6, fontsz-1);
+oH = rhs; halfW = cpW/2; fullW = cpW;
+oY = stickY - oH - 2*cpMv;
+oBg = th_.figBg;
+guiHandles.overlayTime = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',th_.textPrimary,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL oY fullW oH]);
+oY = oY - oH;
+guiHandles.overlayM4 = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',linec.col13,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL oY halfW oH]);
+guiHandles.overlayM1 = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',linec.col10,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL+halfW oY halfW oH]);
+oY = oY - oH;
+guiHandles.overlayM3 = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',linec.col12,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL oY halfW oH]);
+guiHandles.overlayM2 = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',linec.col11,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL+halfW oY halfW oH]);
+oY = oY - oH;
+guiHandles.overlayGR = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',th_.axisRollFilt,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL oY fullW oH]);
+oY = oY - oH;
+guiHandles.overlayGP = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',th_.axisPitchFilt,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL oY fullW oH]);
+oY = oY - oH;
+guiHandles.overlayGY = uicontrol(PSfig,'Style','text','String','','FontSize',oFsz, ...
+    'ForegroundColor',th_.axisYawFilt,'BackgroundColor',oBg,'HorizontalAlignment','left', ...
+    'units','normalized','Position',[cpL oY fullW oH]);
+% Store overlay handles for PSresizeCP
+setappdata(PSfig, 'PSoverlay', struct( ...
+    'axYT',guiHandles.stickAxYT, 'axRP',guiHandles.stickAxRP, ...
+    'time',guiHandles.overlayTime, ...
+    'M4',guiHandles.overlayM4, 'M1',guiHandles.overlayM1, ...
+    'M3',guiHandles.overlayM3, 'M2',guiHandles.overlayM2, ...
+    'GR',guiHandles.overlayGR, 'GP',guiHandles.overlayGP, 'GY',guiHandles.overlayGY));
+end % ishandle(checkpanel)
+
+% always update file list (fnameMaster may have grown since last call)
+set(guiHandles.FileNum, 'string', fnameMaster);
+
+
 fileIdx = get(guiHandles.FileNum, 'Value');
 if exist('tta','var') && iscell(tta) && numel(tta) >= fileIdx
     if numel(epoch1_A) < fileIdx || numel(epoch2_A) < fileIdx
@@ -104,27 +283,14 @@ if exist('tta','var') && iscell(tta) && numel(tta) >= fileIdx
 end
 
 % set IND for data subset. Updated in logviewer.
-for f = 1 : Nfiles
-    tIND{f} = tta{f} > (epoch1_A(f)*us2sec) & tta{f} < (epoch2_A(f)*us2sec);
+if exist('tta','var') && iscell(tta)
+    for f = 1 : min(Nfiles, numel(tta))
+        tIND{f} = tta{f} > (epoch1_A(f)*us2sec) & tta{f} < (epoch2_A(f)*us2sec);
+    end
 end
-
-maxY_textToolTip = ['+/- Scaling factor for the Y axis in degs/s'];
-guiHandles.maxY_text = uicontrol(PSfig,'style','text','string','y scale','fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYtext]);
-guiHandles.maxY_input = uicontrol(PSfig,'style','edit','string',int2str(maxY),'fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','Position',[posInfo.maxYinput],...
-     'callback','PSplotLogViewer; ');
- 
-guiHandles.nCols_text = uicontrol(PSfig,'style','text','string','N colors','fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.nCols_text]);
-guiHandles.nCols_input = uicontrol(PSfig,'style','edit','string',int2str(nLineCols),'fontsize',fontsz,'TooltipString', ['sets the number of colors for other tools (allowable range 1 - 20)'],'units','normalized','Position',[posInfo.nCols_input],...
-     'callback','if str2num(get(guiHandles.nCols_input, ''String'')) > 20, set(guiHandles.nCols_input, ''String'', ''20''); end; if str2num(get(guiHandles.nCols_input, ''String'')) < 1, set(guiHandles.nCols_input, ''String'', ''1''); end; multiLineCols=PSlinecmap(str2num(get(guiHandles.nCols_input, ''String''))); ');
- 
-subplot('position',[posInfo.YTstick]); 
-set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on'); 
-box on
-subplot('position',[posInfo.RPstick])
-set(gca, 'xlim', [-500 500], 'ylim', [0 100], 'xticklabel',[], 'yticklabel',[],'xtick',[0], 'ytick',[50], 'xgrid', 'on', 'ygrid', 'on'); 
-box on
 
 try set(guiHandles.maxY_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ymax'))))), catch, end
 try set(guiHandles.nCols_input, 'String', num2str(defaults.Values(find(strcmp(defaults.Parameters, 'LogViewer-Ncolors'))))), catch, end
+PSstyleControls(PSfig);
 
 

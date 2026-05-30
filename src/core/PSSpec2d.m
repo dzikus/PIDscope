@@ -9,12 +9,13 @@ function [Fs spec] = PSSpec2d(Y, F, psd)
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
 
+N = length(Y);
+if N < 4
+    Fs = []; spec = [];
+    return;
+end
+
 if psd
-    % N = length(Y);
-    % [psdx,Fs] = periodogram(Y,[], N-1, F*1000,'psd'); % power psd
-    % [spec,Fs] = pspectrum(Y, F*1000, 'FrequencyResolution', 10);
-    
-    N = length(Y);
     Fs = ((F*1000)*(0:(N/2))/N);
     Y = Y.*hann(N)';
     Y = fft(Y); 
@@ -23,8 +24,7 @@ if psd
     psdx = psdx(1:N/2+1); 
 %     % scale to dB
      spec = 10 * log10(psdx)';
-else       
-    N = length(Y);
+else
     Fs = ((F*1000)*(0:(N/2))/N);
     Y = Y.*hann(N)';
     Y = fft(Y); 

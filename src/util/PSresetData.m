@@ -1,0 +1,46 @@
+%% PSresetData - clear all loaded data and reset UI state
+% Called from Reset button and firmware-change dialog
+
+clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo;
+clear rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware;
+clear debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis;
+clear notchData rpmFilterData ampmat freq2d2 amp2d2 specMat;
+clear delayDataReady FilterDelayDterm SPGyroDelay Debug01 Debug02;
+clear gyro_phase_shift_deg dterm_phase_shift_deg;
+clear tuneCrtlpanel_init setupInfoWidgets_init;
+
+fcnt = 0; filenameA = {}; fnameMaster = {}; Nfiles = 0; expandON = 0;
+try setappdata(PSfig, 'smoothCacheLV', struct()); catch, end
+try setappdata(PSfig, 'rfMotorCount', []); catch, end
+
+try, delete(checkpanel); clear checkpanel; catch, end
+try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
+try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
+try delete(findobj(PSfig,'Tag','PScombo')); catch, end
+% Delete overlay widgets
+ov = getappdata(PSfig, 'PSoverlay');
+if ~isempty(ov)
+    flds = fieldnames(ov);
+    for fi=1:numel(flds), try delete(ov.(flds{fi})); catch, end; end
+    setappdata(PSfig, 'PSoverlay', []);
+end
+
+% close all secondary figures
+figs = findobj('Type', 'figure');
+for fi = 1:numel(figs)
+    if figs(fi) ~= PSfig
+        try, close(figs(fi)); catch, end
+    end
+end
+
+% clear secondary figure and panel handles
+clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp;
+clear errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel;
+clear freqTimeCrtlpanel tuneCrtlpanel fcntSR;
+
+% reset UI
+set(guiHandles.FileNum, 'String', ' ');
+try
+    set(guiHandles.Epoch1_A_Input, 'String', ' ');
+    set(guiHandles.Epoch2_A_Input, 'String', ' ');
+catch, end

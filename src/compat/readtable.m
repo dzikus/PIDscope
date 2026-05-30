@@ -165,7 +165,7 @@ function names = sanitize_varnames(raw_names)
     s = regexprep(s, '[\[\]\(\) ]+', '_');
     % Replace any remaining non-alphanumeric/underscore chars
     s = regexprep(s, '[^a-zA-Z0-9_]', '_');
-    % Ensure doesn't start with a number
+    % Force doesn't start with a number
     if ~isempty(s) && (s(1) >= '0' && s(1) <= '9')
       s = ['x' s];
     end

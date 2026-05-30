@@ -5,7 +5,17 @@ function [T_out, SetupInfo, lograte_kHz] = PSarduConvert(data, parms)
 %  parms: struct from PSarduRead (parameter name→value)
 
 if ~isfield(data, 'RATE')
-    error('No RATE messages in log — enable LOG_BITMASK bit 1 (ATTITUDE_FAST)');
+    error('No RATE messages in log - enable LOG_BITMASK bit 1 (ATTITUDE_FAST)');
+end
+
+% Older AP firmware (pre-2017) used TimeMS instead of TimeUS
+msgNames = fieldnames(data);
+for mi = 1:numel(msgNames)
+    m = data.(msgNames{mi});
+    if isstruct(m) && ~isfield(m, 'TimeUS') && isfield(m, 'TimeMS')
+        m.TimeUS = double(m.TimeMS) * 1000;
+        data.(msgNames{mi}) = m;
+    end
 end
 
 rate = data.RATE;
@@ -36,7 +46,7 @@ else
     T_out.setpoint_3_ = zeros(N, 1);
 end
 
-% PID terms — interpolate to RATE timestamps
+% PID terms - interpolate to RATE timestamps
 axes_map = {'PIDR', '0'; 'PIDP', '1'; 'PIDY', '2'};
 for ax = 1:3
     msgName = axes_map{ax, 1};
@@ -98,7 +108,7 @@ if isfield(data, 'RCOU')
     end
 end
 
-% debug fields (empty — ArduPilot doesn't use BF debug channels)
+% debug fields (empty - ArduPilot doesn't use BF debug channels)
 for k = 0:3
     T_out.(sprintf('debug_%d_', k)) = zeros(N, 1);
 end
@@ -152,7 +162,7 @@ yFF = getparm(parms, 'ATC_RAT_YAW_FF', 0);
 SetupInfo{n,1} = 'd_min'; SetupInfo{n,2} = sprintf('0,0,0'); n = n+1;
 SetupInfo{n,1} = 'feedforward_weight'; SetupInfo{n,2} = sprintf('%.0f,%.0f,%.0f', rFF*100, pFF*100, yFF*100); n = n+1;
 
-% debug_mode — ArduPilot doesn't have BF debug modes
+% debug_mode - ArduPilot doesn't have BF debug modes
 SetupInfo{n,1} = 'debug_mode'; SetupInfo{n,2} = '0'; n = n+1;
 
 % looptime

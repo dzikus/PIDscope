@@ -89,10 +89,15 @@ currentDate = currentDate(1:strfind(currentDate,' ')-1);
 set(0,'defaultUicontrolFontName', 'Helvetica')
 % defaultUicontrolFontSize is set after fontsz is calculated (below)
 
-%%%% assign main figure handle and define some UI variables 
+%%%% assign main figure handle and define some UI variables
 PSfig = figure(1);
+drawnow;  % flush Qt event queue so figure is mapped before setting Position
 set(PSfig, 'InvertHardcopy', 'off');
-bgcolor=[.95 .95 .95];
+th = PStheme();
+bgcolor = th.figBg;
+panelBg = th.panelBg;
+panelFg = th.panelFg;
+panelBorder = th.panelBorder;
 set(PSfig,'color',bgcolor);
 
 wikipage = 'https://buymeacoffee.com/dzikus';
@@ -115,118 +120,123 @@ fcnt=0;
 filepathA=[];
 filenameA={};
 
-hexpand1=[];
-hexpand2=[];
-hexpand3=[];
+hexpand = {[], [], []};
 
 errmsg=[];
 
 plotall_flag=-1;
 
-colorA=[.8 .1 .2];
-colorA2=[.4 .0 .6];
-colorB=[.1 .4 .8];
+colorA = th.btnDash1;
+colorB = th.btnDash2;
 colorC=[1 .2 .2];
 colorD=[.1 .7 .2];
 
-colRun = [0 .5 0];
-saveCol = [.1 .1 .1];
-setUpCol = [.1 .1 .1];
-cautionCol = [0.6    0.3    0];
+colRun = th.btnRun;
+saveCol = th.btnSave;
+setUpCol = th.textSecondary;
+cautionCol = th.btnReset;
 %use_phsCorrErr=0;
 flightSpec=0;
 screensz = get(0,'ScreenSize');
-screensz(3) = round(1.78 * screensz(4)); % force 16:9
-
-
 % Octave Qt bug: setting figure units to 'normalized' permanently breaks uipanel
 % Calculate pixel position manually instead
-figPos = round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]);
-set(PSfig, 'Position', figPos);
+set(PSfig, 'Position', round([0 0 screensz(3) screensz(4)]));
+try set(PSfig, 'WindowState', 'maximized'); catch, end
 set(PSfig, 'NumberTitle', 'off');
 set(PSfig, 'Name', ['PIDscope (' PsVersion ') - Log Viewer']);
+drawnow; pause(0.2);
+% Use ACTUAL figure size (accounts for dock/panel/taskbar)
+figPos = get(PSfig, 'Position');
+screensz(3) = figPos(3); screensz(4) = figPos(4);
 
-pause(.1)% need to wait for figure to open before extracting screen values
-
-screensz_multiplier = sqrt(screensz(4)^2) * .011; % based on vertical dimension only, to deal with for ultrawide monitors
-prop_max_screen = figPos(4) / screensz(4);
-fontsz = (screensz_multiplier*prop_max_screen);
+th = PStheme();
+fontsz = th.fontsz;
+screensz_multiplier = screensz(4) * .011;
 % Octave font scaling is done below in layout section
 markerSz = round(screensz_multiplier * 0.75);
-vPos = 0.92;
-cpL = .875; % control panel left edge
-cpW = .12;  % control panel width
-rs = 0.025; % row step (vertical spacing between elements)
-rh = 0.026; % row height
+
+% CP dimensions — all derived from pixel sizes, then normalized
+cpW_px = 200; rh_px = 22; rs_px = 24; cpM_px = 5; cpTitle_px = 28;
+ddh_px = 28;   % dropdown height (taller than button)
+cbW_px = 40;   % checkbox column width
+rhs_px = 16;   % small text row height
+infoH_px = 100; % info table height
 if isOctave
-    fontsz = fontsz * 0.85;
-    rs = 0.034; rh = 0.030;
+    rh_px = 26; rs_px = 30; ddh_px = 32; rhs_px = 18;
 end
+cpW = cpW_px / screensz(3);
+cpL = 1 - cpW - cpM_px/screensz(3);
+rh = rh_px / screensz(4);
+rs = rs_px / screensz(4);
+cpM = cpM_px / screensz(3);   % horizontal margin
+cpMv = cpM_px / screensz(4);  % vertical margin
+cpTitleH = cpTitle_px / screensz(4);
+cbW = cbW_px / screensz(3);
+ddh = ddh_px / screensz(4);
+rhs = rhs_px / screensz(4);
+tbOff = 40 / screensz(4);    % figure toolbar offset
+vPos = 1 - tbOff - cpTitleH - cpMv;   % top of first row (below toolbar + title bar)
 set(0,'defaultUicontrolFontSize', fontsz)
+set(0,'defaultUicontrolForegroundColor', th.textPrimary)
+set(0,'defaultUicontrolBackgroundColor', th.panelBg)
 
 row = 1;
-posInfo.firmware =[cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
-posInfo.fileA=[cpL+.006 vPos-rs*row cpW/2-.006 rh];
-posInfo.clr=[cpL+cpW/2 vPos-rs*row cpW/2-.006 rh]; row=row+1;
-posInfo.fnameAText = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
-posInfo.startEndButton=[cpL+.005 vPos-rs*row cpW/2-.005 rh];
-posInfo.RPYcomboLV = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
-LogStDefault = 2;% default ignore first 2 seconds of logfile
-LogNdDefault = 1;% default ignore last 1 second of logfile
-posInfo.plotR_LV =  [cpL+.005 vPos-rs*row .035 rh];
-posInfo.plotP_LV =  [cpL+.04 vPos-rs*row .035 rh];
-posInfo.plotY_LV =  [cpL+.075 vPos-rs*row .035 rh]; row=row+1;
-posInfo.lineSmooth = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
-posInfo.linewidth = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
-posInfo.spectrogramButton = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
-posInfo.TuningButton = [cpL+.003 vPos-rs*row cpW-.006 rh]; row=row+1;
-posInfo.period2Hz = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
-posInfo.DispInfoButton = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
-posInfo.saveFig = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
-posInfo.saveSettings = [cpL+cpW/2 vPos-rs*row cpW/2-.003 rh]; row=row+1;
-%posInfo.wiki = [cpL+.003 vPos-rs*row cpW/2-.003 rh];
-posInfo.PIDtuningService = [cpL+.003 vPos-rs*row cpW-.006 rh];
-cpH = rs*row + 0.04; % control panel height = rows + title margin
+posInfo.firmware =      [cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
+posInfo.fileA=          [cpL+cpM   vPos-rs*row  cpW/2-cpM rh];
+posInfo.clr=            [cpL+cpW/2 vPos-rs*row  cpW/2-cpM rh]; row=row+1;
+posInfo.fnameAText =    [cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
+posInfo.startEndButton= [cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
+posInfo.RPYcomboLV =    [cpL+cpW/2 vPos-rs*row  cpW/2-cpM  rh]; row=row+1;
+LogStDefault = 2;
+LogNdDefault = 1;
+posInfo.plotR_LV =      [cpL+cpM        vPos-rs*row  cbW rh];
+posInfo.plotP_LV =      [cpL+cpM+cbW    vPos-rs*row  cbW rh];
+posInfo.plotY_LV =      [cpL+cpM+2*cbW  vPos-rs*row  cbW rh]; row=row+1;
+posInfo.lineSmooth =    [cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
+posInfo.linewidth =     [cpL+cpW/2 vPos-rs*row  cpW/2-cpM  rh]; row=row+1;
+posInfo.spectrogramButton = [cpL+cpM vPos-rs*row cpW-2*cpM rh]; row=row+1;
+posInfo.TuningButton =  [cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
+posInfo.PIDsliderButton=[cpL+cpM   vPos-rs*row  cpW-2*cpM  rh]; row=row+1;
+posInfo.filterSimButton=[cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
+posInfo.testSignalButton=[cpL+cpW/2 vPos-rs*row cpW/2-cpM  rh]; row=row+1;
+posInfo.PIDErrorButton = [cpL+cpM  vPos-rs*row  cpW/2-cpM  rh];
+posInfo.FlightStatsButton=[cpL+cpW/2 vPos-rs*row cpW/2-cpM rh]; row=row+1;
+posInfo.period2Hz =     [cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
+posInfo.DispInfoButton =[cpL+cpW/2 vPos-rs*row  cpW/2-cpM  rh]; row=row+1;
+posInfo.saveFig =       [cpL+cpM   vPos-rs*row  cpW/2-cpM  rh];
+posInfo.saveSettings =  [cpL+cpW/2 vPos-rs*row  cpW/2-cpM  rh]; row=row+1;
+posInfo.PIDtuningService = [cpL+cpM vPos-rs*row cpW-2*cpM  rh];
+cpH = rs*row + cpTitleH + cpMv;  % small padding below last button
 controlpanel = uipanel('Title','Control Panel','FontSize',fontsz,...
-             'BackgroundColor',[.95 .95 .95],...
-             'Position',[cpL vPos-cpH+0.02 cpW cpH]);
+             'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+             'HighlightColor',panelBorder,...
+             'Position',[cpL vPos-cpH+cpTitleH cpW cpH]);
 
-% Position info table just below control panel
-cpBottom = vPos - cpH + 0.02;
-infoTableH = 0.30;
-infoTableY = cpBottom - infoTableH - 0.01;
-infoTablePos = [cpL infoTableY cpW infoTableH];
-posInfo.resetMain = [cpL+.003 infoTableY - rh - 0.005 cpW-.006 rh];
 
 
 fnameMaster = {}; 
 fcnt = 0;
 
-% ColorSet=colormap(jet);%hsv jet gray lines colorcube
-% j=[1     8    17    20    23    27   45    50    58    64];
-ColorSet=[.6 .6 .6;..., % gray - Gyro raw
-  0   0  0;..., % black - Gyro filt
-  0  .7  0;..., % green - Pterm
- .8  .65 .1;..., % yellow - I term
- .3  .7  .9;..., % light blue - Dterm raw
- .1  .2  .8;..., % dark blue -Dterm Filt
- .6  .3  .3;..., % brown - Fterm 
- .8  0  .2;..., % dark red
- 1  .2  .9;..., % light purple
- .4 0 .9;...,    % dark purple
- .9 0 0;..., %M1 
- 1  .6 0;..., %M2
-0  0 .9;..., %M3
-.1  1  .8;..., %M4
- 0 0 0;..., % throttle
- 0 0 0]; % all
-j=[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16];
-
-k=1;
-for i=1:length(j)
-    eval(['linec.col' int2str(k-1) '=ColorSet(j(i),:);']);
-    k=k+1;
+ColorSet=[th.sigDebug;...     % Debug
+  th.sigGyro;...              % Gyro
+  th.sigPterm;...             % Pterm
+  th.sigIterm;...             % Iterm
+  th.sigDprefilt;...          % Dterm prefilt
+  th.sigDterm;...             % Dterm
+  th.sigFterm;...             % Fterm
+  th.sigSetpoint;...          % Setpoint
+  th.sigPIDsum;...            % PIDsum
+  th.sigPIDerr;...            % PIDerr
+  th.sigMotor{1};...          % M1
+  th.sigMotor{2};...          % M2
+  th.sigMotor{3};...          % M3
+  th.sigMotor{4};...          % M4
+  th.sigThrottle;...          % Throttle
+  th.textPrimary];            % All
+for k=0:15
+    linec.(['col' int2str(k)]) = ColorSet(k+1,:);
 end
+linec.colGyroPF = th.sigGyroPrefilt;
 
 %%% tooltips
 TooltipString_files=['Select the .BBL or .BFL file you wish to analyze. '];
@@ -250,24 +260,20 @@ guiHandles.fileA = uicontrol(PSfig,'string','Select ','fontsize',fontsz,'Tooltip
 set(guiHandles.fileA, 'ForegroundColor', colRun);
 
 guiHandles.clr = uicontrol(PSfig,'string','Reset','fontsize',fontsz,'TooltipString', ['clear all data'], 'units','normalized','Position',[posInfo.clr],...
-     'callback',['clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData ampmat freq2d2 amp2d2 specMat; ' ...
-     'fcnt=0; filenameA={}; fnameMaster={}; Nfiles=0; expandON=0; ' ...
-     'try, delete(subplot(''position'',posInfo.linepos1)); delete(subplot(''position'',posInfo.linepos2)); delete(subplot(''position'',posInfo.linepos3)); delete(subplot(''position'',posInfo.linepos4)); catch, end; ' ...
-     'figs=findobj(''Type'',''figure''); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end; ' ...
-     'set(guiHandles.FileNum, ''String'', '' ''); try, set(guiHandles.Epoch1_A_Input, ''String'', '' ''); set(guiHandles.Epoch2_A_Input, ''String'', '' ''); catch, end;']);
+     'callback','PSresetData;');
 set(guiHandles.clr, 'ForegroundColor', cautionCol);
 
 guiHandles.startEndButton = uicontrol(PSfig,'style','checkbox', 'string','Trim ','fontsize',fontsz,'TooltipString', [TooltipString_selectButton], 'units','normalized','Position',[posInfo.startEndButton],...
     'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), try, [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; catch, end, end');
 
 guiHandles.plotR =uicontrol(PSfig,'Style','checkbox','String','R','fontsize',fontsz,'TooltipString', ['Plot Roll '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotR_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisRoll,'Position',[posInfo.plotR_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 guiHandles.plotP =uicontrol(PSfig,'Style','checkbox','String','P','fontsize',fontsz,'TooltipString', ['Plot Pitch '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotP_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisPitch,'Position',[posInfo.plotP_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 guiHandles.plotY =uicontrol(PSfig,'Style','checkbox','String','Y','fontsize',fontsz,'TooltipString', ['Plot Yaw '],...
-    'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.plotY_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
+    'units','normalized','BackgroundColor',bgcolor,'ForegroundColor',th.axisYaw,'Position',[posInfo.plotY_LV], 'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
 
 guiHandles.RPYcomboLV=uicontrol(PSfig,'Style','checkbox','String','Single Panel','fontsize',fontsz,'BackgroundColor',bgcolor,...
     'units','normalized','Position',[posInfo.RPYcomboLV],'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), PSplotLogViewer; end');
@@ -289,8 +295,46 @@ guiHandles.TuningButton = uicontrol(PSfig,'string','Step Resp Tool','fontsize',f
     'callback','PStuneUIcontrol');
 set(guiHandles.TuningButton, 'ForegroundColor', colorB);
 
-guiHandles.period2Hz = uicontrol(PSfig,'string','Period','fontsize',fontsz,'TooltipString', ['Calculates peak to peak in Hz similar to the BBE ''Mark'' tool' , newline, 'press button, position mouse over 1st peak, mouse click,' , newline, 'then position over 2nd peak, then mouse click again'], 'units','normalized','Position',[posInfo.period2Hz],...
-     'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.period2Hz, ''Value''), try, [x1 y1] = ginput(1); figure(PSfig); h=plot([x1 x1],[-(maxY*2) maxY],''-r'');set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2);  [x2 y2] = ginput(1); h=plot([x2 x2],[-(maxY*2) maxY],''-r''); set(h,''linewidth'' , get(guiHandles.linewidth, ''Value'')/2); plot([x1 x2],[y1 y2],'':k''); x3=[round(x1*1000) round(x2*1000)]; f = 1000/(x3(2)-x3(1)); text(x2, y2, [num2str(x3(2)-x3(1)) ''ms, '' num2str(f) ''Hz''],''FontSize'',fontsz, ''FontWeight'', ''Bold''); catch, end, end');      
+guiHandles.PIDsliderButton = uicontrol(PSfig,'string','PID Slider Tool','fontsize',fontsz,...
+    'TooltipString','Interactive PID ratio calculator','units','normalized',...
+    'Position',[posInfo.PIDsliderButton],...
+    'callback',['try,' ...
+        'tmpFcnt=get(guiHandles.FileNum,''Value'');tmpFcnt=tmpFcnt(1);' ...
+        'PSsliderTool(rollPIDF{tmpFcnt},pitchPIDF{tmpFcnt},yawPIDF{tmpFcnt});' ...
+        'clear tmpFcnt;' ...
+    'catch,' ...
+        'PSsliderTool();' ...
+    'end']);
+set(guiHandles.PIDsliderButton, 'ForegroundColor', th.btnDash3);
+
+guiHandles.filterSimButton = uicontrol(PSfig,'string','Filter Simulator','fontsize',fontsz,...
+    'TooltipString','Simulate BF filter chain (theoretical response)','units','normalized',...
+    'Position',[posInfo.filterSimButton],...
+    'callback',['if ~exist(''A_lograte'',''var''),warndlg(''Please select file(s)'');' ...
+        'else,tmpFcnt=get(guiHandles.FileNum,''Value'');tmpFcnt=tmpFcnt(1);' ...
+        'PSfilterSim([],1000*A_lograte(tmpFcnt),SetupInfo{tmpFcnt});' ...
+        'clear tmpFcnt;end']);
+set(guiHandles.filterSimButton, 'ForegroundColor', th.btnDash4);
+
+guiHandles.testSignalButton = uicontrol(PSfig,'string','Test Signal','fontsize',fontsz,...
+    'TooltipString','Configure and apply offline filter chain to log data','units','normalized',...
+    'Position',[posInfo.testSignalButton],...
+    'callback',['if ~exist(''T'',''var''),warndlg(''Please select file(s)'');' ...
+        'else,tmpFcnt=get(guiHandles.FileNum,''Value'');tmpFcnt=tmpFcnt(1);' ...
+        'PSTestSignalConfig(PSfig,T,Nfiles,A_lograte,SetupInfo,guiHandles,tIND);' ...
+        'clear tmpFcnt;end']);
+set(guiHandles.testSignalButton, 'ForegroundColor', th.btnDash5);
+
+guiHandles.PIDErrorButton = uicontrol(PSfig,'string','PID Error','fontsize',fontsz,'TooltipString', ['PID error distribution analysis'],'units','normalized','Position',[posInfo.PIDErrorButton],...
+    'callback','PSerrUIcontrol; PSplotPIDerror;');
+set(guiHandles.PIDErrorButton, 'ForegroundColor', th.btnDash6);
+
+guiHandles.FlightStatsButton = uicontrol(PSfig,'string','Flight Stats','fontsize',fontsz,'TooltipString', ['Flight statistics and stick analysis'],'units','normalized','Position',[posInfo.FlightStatsButton],...
+    'callback','PSstatsUIcontrol; PSplotStats;');
+set(guiHandles.FlightStatsButton, 'ForegroundColor', th.btnDash7);
+
+guiHandles.period2Hz = uicontrol(PSfig,'string','Period','fontsize',fontsz,'TooltipString', ['Click two points on any trace to measure period and frequency.' , newline, 'Red vertical lines + ms/Hz annotation on all axes.'], 'units','normalized','Position',[posInfo.period2Hz],...
+     'callback','if exist(''filenameA'',''var'') && ~isempty(filenameA), PSlogViewerPeriod(PSfig); end');
 
 guiHandles.DispInfoButton = uicontrol(PSfig,'string','Setup Info','fontsize',fontsz,'TooltipString', [TooltipString_setup],'units','normalized','Position',[posInfo.DispInfoButton],...
     'callback','PSdispSetupInfoUIcontrol;PSdispSetupInfo;');
@@ -313,9 +357,6 @@ guiHandles.PIDtuningService = uicontrol(PSfig,'string','Support PIDscope','fonts
 set(guiHandles.PIDtuningService, 'ForegroundColor', cautionCol);
 
 
-guiHandles.resetMain = uicontrol(PSfig,'string','Reset main directory','fontsize',fontsz ,'FontName','arial','FontAngle','normal','TooltipString', ['Donate to the PIDscope project'],'units','normalized','Position',[posInfo.resetMain],...
-    'callback','uiwait(helpdlg(resetupStr)), cd(configDir),  main_directory = uigetdir(''Navigate to Main folder''); fid = fopen([''mainDir-PS'' PsVersion ''.txt''],''w''); fprintf(fid,''%s\n'',main_directory); fclose(fid);  PIDscope');
-set(guiHandles.resetMain, 'ForegroundColor', cautionCol);
  
  
 
@@ -330,6 +371,16 @@ if ~exist('main_directory','var') || isempty(main_directory) || ~exist(main_dire
         || (~exist(fullfile(main_directory, 'blackbox_decode'), 'file') && ~exist(fullfile(main_directory, 'blackbox_decode.exe'), 'file'))
     main_directory = executableDir;
 end
+
+% Store decoder paths globally so PSgetcsv can use absolute paths
+if ispc()
+    setappdata(0, 'PSdecoderPath', fullfile(main_directory, 'blackbox_decode.exe'));
+    setappdata(0, 'PSdecoderPathINAV', fullfile(main_directory, 'blackbox_decode_INAV.exe'));
+else
+    setappdata(0, 'PSdecoderPath', fullfile(main_directory, 'blackbox_decode'));
+    setappdata(0, 'PSdecoderPathINAV', fullfile(main_directory, 'blackbox_decode_INAV'));
+end
+
 cd(configDir)
 
 try
@@ -348,14 +399,8 @@ ldr = ['logfileDirectory: ' logfile_directory ];
 drawnow; pause(0.2);
 try
     defaults = readtable('PSdefaults.txt');
-    a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
-    t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
 catch
-    defaults = ' '; 
-    a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
-    t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
+    defaults = ' ';
 end
 
 
@@ -376,3 +421,35 @@ if isOctave
     set(PSfig, 'Position', tmpPos);
     drawnow;
 end
+PSstyleControls(PSfig, th);
+
+% Register CP elements for resize — keeps fixed pixel sizes when window changes
+cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
+              'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', infoH_px);
+cpItems = {};
+cpItems{end+1} = struct('h', guiHandles.Firmware, 'type','full', 'row',1, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.fileA, 'type','left', 'row',2, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.clr, 'type','right', 'row',2, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.FileNum, 'type','full', 'row',3, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.startEndButton, 'type','left', 'row',4, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.RPYcomboLV, 'type','right', 'row',4, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.plotR, 'type','cb', 'row',5, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.plotP, 'type','cb', 'row',5, 'col',1, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.plotY, 'type','cb', 'row',5, 'col',2, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.lineSmooth, 'type','left', 'row',6, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.linewidth, 'type','right', 'row',6, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.spectrogramButton, 'type','full', 'row',7, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.TuningButton, 'type','full', 'row',8, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.PIDsliderButton, 'type','full', 'row',9, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.filterSimButton, 'type','left', 'row',10, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.testSignalButton, 'type','right', 'row',10, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.PIDErrorButton, 'type','left', 'row',11, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.FlightStatsButton, 'type','right', 'row',11, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.period2Hz, 'type','left', 'row',12, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.DispInfoButton, 'type','right', 'row',12, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.saveFig, 'type','left', 'row',13, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.saveSettings, 'type','right', 'row',13, 'col',0, 'nrows',0);
+cpItems{end+1} = struct('h', guiHandles.PIDtuningService, 'type','full', 'row',14, 'col',0, 'nrows',0);
+nrows = max(cellfun(@(x) x.row, cpItems));
+cpItems = [{struct('h', controlpanel, 'type','panel', 'row',0, 'col',0, 'nrows',nrows)}, cpItems];
+PSregisterResize(PSfig, cpPx, cpItems, 'rows');

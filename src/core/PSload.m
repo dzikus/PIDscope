@@ -14,7 +14,7 @@
 try
     if ~isempty(filenameA)
 
-        %% Detect firmware type change — mixing firmware types causes issues
+        %% Detect firmware type change - mixing firmware types causes issues
         current_fw = get(guiHandles.Firmware, 'Value');
         if exist('loaded_firmware','var') && loaded_firmware ~= current_fw && exist('fnameMaster','var') && ~isempty(fnameMaster)
             fw_names = get(guiHandles.Firmware, 'String');
@@ -25,14 +25,25 @@ try
                  'Reset data before loading?'], ...
                 'Firmware type changed', 'Reset & Load', 'Cancel', 'Reset & Load');
             if strcmp(choice, 'Reset & Load')
-                clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData;
-                fcnt = 0; fnameMaster = {};
-                try, delete(subplot('position',posInfo.linepos1)); catch, end
-                try, delete(subplot('position',posInfo.linepos2)); catch, end
-                try, delete(subplot('position',posInfo.linepos3)); catch, end
-                try, delete(subplot('position',posInfo.linepos4)); catch, end
+                clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData rpmFilterData ampmat freq2d2 amp2d2 specMat delayDataReady FilterDelayDterm SPGyroDelay Debug01 Debug02 gyro_phase_shift_deg dterm_phase_shift_deg tuneCrtlpanel_init setupInfoWidgets_init;
+                fcnt = 0; fnameMaster = {}; Nfiles = 0;
+                try, delete(checkpanel); clear checkpanel; catch, end
+                % Delete tagged plot axes (never use subplot — creates blank axes)
+                try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
+                try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
+                try delete(findobj(PSfig,'Tag','PScombo')); catch, end
+                % Delete overlay widgets
+                ov = getappdata(PSfig, 'PSoverlay');
+                if ~isempty(ov)
+                    flds = fieldnames(ov);
+                    for fi=1:numel(flds), try delete(ov.(flds{fi})); catch, end; end
+                    setappdata(PSfig, 'PSoverlay', []);
+                end
+                figs=findobj('Type','figure'); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end
+                clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel freqTimeCrtlpanel tuneCrtlpanel fcntSR;
                 set(guiHandles.FileNum, 'String', ' ');
                 try, set(guiHandles.Epoch1_A_Input, 'String', ' '); set(guiHandles.Epoch2_A_Input, 'String', ' '); catch, end
+                try setappdata(PSfig, 'smoothCacheLV', struct()); catch, end
             else
                 return;
             end
@@ -40,6 +51,7 @@ try
         loaded_firmware = current_fw;
 
         logfile_directory=filepathA;
+        try setappdata(PSfig, 'rfMotorCount', []); catch, end
 
         us2sec=1000000;
         maxMotorOutput=2000;
@@ -64,13 +76,9 @@ try
         try
             defaults = readtable('PSdefaults.txt');
             a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
-            t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-            set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
         catch
-            defaults = ' '; 
+            defaults = ' ';
             a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
-            t = uitable(PSfig, 'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-            set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
         end
         
         fnameMaster = [fnameMaster filenameA];
@@ -79,37 +87,14 @@ try
     
         n = size(filenameA,2);
         waitbarFid = waitbar(0,'Please wait...');
-        % Work in temp dir (main_directory may be read-only in AppImage)
         workdir = tempname();
         mkdir(workdir);
-        prev_dir = pwd();
-
-        % Copy blackbox_decode into workdir so ./blackbox_decode works
-        if ispc()
-            decoders = {'blackbox_decode.exe', 'blackbox_decode_INAV.exe'};
-        else
-            decoders = {'blackbox_decode', 'blackbox_decode_INAV'};
-        end
-        for dec = decoders
-            src = fullfile(main_directory, dec{1});
-            if exist(src, 'file')
-                copyfile(src, workdir);
-            end
-        end
-
-        cd(workdir);
 
         for ii = 1 : n
-            source = fullfile(logfile_directory, filenameA{ii});
-            try
-                copyfile(source, workdir);
-            catch e
-                warning('PSload: cannot copy %s to workdir: %s', source, e.message);
-                continue;
-            end
+            srcFile = fullfile(logfile_directory, filenameA{ii});
 
             clear subFiles;
-            [filenameA{ii} subFiles] = PSgetcsv(filenameA{ii}, get(guiHandles.Firmware, 'Value'));
+            [filenameA{ii} subFiles] = PSgetcsv(srcFile, get(guiHandles.Firmware, 'Value'), workdir);
             
              
             for jj = 1 : size(subFiles,2)
@@ -120,13 +105,13 @@ try
 
                 [~, ~, sfext] = fileparts(subFiles{jj});
                 if strcmpi(sfext, '.bin')
-                    % ArduPilot DataFlash binary — direct parse
-                    binpath = fullfile(logfile_directory, subFiles{jj});
-                    [ardu_data, ardu_parms] = PSarduRead(binpath);
+                    % ArduPilot DataFlash binary - direct parse
+                    [ardu_data, ardu_parms] = PSarduRead(subFiles{jj});
                     [T{fcnt}, SetupInfo{fcnt}, A_lograte(fcnt)] = PSarduConvert(ardu_data, ardu_parms);
-                    fnameMaster{fcnt} = subFiles{jj};
+                    [~, sfname, sfx] = fileparts(subFiles{jj});
+                    fnameMaster{fcnt} = [sfname sfx];
                 else
-                    [dataA(fcnt) fnameMaster{fcnt}] = PSimport(subFiles{jj}, char(filenameA{ii}));
+                    [dataA(fcnt) fnameMaster{fcnt}] = PSimport(subFiles{jj}, filenameA{ii});
                     T{fcnt}=dataA(fcnt).T;
                     A_lograte(fcnt)=round((1000/median(diff(T{fcnt}.time_us_-T{fcnt}.time_us_(1)))) * 10) / 10;
                     SetupInfo{fcnt}=dataA(fcnt).SetupInfo;
@@ -138,128 +123,251 @@ try
                 epoch2_A(fcnt)=round(((tta{fcnt}(end)/us2sec)-LogNdDefault)*10) / 10;
 
                 clear a b r p y dm ff
-                r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));
-                p = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'pitchPID')),2));
-                y = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'yawPID')),2));
 
                 %%%%%%%%%% parse firmware version for per-file debug mode indices %%%%%%%%%%
                 [fwType{fcnt}, fwMajor(fcnt), fwMinor(fcnt)] = PSparseBFversion(SetupInfo{fcnt});
                 debugIdx{fcnt} = PSdebugModeIndices(fwType{fcnt}, fwMajor(fcnt), fwMinor(fcnt));
 
+                % Auto-switch firmware dropdown if detected type differs
+                detFwIdx = 0;
+                ft = fwType{fcnt};
+                if strcmpi(ft,'Betaflight') || strcmpi(ft,'Cleanflight'), detFwIdx = 1;
+                elseif strcmpi(ft,'Emuflight'), detFwIdx = 2;
+                elseif strcmpi(ft,'INAV'), detFwIdx = 3;
+                elseif strcmpi(ft,'Rotorflight'), detFwIdx = 6;
+                elseif strcmpi(ft,'KISS'), detFwIdx = 7;
+                end
+                if detFwIdx > 0 && detFwIdx ~= get(guiHandles.Firmware, 'Value')
+                    set(guiHandles.Firmware, 'Value', detFwIdx);
+                end
+                if detFwIdx > 0 && detFwIdx ~= loaded_firmware && fcnt > 1
+                    % stash current file (already imported above)
+                    stash_T_ = T{fcnt}; stash_SI_ = SetupInfo{fcnt};
+                    stash_LR_ = A_lograte(fcnt); stash_TTA_ = tta{fcnt};
+                    stash_E1_ = epoch1_A(fcnt); stash_E2_ = epoch2_A(fcnt);
+                    stash_FN_ = fnameMaster{fcnt};
+                    stash_FwT_ = fwType{fcnt}; stash_FwMaj_ = fwMajor(fcnt);
+                    stash_FwMin_ = fwMinor(fcnt); stash_DbgIdx_ = debugIdx{fcnt};
+
+                    clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo rollPIDF pitchPIDF yawPIDF debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis notchData rpmFilterData ampmat freq2d2 amp2d2 specMat delayDataReady FilterDelayDterm SPGyroDelay Debug01 Debug02 gyro_phase_shift_deg dterm_phase_shift_deg tuneCrtlpanel_init setupInfoWidgets_init;
+                    fnameMaster = {};
+                    try, delete(checkpanel); clear checkpanel; catch, end
+                    try delete(findobj(PSfig,'Tag','PSrpy')); catch, end
+                    try delete(findobj(PSfig,'Tag','PSmotor')); catch, end
+                    try delete(findobj(PSfig,'Tag','PScombo')); catch, end
+                    ov = getappdata(PSfig, 'PSoverlay');
+                    if ~isempty(ov)
+                        flds = fieldnames(ov);
+                        for fi=1:numel(flds), try delete(ov.(flds{fi})); catch, end; end
+                        setappdata(PSfig, 'PSoverlay', []);
+                    end
+                    figs=findobj('Type','figure'); for fi=1:numel(figs), if figs(fi)~=PSfig, try, close(figs(fi)); catch, end; end; end
+                    clear PSspecfig PSspecfig2 PSspecfig3 PStunefig PSerrfig PSstatsfig PSdisp errCrtlpanel statsCrtlpanel spec2Crtlpanel specCrtlpanel freqTimeCrtlpanel tuneCrtlpanel fcntSR;
+                    set(guiHandles.FileNum, 'String', ' ');
+                    try, set(guiHandles.Epoch1_A_Input, 'String', ' '); set(guiHandles.Epoch2_A_Input, 'String', ' '); catch, end
+                    try setappdata(PSfig, 'smoothCacheLV', struct()); catch, end
+                    try setappdata(PSfig, 'rfMotorCount', []); catch, end
+
+                    % restore as file #1 and continue processing
+                    fcnt = 1; Nfiles = 1;
+                    T{1} = stash_T_; SetupInfo{1} = stash_SI_;
+                    A_lograte(1) = stash_LR_; tta{1} = stash_TTA_;
+                    epoch1_A(1) = stash_E1_; epoch2_A(1) = stash_E2_;
+                    fnameMaster{1} = stash_FN_;
+                    fwType{1} = stash_FwT_; fwMajor(1) = stash_FwMaj_;
+                    fwMinor(1) = stash_FwMin_; debugIdx{1} = stash_DbgIdx_;
+                    clear stash_T_ stash_SI_ stash_LR_ stash_TTA_ stash_E1_ stash_E2_ stash_FN_ stash_FwT_ stash_FwMaj_ stash_FwMin_ stash_DbgIdx_;
+                    loaded_firmware = detFwIdx;
+                end
+                if detFwIdx > 0
+                    loaded_firmware = detFwIdx;
+                end
+
                 %%%%%%%%%% collect debug mode info %%%%%%%%%%
                 try
-                    debugmode(fcnt) = str2num(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'debug_mode')),2)));
+                    debugmode(fcnt) = str2double(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'debug_mode')),2)));
                 catch
-                    % BF 2025.12+: GYRO_SCALED removed, use GYRO_FILTERED as default
                     if debugIdx{fcnt}.GYRO_SCALED == -1
                         debugmode(fcnt) = debugIdx{fcnt}.GYRO_FILTERED;
                     else
-                        debugmode(fcnt) = 6;% default to gyro_scaled
+                        debugmode(fcnt) = 6;
                     end
                 end
 
-                %%%%%%%%%% parse gyro_debug_axis (BF 2025.12+, for FFT_FREQ axis) %%%%%%%%%%
                 try
-                    gyro_debug_axis(fcnt) = str2num(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'gyro_debug_axis')),2)));
+                    gyro_debug_axis(fcnt) = str2double(char(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'gyro_debug_axis')),2)));
                 catch
-                    gyro_debug_axis(fcnt) = 0; % default Roll
+                    gyro_debug_axis(fcnt) = 0;
                 end
 
-                dm = {};
-                % Try d_max first (BF 2025.12+), fallback to d_min (older)
-                dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_max'));
-                if isempty(dm_idx)
-                    dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_min'));
-                end
-                if ~isempty(dm_idx) && ~isempty(SetupInfo{fcnt}(dm_idx,2))
-                    dm = SetupInfo{fcnt}(dm_idx, 2);
-                else
-                    dm = {' , , '};
-                end
-                ff = {};
-                if ~isempty(SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'feedforward_weight') | strcmp(SetupInfo{fcnt}(:,1), 'ff_weight')),2))
-                    ff = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'feedforward_weight') | strcmp(SetupInfo{fcnt}(:,1), 'ff_weight')),2));
-                else 
-                    ff = {' , , '};
+                % BF 4.5+: gyroUnfilt → gyroPrefilt; fallback to debug if GYRO_SCALED
+                for ax_ = 0:2
+                    uf_ = ['gyroUnfilt_' int2str(ax_) '_'];
+                    pf_ = ['gyroPrefilt_' int2str(ax_) '_'];
+                    if isfield(T{fcnt}, uf_)
+                        T{fcnt}.(pf_) = T{fcnt}.(uf_);
+                    elseif debugmode(fcnt) == debugIdx{fcnt}.GYRO_SCALED && debugIdx{fcnt}.GYRO_SCALED > 0
+                        df_ = ['debug_' int2str(ax_) '_'];
+                        if isfield(T{fcnt}, df_), T{fcnt}.(pf_) = T{fcnt}.(df_); end
+                    end
                 end
 
-                a=strfind(char(dm),',');
-                b=strfind(char(ff),',');
-                rollPIDF{fcnt} = [char(r) ',' dm{1}(1:a(1)-1) ',' ff{1}(1:b(1)-1)];
-                pitchPIDF{fcnt} = [char(p) ',' dm{1}(a(1)+1:a(2)-1) ',' ff{1}(b(1)+1:b(2)-1)];
-                yawPIDF{fcnt} = [char(y) ',' dm{1}(a(2)+1:end) ',' ff{1}(b(2)+1:end)];
+                try
+                    r = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'rollPID')),2));
+                    p = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'pitchPID')),2));
+                    y = (SetupInfo{fcnt}(find(strcmp(SetupInfo{fcnt}(:,1), 'yawPID')),2));
+                    dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_max'));
+                    if isempty(dm_idx), dm_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'd_min')); end
+                    if ~isempty(dm_idx) && ~isempty(SetupInfo{fcnt}(dm_idx,2))
+                        dm = SetupInfo{fcnt}(dm_idx, 2);
+                    else
+                        dm = {' , , '};
+                    end
+                    ff_idx = find(strcmp(SetupInfo{fcnt}(:,1), 'feedforward_weight') | strcmp(SetupInfo{fcnt}(:,1), 'ff_weight'));
+                    if ~isempty(ff_idx) && ~isempty(SetupInfo{fcnt}(ff_idx,2))
+                        ff = SetupInfo{fcnt}(ff_idx, 2);
+                    else
+                        ff = {' , , '};
+                    end
+                    a=strfind(char(dm),',');
+                    b=strfind(char(ff),',');
+                    rollPIDF{fcnt} = [char(r) ',' dm{1}(1:a(1)-1) ',' ff{1}(1:b(1)-1)];
+                    pitchPIDF{fcnt} = [char(p) ',' dm{1}(a(1)+1:a(2)-1) ',' ff{1}(b(1)+1:b(2)-1)];
+                    yawPIDF{fcnt} = [char(y) ',' dm{1}(a(2)+1:end) ',' ff{1}(b(2)+1:end)];
+                catch
+                    rollPIDF{fcnt} = '0,0,0,0,0';
+                    pitchPIDF{fcnt} = '0,0,0,0,0';
+                    yawPIDF{fcnt} = '0,0,0,0,0';
+                end
 
-                if get(guiHandles.Firmware, 'Value') == 3 % INAV
+                isRF = strcmpi(fwType{fcnt}, 'Rotorflight');
+                if strcmpi(fwType{fcnt}, 'INAV')
                     T{fcnt}.setpoint_0_ = T{fcnt}.axisRate_0_;
                     T{fcnt}.setpoint_1_ = T{fcnt}.axisRate_1_;
                     T{fcnt}.setpoint_2_ = T{fcnt}.axisRate_2_;
-                    T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
+                    if isfield(T{fcnt}, 'rcData_3_')
+                        T{fcnt}.setpoint_3_ = (T{fcnt}.rcData_3_ - 1000);
+                    else
+                        T{fcnt}.setpoint_3_ = zeros(length(T{fcnt}.loopIteration), 1);
+                    end
+                end
+                if isRF % setpoint_3_ is collective, use rcCommand[4] as throttle
+                    if isfield(T{fcnt}, 'rcCommand_4_')
+                        T{fcnt}.setpoint_3_ = T{fcnt}.rcCommand_4_;
+                    end
+                end
+                % KISS/FETTEC: synthesize setpoint from rcCommand if missing
+                if ~isfield(T{fcnt}, 'setpoint_0_') && isfield(T{fcnt}, 'rcCommand_0_')
+                    for ax = 0:2
+                        T{fcnt}.(['setpoint_' int2str(ax) '_']) = T{fcnt}.(['rcCommand_' int2str(ax) '_']);
+                    end
+                    T{fcnt}.setpoint_3_ = (T{fcnt}.rcCommand_3_ - 1000) / 10;
+                elseif ~isfield(T{fcnt}, 'setpoint_0_')
+                    for ax = 0:3
+                        T{fcnt}.(['setpoint_' int2str(ax) '_']) = zeros(length(T{fcnt}.loopIteration), 1);
+                    end
+                end
+
+                % gyroUnfilt -> gyroADC fallback (old BF logs lack gyroADC)
+                for ax = 0:2
+                    adc = sprintf('gyroADC_%d_', ax);
+                    uf = sprintf('gyroUnfilt_%d_', ax);
+                    if ~isfield(T{fcnt}, adc) && isfield(T{fcnt}, uf)
+                        T{fcnt}.(adc) = T{fcnt}.(uf);
+                    elseif ~isfield(T{fcnt}, adc)
+                        T{fcnt}.(adc) = zeros(length(T{fcnt}.loopIteration), 1);
+                    end
                 end
 
                 isArduPilot = strcmpi(sfext, '.bin');
 
+                Nsamples = length(T{fcnt}.loopIteration);
+                isINAV = strcmpi(fwType{fcnt}, 'INAV');
                 for k = 0 : 3
                   if ~isArduPilot
-                    try
-                        eval(['T{fcnt}.debug_' int2str(k) '_(1);'])
-                    catch
-                        eval(['T{fcnt}.(''debug_' int2str(k) '_'')' '= zeros(length(T{fcnt}.loopIteration),1);']) ;
+                    dbg_f = ['debug_' int2str(k) '_'];
+                    if ~isfield(T{fcnt}, dbg_f)
+                        T{fcnt}.(dbg_f) = zeros(Nsamples, 1);
                     end
-                    try
-                        eval(['T{fcnt}.axisF_' int2str(k) '_(1);'])
-                    catch
-                        eval(['T{fcnt}.(''axisF_' int2str(k) '_'')' '= zeros(length(T{fcnt}.loopIteration),1);']);
+                    axF_f = ['axisF_' int2str(k) '_'];
+                    if ~isfield(T{fcnt}, axF_f)
+                        T{fcnt}.(axF_f) = zeros(Nsamples, 1);
                     end
 
-                    if get(guiHandles.Firmware, 'Value') == 3 % INAV
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_ - 1000)) / 10;'])% scale motor sigs to %
-                        catch, end
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k+4) '_ = ((T{fcnt}.motor_' int2str(k+4) '_ - 1000)) / 10;'])% scale motor sigs 4-7 for x8 configuration
-                        catch
+                    mot_f = ['motor_' int2str(k) '_'];
+                    mot8_f = ['motor_' int2str(k+4) '_'];
+                    if isINAV
+                        if isfield(T{fcnt}, mot_f)
+                            T{fcnt}.(mot_f) = (T{fcnt}.(mot_f) - 1000) / 10;
+                        end
+                        if isfield(T{fcnt}, mot8_f)
+                            T{fcnt}.(mot8_f) = (T{fcnt}.(mot8_f) - 1000) / 10;
                         end
                     else
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k) '_ = ((T{fcnt}.motor_' int2str(k) '_) / 2000) * 100;'])% scale motor sigs to %
-                        catch, end
-                        try
-                            eval(['T{fcnt}.motor_' int2str(k+4) '_ = ((T{fcnt}.motor_' int2str(k+4) '_) / 2000) * 100;'])% scale motor sigs 4-7 for x8 configuration
-                        catch
+                        if isfield(T{fcnt}, mot_f)
+                            T{fcnt}.(mot_f) = T{fcnt}.(mot_f) / 2000 * 100;
+                        end
+                        if isfield(T{fcnt}, mot8_f)
+                            T{fcnt}.(mot8_f) = T{fcnt}.(mot8_f) / 2000 * 100;
                         end
                     end
                   end % ~isArduPilot
+                  % Rotorflight: fill empty motor slots with servo data
+                  if isRF && k == 3
+                      nMotReal = 0;
+                      for mm = 0:3
+                          if isfield(T{fcnt}, ['motor_' int2str(mm) '_']), nMotReal = mm+1; end
+                      end
+                      si = 0;
+                      for mm = nMotReal:3
+                          sf = ['servo_' int2str(si) '_'];
+                          mf = ['motor_' int2str(mm) '_'];
+                          if isfield(T{fcnt}, sf)
+                              T{fcnt}.(mf) = (T{fcnt}.(sf) - 1000) / 10;
+                          end
+                          si = si + 1;
+                      end
+                      try setappdata(PSfig, 'rfMotorCount', nMotReal); catch, end
+                  end
                     if k < 3
-                        if k < 2 % compute prefiltered dterm and scale
+                        ks = int2str(k);
+                        if k < 2 % compute prefiltered dterm
                           try
-                            eval(['T{fcnt}.axisDpf_' int2str(k) '_ = -[0; diff(T{fcnt}.gyroADC_' int2str(k) '_)];'])
-                            clear d1 d2 d3 sclr
-                            eval(['d1 = smooth(T{fcnt}.axisDpf_' int2str(k) '_, 100);'])
-                            eval(['d2 = smooth(T{fcnt}.axisD_' int2str(k) '_, 100);'])
-                            d3 = (d2 ./ d1);
+                            dpf_f = ['axisDpf_' ks '_'];
+                            T{fcnt}.(dpf_f) = -[0; diff(T{fcnt}.(['gyroADC_' ks '_']))];
+                            d1 = smooth(T{fcnt}.(dpf_f), 100);
+                            d2 = smooth(T{fcnt}.(['axisD_' ks '_']), 100);
+                            d3 = d2 ./ d1;
                             sclr = nanmedian(d3(~isinf(d3) & d3 > 0));
-                            eval(['T{fcnt}.axisDpf_' int2str(k) '_ = T{fcnt}.axisDpf_' int2str(k) '_ * sclr;'])
+                            T{fcnt}.(dpf_f) = T{fcnt}.(dpf_f) * sclr;
                           catch, end
                         end
 
-                        eval(['T{fcnt}.(''piderr_' int2str(k) '_'') = T{fcnt}.gyroADC_' int2str(k) '_ - T{fcnt}.setpoint_' int2str(k) '_;'])
                         try
-                            eval(['T{fcnt}.(''pidsum_' int2str(k) '_'') = T{fcnt}.axisP_' int2str(k) '_ + T{fcnt}.axisI_' int2str(k) '_ + T{fcnt}.axisD_' int2str(k) '_ + T{fcnt}.axisF_' int2str(k) '_;'])
+                            T{fcnt}.(['piderr_' ks '_']) = T{fcnt}.(['gyroADC_' ks '_']) - T{fcnt}.(['setpoint_' ks '_']);
                         catch
-                            eval(['T{fcnt}.(''pidsum_' int2str(k) '_'') = T{fcnt}.axisP_' int2str(k) '_ + T{fcnt}.axisI_' int2str(k) '_ + T{fcnt}.axisF_' int2str(k) '_;'])
+                            T{fcnt}.(['piderr_' ks '_']) = zeros(Nsamples, 1);
+                        end
+                        try
+                            T{fcnt}.(['pidsum_' ks '_']) = T{fcnt}.(['axisP_' ks '_']) + T{fcnt}.(['axisI_' ks '_']) + T{fcnt}.(['axisD_' ks '_']) + T{fcnt}.(['axisF_' ks '_']);
+                        catch
+                            try
+                                T{fcnt}.(['pidsum_' ks '_']) = T{fcnt}.(['axisP_' ks '_']) + T{fcnt}.(['axisI_' ks '_']) + T{fcnt}.(['axisF_' ks '_']);
+                            catch
+                                T{fcnt}.(['pidsum_' ks '_']) = zeros(Nsamples, 1);
+                            end
                         end
                     end
                 end
             end
         end
         % Clean up workdir
-        cd(prev_dir);
         try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     end
 
     try close(waitbarFid), catch, end
+
 catch  ME
-    try cd(prev_dir); catch, end
     try if ispc(), system(['rmdir /s /q "' workdir '"']); else system(['rm -rf ' workdir]); end; catch, end
     try close(waitbarFid); catch, end
     warning('PSload error: %s', ME.message);

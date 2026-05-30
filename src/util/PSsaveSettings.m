@@ -51,6 +51,9 @@ try
         var(31,:) = [{'StepResp-plotY' 1}];
         var(32,:) = [{'StepResp-SinglePanel' 0}];
         var(33,:) = [{'StepResp-Ymax' 1.75}];
+        var(34,:) = [{'StepResp-Subsample' 1}];
+        var(35,:) = [{'StepResp-MinRate' 40}];
+        var(36,:) = [{'StepResp-MaxRate' 500}];
 
         defaults = cell2table(var, 'VariableNames',{'Parameters' ; 'Values'});
     else
@@ -67,8 +70,8 @@ try
     defaults.Values(5) = get(guiHandles.plotY, 'Value');
     defaults.Values(6) = get(guiHandles.lineSmooth, 'Value');
     defaults.Values(7) = get(guiHandles.linewidth, 'Value');
-    defaults.Values(8) = str2num(get(guiHandles.maxY_input, 'String'));
-    defaults.Values(9) = str2num(get(guiHandles.nCols_input, 'String'));
+    defaults.Values(8) = str2double(get(guiHandles.maxY_input, 'String'));
+    defaults.Values(9) = str2double(get(guiHandles.nCols_input, 'String'));
 catch
 end
 try
@@ -106,7 +109,10 @@ try
     defaults.Values(30) = get(guiHandlesTune.plotP, 'Value');
     defaults.Values(31) = get(guiHandlesTune.plotY, 'Value');
     defaults.Values(32) = get(guiHandlesTune.RPYcombo, 'Value');
-    defaults.Values(33) = str2num(get(guiHandlesTune.maxYStepInput, 'String'));
+    defaults.Values(33) = str2double(get(guiHandlesTune.maxYStepInput, 'String'));
+    defaults.Values(34) = get(guiHandlesTune.subsample, 'Value');
+    defaults.Values(35) = str2double(get(guiHandlesTune.minRateInput, 'String'));
+    defaults.Values(36) = str2double(get(guiHandlesTune.maxRateInput, 'String'));
 catch
 end
 
@@ -127,14 +133,8 @@ ldr = ['logfileDirectory: ' logfile_directory ];
 
 try
     defaults = readtable('PSdefaults.txt');
-    a = char([cellstr([char(defaults.Parameters) num2str(defaults.Values)]); {rdr}; {mdr}; {ldr}]);
-    t = uitable(PSfig,'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
 catch
-    defaults = ' '; 
-    a = char(['Unable to set user defaults '; {rdr}; {mdr}; {ldr}]);
-    t = uitable(PSfig,'ColumnWidth',{500},'ColumnFormat',{'char'},'Data',[cellstr(a)]);
-    set(t,'units','normalized','Position',infoTablePos,'FontSize',fontsz*.8, 'ColumnName', [''])
+    defaults = ' ';
 end
 
 clear var

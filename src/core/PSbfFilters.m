@@ -1,6 +1,6 @@
 function [b, a] = PSbfFilters(type, fc, Fs, Q)
 %% PSbfFilters - BF-compatible discrete filter coefficients
-%  type: 'pt1','pt2','pt3','biquad','notch'
+%  type: 'pt1','pt2','pt3','biquad','biquad-bessel','notch'
 %  fc: cutoff/center freq (Hz)
 %  Fs: sample rate (Hz)
 %  Q: quality factor (notch only, default 3.5 = BF dyn_notch_q/100)

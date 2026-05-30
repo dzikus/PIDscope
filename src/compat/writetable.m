@@ -8,7 +8,7 @@ function writetable(T, filename)
 % Writes the struct-based table T to a text file.
 % Appends .txt extension if no extension present.
 
-  % Ensure .txt extension
+  % Force .txt extension
   if isempty(strfind(filename, '.'))
     filename = [filename '.txt'];
   end

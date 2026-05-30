@@ -8,19 +8,21 @@
 % ----------------------------------------------------------------------------------
 
 
-if ~isempty(filenameA) || ~isempty(filenameB)
-      
-PSerrfig=figure(3);
-set(PSerrfig, 'Position', round([.1*screensz(3) .1*screensz(4) .75*screensz(3) .8*screensz(4)]));
-set(PSerrfig, 'NumberTitle', 'off');
-set(PSerrfig, 'Name', ['PIDscope (' PsVersion ') - PID Error Tool']);
-set(PSerrfig, 'InvertHardcopy', 'off');
-set(PSerrfig,'color',bgcolor)
+if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
-PSerrfig_pos = get(PSerrfig, 'Position');
-screensz_tmp = get(0,'ScreenSize'); if PSerrfig_pos(3) > 10, PSerrfig_pos(3:4) = PSerrfig_pos(3:4) ./ screensz_tmp(3:4); end
-prop_max_screen=(max([PSerrfig_pos(3) PSerrfig_pos(4)]));
-fontsz3=round(screensz_multiplier*prop_max_screen);
+if exist('PSerrfig','var') && ishandle(PSerrfig)
+    figure(PSerrfig);
+else
+    PSerrfig=figure(7);
+    set(PSerrfig, 'Position', round([0 0 screensz(3) screensz(4)]));
+    try set(PSerrfig, 'WindowState', 'maximized'); catch, end
+    set(PSerrfig, 'NumberTitle', 'off');
+    set(PSerrfig, 'Name', ['PIDscope (' PsVersion ') - PID Error Tool']);
+    set(PSerrfig, 'InvertHardcopy', 'off');
+    set(PSerrfig,'color',bgcolor);
+end
+
+fontsz3 = fontsz;
 maxDegsec=100;
 updateErr=0;
 
@@ -29,38 +31,82 @@ TooltipString_degsec=['Sets the maximum rate used in the PID error analysis (dis
     newline , 'This cutoff helps to reduce inclusion of data with inflated PID error as a result of snap maneuvers' ];
 
 clear posInfo.PIDerrAnalysis
-cols=[0.1 0.55];
-rows=[0.66 0.38 0.1];
+plotR = cpL - 0.04;  plotLe = 0.08;  colGapE = 0.02;
+colWe = (plotR - plotLe - colGapE) / 2;
+cols = [plotLe, plotLe + colWe + colGapE];
+rows=[0.63 0.36 0.09];
 k=0;
 for c=1:2
     for r=1:3
         k=k+1;
-        posInfo.PIDerrAnalysis(k,:)=[cols(c) rows(r) 0.39 0.24];
+        posInfo.PIDerrAnalysis(k,:)=[cols(c) rows(r) colWe 0.24];
     end
 end
 
-posInfo.refresh2=[.09 .94 .06 .04];
-posInfo.saveFig3=[.16 .94 .06 .04];
+% Top bar layout — pixel-based sizes
+topBtnW = 100/screensz(3); topBtnH = rh; topEdtW = 80/screensz(3);
+topTxtW = 120/screensz(3); topDdW = 160/screensz(3); topBarL = 0.09;
+tbOff = 40/screensz(4);  % toolbar offset
+topBtnY = 1 - tbOff - rh - cpMv;
+topX = topBarL + cpM;
+posInfo.refresh2=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
+posInfo.saveFig3=    [topX topBtnY topBtnW topBtnH]; topX=topX+topBtnW+cpM;
+posInfo.maxStick=    [topX topBtnY topEdtW topBtnH]; topX=topX+topEdtW+cpM;
+posInfo.maxSticktext=[topX topBtnY topTxtW topBtnH]; topX=topX+topTxtW+cpM;
+posInfo.errFileA=    [topX topBtnY topDdW ddh]; topX=topX+topDdW+cpM;
+posInfo.errFileB=    [topX topBtnY topDdW ddh];
+topPanelW = topX + topDdW + cpM - topBarL;
+topPanelH = 1 - tbOff - topBtnY + cpMv;
 
-posInfo.maxSticktext=[.22 .966 .12 .03];
-posInfo.maxStick=[.24 .94 .06 .03];
-
+if ~exist('errCrtlpanel','var') || ~ishandle(errCrtlpanel)
 errCrtlpanel = uipanel('Title','','FontSize',fontsz3,...
-              'BackgroundColor',[.95 .95 .95],...
-              'Position',[.085 .93 .23 .06]);
-          
-guiHandlesPIDerr.refresh = uicontrol(PSerrfig,'string','Refresh','fontsize',fontsz3,'TooltipString',[TooltipString_refresh],'units','normalized','Position',[posInfo.refresh2],...
+              'BackgroundColor',panelBg,'ForegroundColor',panelFg,...
+              'HighlightColor',panelBorder,...
+              'Position',[topBarL topBtnY-cpMv topPanelW topPanelH]);
+
+guiHandlesPIDerr.refresh = uicontrol(PSerrfig,'string','Refresh','fontsize',fontsz3,'TooltipString','Refresh plots','units','normalized','Position',[posInfo.refresh2],...
     'callback','updateErr=1;PSplotPIDerror;');
-set(guiHandlesPIDerr.refresh, 'BackgroundColor', [1 1 .2]);
+set(guiHandlesPIDerr.refresh, 'ForegroundColor', colRun);
 
 guiHandlesPIDerr.maxSticktext = uicontrol(PSerrfig,'style','text','string','max stick deg/s','fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxSticktext]);
 guiHandlesPIDerr.maxStick = uicontrol(PSerrfig,'style','edit','string',[int2str(maxDegsec)],'fontsize',fontsz3,'TooltipString',[TooltipString_degsec],'units','normalized','Position',[posInfo.maxStick],...
-     'callback','@textinput_call; maxDegsec=str2num(get(guiHandlesPIDerr.maxStick, ''String'')); updateErr=1;PSplotPIDerror; ');
+     'callback','maxDegsec=str2double(get(guiHandlesPIDerr.maxStick, ''String'')); updateErr=1;PSplotPIDerror; ');
 
 guiHandlesPIDerr.saveFig3 = uicontrol(PSerrfig,'string','Save Fig','fontsize',fontsz3,'TooltipString',[TooltipString_saveFig],'units','normalized','Position',[posInfo.saveFig3],...
-    'callback','set(guiHandlesPIDerr.saveFig3, ''FontWeight'', ''bold'');PSsaveFig; set(guiHandlesPIDerr.saveFig3, ''FontWeight'', ''normal'');');
-set(guiHandlesPIDerr.saveFig3, 'BackgroundColor', [.8 .8 .8]);
-   
+    'callback','PSsaveFig;');
+set(guiHandlesPIDerr.saveFig3, 'ForegroundColor', saveCol);
+
+guiHandlesPIDerr.FileA = uicontrol(PSerrfig,'Style','popupmenu','string',[fnameMaster],...
+    'fontsize',fontsz3,'TooltipString','File A (red)','units','normalized','Position',[posInfo.errFileA],...
+    'callback','updateErr=0;PSplotPIDerror;');
+set(guiHandlesPIDerr.FileA, 'Value', 1);
+if Nfiles > 1
+    guiHandlesPIDerr.FileB = uicontrol(PSerrfig,'Style','popupmenu','string',[fnameMaster],...
+        'fontsize',fontsz3,'TooltipString','File B (blue)','units','normalized','Position',[posInfo.errFileB],...
+        'callback','updateErr=0;PSplotPIDerror;');
+    set(guiHandlesPIDerr.FileB, 'Value', min(2, Nfiles));
+end
+end % ishandle(errCrtlpanel)
+
+% Register top bar for fixed-pixel resize
+cpPx = struct('cpW', cpW_px, 'cpM', cpM_px, 'rh', rh_px, 'rs', rs_px, ...
+              'ddh', ddh_px, 'cbW', cbW_px, 'rhs', rhs_px, 'cpTitle', cpTitle_px, 'infoH', 0);
+cpI = {};
+cpI{end+1} = struct('h', guiHandlesPIDerr.refresh, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',100);
+cpI{end+1} = struct('h', guiHandlesPIDerr.saveFig3, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',100);
+cpI{end+1} = struct('h', guiHandlesPIDerr.maxStick, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',80);
+cpI{end+1} = struct('h', guiHandlesPIDerr.maxSticktext, 'type','btn', 'row',0, 'col',0, 'hpx',0, 'wpx',120);
+cpI{end+1} = struct('h', guiHandlesPIDerr.FileA, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
+if Nfiles > 1 && isfield(guiHandlesPIDerr, 'FileB') && ishandle(guiHandlesPIDerr.FileB)
+    cpI{end+1} = struct('h', guiHandlesPIDerr.FileB, 'type','dd', 'row',0, 'col',0, 'hpx',0, 'wpx',160);
+end
+cpI{end+1} = struct('h', errCrtlpanel, 'type','panel', 'row',0, 'col',0, 'hpx',0, 'wpx',0);
+setappdata(PSerrfig, 'PSplotGrid', struct('plotL',plotLe, 'colGap',colGapE, ...
+    'ncols',2, 'rows',rows, 'rowH',0.24, 'margin',0.04));
+PSregisterResize(PSerrfig, cpPx, cpI, 'topbar', topBarL);
+
+PSstyleControls(PSerrfig);
+
 else
     errordlg('Please select file(s) then click ''load+run''', 'Error, no data');
     pause(2);

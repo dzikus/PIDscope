@@ -15,13 +15,13 @@ function ys = smooth(y, span, method)
   if nargin < 2, span = 5; end
   if nargin < 3, method = 'moving'; end
 
-  y = y(:);  % ensure column vector
+  y = y(:);  % force column vector
   n = length(y);
 
   % Clamp span
   span = min(round(span), n);
   span = max(span, 1);
-  % Ensure span is odd for symmetric window
+  % Force span is odd for symmetric window
   if mod(span, 2) == 0
     span = span + 1;
   end

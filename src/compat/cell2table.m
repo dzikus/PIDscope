@@ -15,7 +15,7 @@ function T = cell2table(C, varargin)
       if ~iscell(var_names)
         var_names = cellstr(var_names);
       end
-      var_names = var_names(:)';  % ensure row vector
+      var_names = var_names(:)';  % force row vector
     end
   end
 
@@ -27,7 +27,7 @@ function T = cell2table(C, varargin)
   T = struct();
   for j = 1:ncols
     col_data = C(:, j);
-    % Check if all entries are numeric
+    
     all_numeric = true;
     for k = 1:length(col_data)
       if ~isnumeric(col_data{k})
