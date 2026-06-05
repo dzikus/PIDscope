@@ -14,6 +14,12 @@ function [multiLineCols] = PSlinecmap(nColors)
     for i = find(multiLineCols(:,1) > .5 & multiLineCols(:,2) > .7 & multiLineCols(:,3) < .3)
         multiLineCols(i,:) = multiLineCols(i,:) * .78;
     end
+    % jet endpoints (dark red/blue) vanish on the dark theme - lift toward
+    % white instead of rescaling, so neighbors keep distinct hues
+    th = PStheme();
+    mx = max(multiLineCols, [], 2);
+    dim = mx < th.lineMinBright;
+    multiLineCols(dim,:) = min(1, multiLineCols(dim,:) + (th.lineMinBright - mx(dim)));
     multiLineCols = repmat(multiLineCols, round(100/nColors),1);% repeats colormap to be 100 rows long
 
 end

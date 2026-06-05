@@ -12,6 +12,9 @@ th.axesBg      = [.10 .10 .12];
 th.axesFg      = [.75 .75 .75];
 th.gridColor   = [.28 .28 .30];
 
+% per-file line palette: minimum brightness readable on the dark background
+th.lineMinBright = .85;
+
 % text
 th.textPrimary   = [.90 .90 .90];
 th.textSecondary = [.65 .65 .65];
