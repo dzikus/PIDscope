@@ -140,8 +140,14 @@ flightSpec=0;
 screensz = get(0,'ScreenSize');
 % Octave Qt bug: setting figure units to 'normalized' permanently breaks uipanel
 % Calculate pixel position manually instead
-set(PSfig, 'Position', round([0 0 screensz(3) screensz(4)]));
-try set(PSfig, 'WindowState', 'maximized'); catch, end
+if ispc
+    % Position sets the client area only - on Windows the title bar ends up
+    % above the screen top; OuterPosition includes the frame
+    drawnow;
+    set(PSfig, 'OuterPosition', round([0 0 screensz(3) screensz(4)]));
+else
+    set(PSfig, 'Position', round([0 0 screensz(3) screensz(4)]));
+end
 set(PSfig, 'NumberTitle', 'off');
 set(PSfig, 'Name', ['PIDscope (' PsVersion ') - Log Viewer']);
 drawnow; pause(0.2);
