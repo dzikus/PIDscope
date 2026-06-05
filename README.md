@@ -46,6 +46,17 @@ That said - if you find PIDscope useful and want to buy me a coffee (not a beer,
 <a href="https://www.buymeacoffee.com/dzikus" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 ---
 
+## Installing
+
+AppImage (Linux), Windows and macOS builds are on the [releases page](https://github.com/dzikus/PIDscope/releases).
+
+Arch Linux users can install from the AUR thanks to [FPVogel](https://github.com/FPVogel):
+
+- [pidscope-bin](https://aur.archlinux.org/packages/pidscope-bin) - the released AppImage
+- [pidscope-git](https://aur.archlinux.org/packages/pidscope-git) - built from the latest git source
+
+---
+
 ## License
 
 PIDscope is licensed under the [GNU General Public License v3.0](LICENSE).
