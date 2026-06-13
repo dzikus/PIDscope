@@ -224,10 +224,10 @@ try idx_=find(strcmp(defaults.Parameters,'StepResp-Subsample')); if ~isempty(idx
 try idx_=find(strcmp(defaults.Parameters,'StepResp-MinRate')); if ~isempty(idx_), set(guiHandlesTune.minRateInput,'String',num2str(defaults.Values(idx_))); end, catch, end
 try idx_=find(strcmp(defaults.Parameters,'StepResp-MaxRate')); if ~isempty(idx_), set(guiHandlesTune.maxRateInput,'String',num2str(defaults.Values(idx_))); end, catch, end
 
+PSstyleControls(PStunefig);
 else
     warndlg('Please select file(s)');
 end
-PSstyleControls(PStunefig);
 
 % functions
 function textinput_call3(src,eventdata)
