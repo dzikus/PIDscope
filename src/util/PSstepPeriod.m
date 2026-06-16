@@ -9,6 +9,10 @@ delete(findobj(fig, 'Tag', 'PSperiod'));
 allAx = findobj(fig, 'Type', 'axes', 'Visible', 'on');
 if isempty(allAx), return; end
 
+% PSbusy lets re-entrant callbacks bail during the ginput capture (#21)
+setappdata(0, 'PSbusy', 1);
+restoreBusy_ = onCleanup(@() setappdata(0, 'PSbusy', 0));
+
 % first click - determines target axes
 try ginput(1); catch, return; end
 figPt = get(fig, 'CurrentPoint');

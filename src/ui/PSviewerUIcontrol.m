@@ -150,7 +150,7 @@ end
  
 TooltipString_FileNum=['Select the file you wish to plot in the logviewer. '];
 set(guiHandles.FileNum, 'string', fnameMaster, 'TooltipString', TooltipString_FileNum,...
-    'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), try set(zoom, ''Enable'',''off''); catch, end, expandON=0; PSplotLogViewer; if exist(''filenameA'',''var'') && ~isempty(filenameA) && get(guiHandles.startEndButton, ''Value''), try, [x y] = ginput(1); epoch1_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; [x y] = ginput(1); epoch2_A(get(guiHandles.FileNum, ''Value'')) = round(x(1)*10)/10; PSplotLogViewer; catch, end, end, end');
+    'callback','if exist(''fnameMaster'',''var'') && ~isempty(fnameMaster), try set(zoom, ''Enable'',''off''); catch, end, expandON=0; PSplotLogViewer; PStrimSelect; end');
 maxY_textToolTip = ['+/- Scaling factor for the Y axis in degs/s'];
 guiHandles.maxY_text = uicontrol(PSfig,'style','text','string','y scale','fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.maxYtext]);
 guiHandles.maxY_input = uicontrol(PSfig,'style','edit','string',int2str(maxY),'fontsize',fontsz,'TooltipString', [maxY_textToolTip],'units','normalized','Position',[posInfo.maxYinput],...

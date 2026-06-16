@@ -8,6 +8,8 @@
 % ----------------------------------------------------------------------------------
 
     
+if getappdata(0, 'PSbusy'), return; end  % skip re-entrant call mid-capture (#21)
+
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
 if exist('PSdisp','var') && ishandle(PSdisp)
