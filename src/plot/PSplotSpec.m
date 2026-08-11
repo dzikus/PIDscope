@@ -115,7 +115,9 @@ if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 || get(guiHandlesSpec.SpecSelect
     if updateSpec==0 
         clear s dat ampmat amp2d freq a RC smat amp2d freq2d Throt
         p=0;
-         hw = waitbar(0,['please wait... ' ]); 
+        % waitbar pumps the event queue, so hold off dashboard clicks until done
+        setappdata(0, 'PSbusy', 1);
+         hw = waitbar(0,['please wait... ' ]);
 
         tmpPSDVal = get(guiHandlesSpec.checkboxPSD, 'Value');
         for k=1:length(vars)
@@ -148,6 +150,7 @@ if get(guiHandlesSpec.SpecSelect{1}, 'Value')>1 || get(guiHandlesSpec.SpecSelect
             end
         end
         close(hw)
+        setappdata(0, 'PSbusy', 0);
     end
 else
     warndlg({'Dropdowns set to ''NONE''.'; 'Please select a preset or specific variables to analyze.'});

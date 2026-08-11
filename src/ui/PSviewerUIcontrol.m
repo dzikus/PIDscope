@@ -9,6 +9,9 @@
 % ----------------------------------------------------------------------------------  
     
 
+if getappdata(0, 'PSbusy'), return; end  % skip re-entrant call from a running job
+if ~exist('PSfig','var') || ~ishandle(PSfig), return; end  % called outside the main workspace
+
 % Checkbox bar — pixel sizes (constant across resizes)
 chkW_px = 130; chkMotW_px = 100; chkEdtW_px = 45; chkTxtW_px = 65;
 figPos = get(PSfig, 'Position'); figW = figPos(3); figH = figPos(4);

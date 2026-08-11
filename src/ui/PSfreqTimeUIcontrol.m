@@ -6,9 +6,11 @@
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
-    
+
+if getappdata(0, 'PSbusy'), return; end  % skip re-entrant call from a running job
+
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
-   
+
 %%% tooltips
 TooltipString_specRun=['Run current spectral configuration'];
 TooltipString_cmap=['Choose from a selection of colormaps'];
@@ -228,10 +230,11 @@ try set(guiHandlesSpec3.subsampleFactor_select, 'Value', defaults.Values(find(st
 try set(guiHandlesSpec3.ColormapSelect, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqxTime-Colormap')))), catch, set(guiHandlesSpec3.ColormapSelect, 'Value', 3), end
 
 
+PSstyleControls(PSspecfig3);
+
 else
      warndlg('Please select file(s)');
 end
-PSstyleControls(PSspecfig3);
 
 % functions
 function selection2(src,event)
