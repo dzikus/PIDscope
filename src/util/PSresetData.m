@@ -1,6 +1,8 @@
 %% PSresetData - clear all loaded data and reset UI state
 % Called from Reset button and firmware-change dialog
 
+if getappdata(0, 'PSbusy'), return; end  % skip re-entrant call mid-capture (#21)
+
 clear T dataA tta A_lograte epoch1_A epoch2_A SetupInfo;
 clear rollPIDF pitchPIDF yawPIDF filenameA fnameMaster loaded_firmware;
 clear debugmode debugIdx fwType fwMajor fwMinor gyro_debug_axis;

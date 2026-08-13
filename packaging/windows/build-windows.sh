@@ -7,7 +7,7 @@ set -euo pipefail
 
 SRC_DIR="${1:-/src}"
 DIST_DIR="${2:-/dist}"
-OCTAVE_VERSION="${OCTAVE_VERSION:-11.1.0}"
+OCTAVE_VERSION="${OCTAVE_VERSION:-11.3.0}"
 # Version: env > VERSION file > git tag > fallback
 if [ -n "${PIDSCOPE_VERSION:-}" ]; then
     VERSION="${PIDSCOPE_VERSION}"

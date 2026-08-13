@@ -19,6 +19,10 @@ if isempty(lvAx), return; end
 
 set(fig, 'pointer', 'crosshair');
 
+% PSbusy lets re-entrant callbacks bail during the ginput capture (#21)
+setappdata(0, 'PSbusy', 1);
+restoreBusy_ = onCleanup(@() setappdata(0, 'PSbusy', 0));
+
 % first click
 try ginput(1); catch, set(fig,'pointer','arrow'); return; end
 figPt = get(fig, 'CurrentPoint');

@@ -6,7 +6,9 @@
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
-    
+
+if getappdata(0, 'PSbusy'), return; end  % skip re-entrant call from a running job
+
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
 %%% tooltips
@@ -328,10 +330,11 @@ try set(guiHandlesSpec.ColormapSelect, 'Value', defaults.Values(find(strcmp(defa
 try set(guiHandlesSpec.smoothFactor_select, 'Value', defaults.Values(find(strcmp(defaults.Parameters, 'FreqXthr-Smoothing')))), catch, set(guiHandlesSpec.smoothFactor_select, 'Value', 3); end
 
 
+PSstyleControls(PSspecfig);
+
 else
      warndlg('Please select file(s)');
 end
-PSstyleControls(PSspecfig);
 
 % functions
 function selection2(src,event)

@@ -7,6 +7,8 @@
 % this stuff is worth it, you can buy me a beer in return. -Brian White
 % ----------------------------------------------------------------------------------
     
+if getappdata(0, 'PSbusy'), return; end  % skip re-entrant call mid-capture (#21)
+
 if exist('fnameMaster','var') && ~isempty(fnameMaster)
 
 th = PStheme();
@@ -28,7 +30,7 @@ TooltipString_steprun=['Runs step response analysis.',...
     newline, 'Warning: Set subsampling dropdown @ or < medium for faster processing.'];
 TooltipString_minRate=['Input the minimum rate of rotation for calculating the step response (lower bound must be > 0 but lower than upper bound).',...
     newline, 'Really low values may yield more noisy contributions to the data, whereas higher values limit the total data used.',...
-    newline, 'The default of 40deg/s should be sufficient in most cases, but if N is low, try setting this to lower'];
+    newline, 'The default of 40deg/s (20 for Rotorflight) should be sufficient in most cases, but if N is low, try setting this to lower'];
 TooltipString_maxRate=['Input the maximum rate of rotation for for calculating the step response (upper bound must be greater than lower bound).',...
     newline, 'This also marks the lower bound for step resp plots associated with the ''snap maneuvers'' selection.',...
     newline, 'The default of 500deg/s is sufficient in most cases'];
@@ -128,7 +130,10 @@ set(guiHandlesTune.subsample, 'Value', 1);
 
 guiHandlesTune.minRateTxt = uicontrol(PStunefig,'style','text','string','deg/s','fontsize',fontsz,...
     'TooltipString', [TooltipString_minRate], 'units','normalized','BackgroundColor',bgcolor,'Position',[posInfo.minRateTxt]);
-guiHandlesTune.minRateInput = uicontrol(PStunefig,'style','edit','string','40','fontsize',fontsz,...
+% helis are flown with gentle cyclic rates - 40 deg/s would reject most maneuvers
+minRateDef_ = '40';
+try, if any(strcmpi(fwType, 'Rotorflight')), minRateDef_ = '20'; end, catch, end
+guiHandlesTune.minRateInput = uicontrol(PStunefig,'style','edit','string',minRateDef_,'fontsize',fontsz,...
     'TooltipString', [TooltipString_minRate], 'units','normalized','Position',[posInfo.minRateInput],...
     'callback','delete(findobj(PStunefig,''Type'',''axes'')); fcntSR = 0; updateStep = 0; PStuningParams; set(PStunefig, ''pointer'', ''arrow'');');
 guiHandlesTune.maxRateInput = uicontrol(PStunefig,'style','edit','string','500','fontsize',fontsz,...
@@ -221,10 +226,10 @@ try idx_=find(strcmp(defaults.Parameters,'StepResp-Subsample')); if ~isempty(idx
 try idx_=find(strcmp(defaults.Parameters,'StepResp-MinRate')); if ~isempty(idx_), set(guiHandlesTune.minRateInput,'String',num2str(defaults.Values(idx_))); end, catch, end
 try idx_=find(strcmp(defaults.Parameters,'StepResp-MaxRate')); if ~isempty(idx_), set(guiHandlesTune.maxRateInput,'String',num2str(defaults.Values(idx_))); end, catch, end
 
+PSstyleControls(PStunefig);
 else
     warndlg('Please select file(s)');
 end
-PSstyleControls(PStunefig);
 
 % functions
 function textinput_call3(src,eventdata)

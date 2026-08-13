@@ -4,7 +4,7 @@
 
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
-ARG OCTAVE_VERSION=11.1.0
+ARG OCTAVE_VERSION=11.3.0
 
 RUN apt-get update && apt-get install -y \
     p7zip-full zip wget git curl make \

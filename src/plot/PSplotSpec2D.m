@@ -50,6 +50,8 @@ set(PSspecfig2, 'pointer', 'watch')
 
 %%% compute delay/overlay data (deferred from UI open to Run click)
 if ~exist('delayDataReady','var') || ~delayDataReady
+    % waitbar pumps the event queue, so hold off dashboard clicks until done
+    setappdata(0, 'PSbusy', 1);
     hw_delay = waitbar(0, 'computing delays...');
     FilterDelayDterm={};
     SPGyroDelay=[];
@@ -157,6 +159,7 @@ if ~exist('delayDataReady','var') || ~delayDataReady
     end
     delayDataReady = true;
     try close(hw_delay); catch, end
+    setappdata(0, 'PSbusy', 0);
 end
 
 tmpSpecVal = get(guiHandlesSpec2.SpecList, 'Value');
@@ -177,6 +180,7 @@ clear s dat a RC smat amp2d2 freq2d2
 freq2d2 = {};
 amp2d2 = {};
 p=0;
+setappdata(0, 'PSbusy', 1);
 hw_fft = waitbar(0, 'computing FFT...');
 for k = 1 : length(tmpSpecVal)
     s = char(datSelectionString(tmpSpecVal(k)));
@@ -233,6 +237,7 @@ for k = 1 : length(tmpSpecVal)
     end
 end
 try close(hw_fft); catch, end
+setappdata(0, 'PSbusy', 0);
 prevPsdKey_ = struct('specVal', tmpSpecVal, 'fileVal', tmpFileVal, 'psdVal', tmpPSDVal, 'axes', axesOptionsSpec);
 end
 

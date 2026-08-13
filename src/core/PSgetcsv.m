@@ -1,8 +1,9 @@
-function [filename csvFnames] = PSgetcsv(filename, firmware_flag, outdir)
-%% [filename csvFnames] = PSgetcsv(filename, firmware_flag, outdir)
+function [filename csvFnames] = PSgetcsv(filename, firmware_flag, outdir, sel)
+%% [filename csvFnames] = PSgetcsv(filename, firmware_flag, outdir, sel)
 % Converts bbl files to csv using blackbox_decode
 % filename: full path to BBL/BFL/TXT/BTFL/JSON/BIN file
 % outdir: directory for CSV output (default: same as input file)
+% sel: session numbers to keep from a multi-log file; omit to ask the user
 
 % ----------------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -21,6 +22,8 @@ mainFname = filename;
 if nargin < 3 || isempty(outdir)
     outdir = fdir;
 end
+if nargin < 4, sel = []; end
+askUser = isempty(sel);
 
 if strcmpi(fext, '.bin')
     csvFnames = {filename};
@@ -36,10 +39,10 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
     decoder_path = getappdata(0, 'PSdecoderPath');
     decoder_inav = getappdata(0, 'PSdecoderPathINAV');
 
-    if firmware_flag == 3 && ~isempty(decoder_inav)
-        % INAV decoder has no --output-dir; copy input to workdir first
+    if firmware_flag == 3 && ~isempty(decoder_inav) && exist(decoder_inav, 'file') == 2
+        % INAV decoder has no --output-dir; run it on a copy inside outdir
         tmpSrc = fullfile(outdir, [fname fext]);
-        copyfile(filename, tmpSrc);
+        if ~strcmp(tmpSrc, filename), copyfile(filename, tmpSrc); end
         cmd = ['"' decoder_inav '" "' tmpSrc '" 2>&1'];
     else
         cmd = ['"' decoder_path '" --output-dir "' outdir '" "' filename '" 2>&1'];
@@ -52,9 +55,15 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
     end
 
     fbase = fullfile(outdir, fname);
-    files = dir([fbase '*.csv']);
 
-    % filter out files with .bbl or .bfl in name
+    % junk the decoder drops next to the csv output
+    for pat = {'*.event', '*.gps.gpx', '*.gps.csv'}
+        junk = dir([fbase pat{1}]);
+        for k = 1:size(junk,1), delete(fullfile(outdir, junk(k).name)); end
+    end
+
+    % side outputs keep the source extension in the name
+    files = dir([fbase '*.csv']);
     valid = true(size(files,1), 1);
     for k = 1:size(files,1)
         if contains(files(k).name, '.bbl', 'IgnoreCase', true) || contains(files(k).name, '.bfl', 'IgnoreCase', true)
@@ -64,50 +73,60 @@ elseif any(strcmpi(fext, {'.BFL', '.BBL', '.TXT', '.BTFL'}))
     files = files(valid, :);
 
     if isempty(files)
-        set(gcf, 'pointer', 'arrow');
         csvFnames = {};
         return;
     end
 
-    % clean up junk files in outdir
-    fevt = dir([fbase '*.event']);
-    for k = 1:size(fevt,1), delete(fullfile(outdir, fevt(k).name)); end
-    fevt = dir([fbase '*.gps.gpx']);
-    for k = 1:size(fevt,1), delete(fullfile(outdir, fevt(k).name)); end
-    fevt = dir([fbase '*.gps.csv']);
-    for k = 1:size(fevt,1), delete(fullfile(outdir, fevt(k).name)); end
+    if size(files,1) > 1
+        % the decoder prints one duration per log, in the order it wrote them,
+        % so pair them up before anything is dropped from the list
+        a = strfind(result, 'duration');
+        labels = cell(size(files,1), 1);
+        for k = 1:size(files,1)
+            if k <= length(a)
+                labels{k} = result(a(k):min(a(k)+filename_nchars, length(result)));
+            else
+                labels{k} = files(k).name;
+            end
+        end
 
-    % refresh file list after cleanup
-    files = dir([fbase '*.csv']);
+        % logs under 1KB hold no flight data - drop them and their labels together
+        small = [files.bytes] < 1000;
+        for k = find(small), delete(fullfile(outdir, files(k).name)); end
+        files = files(~small, :);
+        labels = labels(~small);
+
+        if isempty(files)
+            if askUser
+                a = errordlg(['no valid data in ' mainFname]); pause(3); close(a);
+            else
+                warning('PSgetcsv: no valid data in %s', mainFname);
+            end
+            csvFnames = {};
+            return;
+        end
+    end
 
     if size(files,1) > 1
-        % remove empty subfiles (<1KB)
-        valid = true(size(files,1), 1);
-        for k = 1:size(files,1)
-            if files(k).bytes < 1000
-                delete(fullfile(outdir, files(k).name));
-                valid(k) = false;
+        if askUser
+            for k = 1:size(files,1)
+                labels{k} = [int2str(k) ') ' labels{k}];
             end
-        end
-        files = files(valid, :);
-
-        a = strfind(result, 'duration');
-        logDurStr = '';
-        for d = 1:length(a)
-            logDurStr{d} = [int2str(d) ') ' result(a(d):a(d)+filename_nchars)];
-        end
-
-        if size(files,1) > 0
-            x = size(files,1);
-            if x > 1
-                [fnums, tf] = listdlg('ListString', logDurStr, 'ListSize', [250, round(size(logDurStr,2)*20)], 'Name', 'Select file(s): ');
-                for k = 1:x
-                    if ~ismember(k, fnums), delete(fullfile(outdir, files(k).name)); end
-                end
+            % the dialog opens behind the import waitbar on Windows and looks like a hang
+            wb = findall(0, 'Type', 'figure', 'Tag', 'waitbar');
+            set(wb, 'Visible', 'off');
+            [fnums, tf] = listdlg('ListString', labels, 'ListSize', [250, round(numel(labels)*20)], 'Name', 'Select file(s): ');
+            set(wb, 'Visible', 'on');
+            if ~tf || isempty(fnums)
+                for k = 1:size(files,1), delete(fullfile(outdir, files(k).name)); end
+                csvFnames = {};
+                return;
             end
         else
-            validData = 0;
-            a = errordlg(['no valid data in ' mainFname]); pause(3); close(a);
+            fnums = sel(sel >= 1 & sel <= size(files,1));
+        end
+        for k = 1:size(files,1)
+            if ~ismember(k, fnums), delete(fullfile(outdir, files(k).name)); end
         end
     end
 end
