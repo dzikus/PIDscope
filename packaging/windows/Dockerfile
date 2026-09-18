@@ -19,14 +19,19 @@ RUN mkdir -p /cache && \
 
 # Cross-compile blackbox_decode.exe from betaflight and iNav
 # BIN_DIR = obj/, so output is obj/blackbox_decode
-RUN git clone --depth=1 https://github.com/betaflight/blackbox-tools.git /tmp/blackbox-tools-bf && \
+ARG BF_BLACKBOX_REV=f832acf9cd9dbe5ad8220de1a5f4eb4021523d72
+ARG INAV_BLACKBOX_REV=v9.0.0
+
+RUN git clone https://github.com/betaflight/blackbox-tools.git /tmp/blackbox-tools-bf && \
     cd /tmp/blackbox-tools-bf && \
+    git checkout --detach ${BF_BLACKBOX_REV} && \
     CC=x86_64-w64-mingw32-gcc make -j$(nproc) obj/blackbox_decode && \
     x86_64-w64-mingw32-gcc -o /cache/blackbox_decode.exe obj/*.o -lm -lws2_32 && \
     rm -rf /tmp/blackbox-tools-bf
 
-RUN git clone --depth=1 https://github.com/iNavFlight/blackbox-tools.git /tmp/blackbox-tools-inav && \
+RUN git clone https://github.com/iNavFlight/blackbox-tools.git /tmp/blackbox-tools-inav && \
     cd /tmp/blackbox-tools-inav && \
+    git checkout --detach ${INAV_BLACKBOX_REV} && \
     CC=x86_64-w64-mingw32-gcc make -j$(nproc) obj/blackbox_decode && \
     x86_64-w64-mingw32-gcc -o /cache/blackbox_decode_INAV.exe obj/*.o -lm -lws2_32 && \
     rm -rf /tmp/blackbox-tools-inav
