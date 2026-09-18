@@ -60,6 +60,10 @@ modules:
     build-commands:
       # Install all packages globally into /app in dependency order
       - |
+        mkdir -p /tmp/shim
+        printf '#!/bin/sh\nexec %s "$@" --no-same-owner\n' "$(command -v tar)" > /tmp/shim/tar
+        chmod +x /tmp/shim/tar
+        export PATH=/tmp/shim:$PATH
         octave --eval "
           pkg install -global control-4.2.1.tar.gz;
           pkg install -global signal-1.4.7.tar.gz;
