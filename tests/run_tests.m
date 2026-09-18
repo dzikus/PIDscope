@@ -12,7 +12,6 @@ addpath(fullfile(project_root, 'tests'));
 % Load required packages
 if exist('OCTAVE_VERSION', 'builtin')
   pkg load signal;
-  pkg load statistics;
 end
 
 % Collect test files
