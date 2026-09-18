@@ -60,6 +60,30 @@ The AppImage links against the system Octave of its build container. The
 Flatpak uses the `org.octave.Octave` base from Flathub and does not bundle
 Octave itself.
 
+## Octave Forge packages
+
+The AppImage and Flatpak install the packages below from the upstream release
+tarballs listed. Each package keeps its own licence and copyright notices inside
+its installed directory, under `packinfo/COPYING` and, where a package carries
+additional terms, beside it.
+
+| Package | Version | Upstream tarball | Licence |
+| --- | --- | --- | --- |
+| control | 4.2.1 | https://github.com/gnu-octave/pkg-control/releases/download/control-4.2.1/control-4.2.1.tar.gz | GPL-3.0-or-later; the bundled SLICOT routines are BSD-3-Clause |
+| signal | 1.4.7 | https://github.com/gnu-octave/octave-signal/releases/download/1.4.7/signal-1.4.7.tar.gz | GPL-3.0-or-later; some files are public domain |
+| datatypes | 1.1.8 | https://github.com/pr0m1th3as/datatypes/releases/download/release-1.1.8/datatypes-1.1.8.tar.gz | GPL-3.0; the package logo is CC BY-SA 4.0 |
+| statistics | 1.8.1 | https://github.com/gnu-octave/statistics/releases/download/release-1.8.1/statistics-1.8.1.tar.gz | GPL-3.0-or-later |
+| image | 2.18.1 | https://downloads.sourceforge.net/project/octave/Octave%20Forge%20Packages/Individual%20Package%20Releases/image-2.18.1.tar.gz | GPL-3.0-or-later |
+
+The SLICOT copyright notice and its BSD-3-Clause terms travel with the package
+as `control-4.2.1/doc/SLICOT/LICENSE`.
+
+The Windows ZIP installs none of these itself; it carries the package set of the
+official Octave distribution (control 4.2.1, image 2.20.0, io 2.7.1,
+signal 1.4.7, statistics 1.8.3) with their notices retained in place. The macOS
+package ships no Octave packages at all - `pidscope.command` fetches them from
+the upstream locations above on first launch.
+
 ## MATLAB File Exchange helpers
 
 `src/` contains a small number of helper functions originating from the
