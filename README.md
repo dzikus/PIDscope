@@ -57,6 +57,18 @@ Arch Linux users can install from the AUR thanks to [FPVogel](https://github.com
 
 ---
 
+## Credits
+
+The chirp analysis in PIDscope builds on work by **Michael Peter ([pichim](https://github.com/pichim))**, whose [bf_controller_tuning](https://github.com/pichim/bf_controller_tuning) (GPL-3.0) established the frequency-response identification used here. Three files are adapted from it and say so in their headers:
+
+- `src/core/PSestimateFreqResponse.m` - from `estimate_frequency_response.m`
+- `src/core/PSstepFromFRD.m` - from `calculate_step_response_from_frd.m`
+- `src/core/PSrotFiltFilt.m` - from `apply_rotfiltfilt.m`
+
+Arch Linux packaging is maintained by [FPVogel](https://github.com/FPVogel).
+
+---
+
 ## License
 
 PIDscope is licensed under the [GNU General Public License v3.0](LICENSE).
