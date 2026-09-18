@@ -39,7 +39,10 @@ rm -rf "${STAGING}/octave/mingw64/include"
 # Remove bulky doc files but keep .qhc/.qch (prevents Qt Help startup errors)
 find "${STAGING}/octave/mingw64/share/octave/${OCTAVE_VERSION}/doc" -name '*.html' -delete 2>/dev/null || true
 find "${STAGING}/octave/mingw64/share/octave/${OCTAVE_VERSION}/doc" -name '*.pdf' -delete 2>/dev/null || true
-rm -rf "${STAGING}/octave/mingw64/share/doc"
+find "${STAGING}/octave/mingw64/share/doc" -type f \
+    ! -iname 'COPYING*' ! -iname 'LICENSE*' ! -iname 'COPYRIGHT*' \
+    ! -iname 'NOTICE*' ! -iname 'AUTHORS*' -delete 2>/dev/null || true
+find "${STAGING}/octave/mingw64/share/doc" -type d -empty -delete 2>/dev/null || true
 rm -rf "${STAGING}/octave/mingw64/share/info"
 rm -rf "${STAGING}/octave/mingw64/share/man"
 # Remove .a static libraries (not needed at runtime)
@@ -78,6 +81,10 @@ cp -r "${SRC_DIR}/src" "${STAGING}/app/"
 # 4. Copy blackbox_decode binaries (cross-compiled)
 cp /cache/blackbox_decode.exe "${STAGING}/app/"
 cp /cache/blackbox_decode_INAV.exe "${STAGING}/app/"
+
+# 4a. Licence text and third-party notices
+cp "${SRC_DIR}/LICENSE" "${STAGING}/"
+cp "${SRC_DIR}/THIRD-PARTY-LICENSES.md" "${STAGING}/"
 
 # 5. Suppress Windows Terminal false-positive warning (only affects CLI, not GUI)
 OCTAVERC="${STAGING}/octave/mingw64/share/octave/site/m/startup/octaverc"
