@@ -147,6 +147,7 @@ jobs:
           path: dist/PIDscope-*-x86_64.AppImage
 
   build-flatpak:
+    needs: test
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
@@ -271,7 +272,7 @@ jobs:
   # Stage 3: Create GitHub Release
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-appimage, build-windows, build-macos]
+    needs: [build-appimage, build-windows, build-macos, build-flatpak]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -288,6 +289,7 @@ jobs:
             artifacts/appimage/*
             artifacts/windows-zip/*
             artifacts/macos-zip/*
+            artifacts/flatpak/*
           generate_release_notes: true
           draft: ${{ contains(github.ref_name, 'beta') }}
           prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') }}
