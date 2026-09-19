@@ -1,19 +1,8 @@
 name: Flatpak
 
-# The flatpak build takes up to an hour and only breaks when the manifest or the
-# revisions it pins move, so it runs on those paths rather than on every push.
-# Release builds it separately and ships the bundle.
+# Packaging, not a test. Release builds and ships the bundle; this is here for
+# checking a manifest change without cutting a tag.
 on:
-  push:
-    branches: [main, pidscope]
-    paths:
-      - 'packaging/flatpak/**'
-      - '.github/workflows/flatpak.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'packaging/flatpak/**'
-      - '.github/workflows/flatpak.yml'
   workflow_dispatch:
 
 permissions: {}
