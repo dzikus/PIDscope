@@ -6,18 +6,22 @@ function [idx_start, idx_end] = PSfindChirpWindow(sinarg_raw, gyro, varThresh)
 
 if nargin < 3, varThresh = 500; end
 
-sinarg = sinarg_raw / 5000;
-active = sinarg > 0.01 & sinarg < max(sinarg) * 0.99;
+sinarg_raw = sinarg_raw(:);
 
-% find contiguous active regions
-d = diff([0; active(:); 0]);
-starts = find(d > 0.5);
-ends = find(d < -0.5) - 1;
+% sinarg is a phase wrapping through [0, 2*pi], so it passes near zero on every
+% cycle - hundreds of times a second at the top of the sweep. Only a real gap
+% between runs separates two windows, not a wrap or a sample landing on one.
+maxGap = 50;
+act = find(sinarg_raw ~= 0);
 
-if isempty(starts)
-    idx_start = 1; idx_end = length(sinarg);
+if isempty(act)
+    idx_start = 1; idx_end = length(sinarg_raw);
     return
 end
+
+brk = find(diff(act) > maxGap);
+starts = act([1; brk+1]);
+ends = act([brk; numel(act)]);
 
 % pick longest window with sufficient gyro variance
 best_len = 0;

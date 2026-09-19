@@ -56,6 +56,7 @@ if isfield(T, ['axisP' axSuffix{ax}]) && isfield(T, ['axisI' axSuffix{ax}])
     axisSumPI_w = P(i0:i1) + I(i0:i1);
 
     axisSum_filt = PSrotFiltFilt(axisSum_w, sinarg_w, Fs);
+    axisF_filt = PSrotFiltFilt(F(i0:i1), sinarg_w, Fs);
     hasAxisSum = true;
 end
 
@@ -64,10 +65,14 @@ end
 
 % estimate plant if PID terms available
 G_plant = [];
+G_ff = [];
 if hasAxisSum
     [G_uw, ~, ~] = PSestimateFreqResponse(sp_filt, axisSum_filt, Fs);
     % P = T / Guw (transfer function from controller output to gyro)
     G_plant = G_track ./ (G_uw + 1e-12);
+    if any(F(i0:i1) ~= 0)
+        [G_ff, ~, ~] = PSestimateFreqResponse(sp_filt, axisF_filt, Fs);
+    end
 end
 
 % step response from tracking TF
@@ -78,7 +83,18 @@ catch
     stepData = [];
 end
 
+% controller model for the prediction sliders - needs the gains and the dterm
+% filters from the header, and the PID rate rather than the logging rate
+pred = [];
+if hasAxisSum && ~isempty(setupInfo)
+    fp = PSparseFilterParams(setupInfo);
+    FsPid = fp.pid_rate_hz;
+    if FsPid <= 0, FsPid = Fs; end
+    pred = struct('gains', PSparsePIDGains(setupInfo, axisIdx), 'fp', fp, ...
+                  'FsPid', FsPid, 'Fref', G_ff);
+end
+
 % plot
-PSplotBode(freq, G_track, G_plant, C_track, stepData, axNames{ax});
+PSplotBode(freq, G_track, G_plant, C_track, stepData, axNames{ax}, pred);
 
 end

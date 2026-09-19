@@ -49,16 +49,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd  # v4.0.0
+
       - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121  # v4.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push builder image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest ./packaging/appimage
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
+      - uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294  # v7.0.0
+        with:
+          context: ./packaging/appimage
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:${{ github.sha }}
+          cache-from: type=gha,scope=builder-appimage
+          cache-to: type=gha,mode=max,scope=builder-appimage
 
   build-windows-builder:
     needs: test
@@ -72,16 +77,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd  # v4.0.0
+
       - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121  # v4.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push builder image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest ./packaging/windows
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
+      - uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294  # v7.0.0
+        with:
+          context: ./packaging/windows
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:${{ github.sha }}
+          cache-from: type=gha,scope=builder-windows
+          cache-to: type=gha,mode=max,scope=builder-windows
 
   build-macos-blackbox:
     needs: test
@@ -96,10 +106,17 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+    env:
+      BF_BLACKBOX_REV: f832acf9cd9dbe5ad8220de1a5f4eb4021523d72
     steps:
+      - id: bbcache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: blackbox_decode.${{ matrix.arch_name }}
+          key: blackbox-decode-${{ matrix.arch_name }}-${{ env.BF_BLACKBOX_REV }}
+
       - name: Build blackbox_decode
-        env:
-          BF_BLACKBOX_REV: f832acf9cd9dbe5ad8220de1a5f4eb4021523d72
+        if: steps.bbcache.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/betaflight/blackbox-tools.git
           cd blackbox-tools
@@ -135,11 +152,11 @@ jobs:
       - name: Build AppImage
         run: |
           mkdir -p dist
-          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
+          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:${{ github.sha }}
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:${{ github.sha }}
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
         with:
@@ -147,6 +164,7 @@ jobs:
           path: dist/PIDscope-*-x86_64.AppImage
 
   build-flatpak:
+    needs: test
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
@@ -196,11 +214,11 @@ jobs:
       - name: Build Windows ZIP
         run: |
           mkdir -p dist
-          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
+          docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:${{ github.sha }}
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/dist:/dist \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:${{ github.sha }}
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
         with:
@@ -271,7 +289,7 @@ jobs:
   # Stage 3: Create GitHub Release
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-appimage, build-windows, build-macos]
+    needs: [build-appimage, build-windows, build-macos, build-flatpak]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -288,6 +306,7 @@ jobs:
             artifacts/appimage/*
             artifacts/windows-zip/*
             artifacts/macos-zip/*
+            artifacts/flatpak/*
           generate_release_notes: true
           draft: ${{ contains(github.ref_name, 'beta') }}
           prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') }}

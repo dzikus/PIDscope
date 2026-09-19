@@ -30,6 +30,8 @@ jobs:
           context: ./packaging/appimage
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-appimage:latest
+          cache-from: type=gha,scope=builder-appimage
+          cache-to: type=gha,mode=max,scope=builder-appimage
 
   build-windows-builder:
     runs-on: ubuntu-latest
@@ -52,6 +54,8 @@ jobs:
           context: ./packaging/windows
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-windows:latest
+          cache-from: type=gha,scope=builder-windows
+          cache-to: type=gha,mode=max,scope=builder-windows
 
   build-macos-builder:
     runs-on: ubuntu-latest
@@ -74,3 +78,5 @@ jobs:
           context: ./packaging/macos
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/pidscope-builder-macos:latest
+          cache-from: type=gha,scope=builder-macos
+          cache-to: type=gha,mode=max,scope=builder-macos

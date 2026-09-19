@@ -43,27 +43,3 @@ jobs:
 
       - name: Run unit tests
         run: octave --no-gui --eval "run('tests/run_tests.m')"
-
-  flatpak:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    permissions:
-      contents: read
-    container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.10
-      options: --privileged
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Add Flathub remote for the Octave base app
-        run: |
-          flatpak remote-add --if-not-exists --user flathub \
-            https://dl.flathub.org/repo/flathub.flatpakrepo
-
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@79327416609af08178ad73b352877e51450790b3  # v6.8
-        with:
-          bundle: PIDscope.flatpak
-          manifest-path: packaging/flatpak/com.pidscope.PIDscope.yml
-          cache-key: flatpak-builder-${{ github.sha }}

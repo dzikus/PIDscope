@@ -375,7 +375,8 @@ end
 function y = applyNotch(x, center_hz, cutoff_hz, Fs)
     if center_hz == 0, y = x; return; end
     if cutoff_hz <= 0, cutoff_hz = center_hz * 0.7; end
-    Q = center_hz / (center_hz - cutoff_hz + 1);
+    Q = PSnotchQ(center_hz, cutoff_hz);
+    if Q <= 0, y = x; return; end
     [b, a] = PSbfFilters('notch', center_hz, Fs, Q);
     y = filter(b, a, x);
 end
