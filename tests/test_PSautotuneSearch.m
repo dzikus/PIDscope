@@ -167,6 +167,19 @@
 %!        'the budget must say when it bound');
 
 %!test
+%! % I moves with P, because Ki in the firmware is absolute. Holding I while
+%! % cutting P drags the PI corner upwards, so the integrator contributes more
+%! % lag exactly where the scan is trying to buy phase margin. Measured on the
+%! % pichim corpus: with I held, one craft tops out at 45.2 deg of reachable
+%! % phase margin however far P is cut, and clears 69.9 deg once I follows.
+%! res = PSautotuneSearch(mkfix('P', 80, 'I', 120), struct('pmTarget', 60));
+%! assert(res.ok, res.reason);
+%! assert(res.gains.I ~= 120, 'I has to move when P does');
+%! assert(abs(res.scale.I - res.scale.P) < 0.02, ...
+%!        sprintf('I scaled %.3f against P %.3f - the integral time must hold', ...
+%!                res.scale.I, res.scale.P));
+
+%!test
 %! % Reason codes have to be usable by the UI without guessing
 %! r = PSautotuneSearch(mkfix('P', 40), struct('pmTarget', 60, 'pClamp', [1 1]));
 %! assert(strcmp(r.reason, 'already-tuned') || strcmp(r.reason, 'ok'));

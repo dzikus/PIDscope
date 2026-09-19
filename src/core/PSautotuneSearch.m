@@ -20,7 +20,7 @@ if nargin < 2 || isempty(opt), opt = struct(); end
 o = struct('pmTarget', 60, 'msMax', 2.0, 'peakMaxDb', 6, ...
            'magAtTrustDb', -6, 'wcpFracTrust', 0.5, 'wcpMaxRatio', 3, ...
            'dDomRatio', 2.0, ...
-           'pClamp', [0.5 2.0], 'pStep', 0.02, ...
+           'pClamp', [0.3 2.0], 'pStep', 0.02, ...
            'dClamp', [0.6 1.25], 'dStep', 0.05, 'pidsumFrac', 0.9);
 fn = fieldnames(o);
 for k = 1:numel(fn)
@@ -85,15 +85,20 @@ g.okMask = false(nD, nP);
 g.pm = nan(nD, nP);  g.ms = nan(nD, nP);  g.wcp = nan(nD, nP);
 g.gm = nan(nD, nP);  g.peakDb = nan(nD, nP);  g.nCross = zeros(nD, nP);
 g.magTrustDb = nan(nD, nP); g.dRatio = nan(nD, nP);
-g.P = zeros(nD, nP); g.D = zeros(nD, nP);
+g.P = zeros(nD, nP); g.I = zeros(nD, nP); g.D = zeros(nD, nP);
 
 for iD = 1:nD
     Di = round(sD(iD) * D0);
     Dv = Di * b.D1;
     for iP = 1:nP
         Pi = round(sP(iP) * P0);
-        c = evalOne(Pk, fk, Pi*b.Ap + I0*b.Ai, Dv, F0*b.F1);
-        g.P(iD,iP) = Pi; g.D(iD,iP) = Di;
+        % Ki in the firmware is absolute, so holding I while cutting P drags
+        % the PI corner upwards and the integrator adds lag exactly where the
+        % scan is trying to buy phase margin. Scaling both keeps the integral
+        % time the pilot flew.
+        Ii = round(sP(iP) * I0);
+        c = evalOne(Pk, fk, Pi*b.Ap + Ii*b.Ai, Dv, F0*b.F1);
+        g.P(iD,iP) = Pi; g.I(iD,iP) = Ii; g.D(iD,iP) = Di;
         g.pm(iD,iP) = c.pm; g.ms(iD,iP) = c.ms; g.wcp(iD,iP) = c.wcp;
         g.gm(iD,iP) = c.gm; g.peakDb(iD,iP) = c.peakDb;
         g.nCross(iD,iP) = c.nCross;
@@ -125,8 +130,9 @@ iD = iDs(pick(1)); iP = iPs(pick(1));
 res.iD = iD; res.iP = iP;
 res.grid = g;
 res.gains.P = g.P(iD,iP);
+res.gains.I = g.I(iD,iP);
 res.gains.D = g.D(iD,iP);
-res.scale = struct('P', ratio(res.gains.P, P0), 'I', 1, ...
+res.scale = struct('P', ratio(res.gains.P, P0), 'I', ratio(res.gains.I, I0), ...
                    'D', ratio(res.gains.D, D0), 'F', 1);
 
 % report what the CLI will actually set, not what the scale factor found
@@ -136,7 +142,7 @@ res.pm = fin.pm; res.gm = fin.gm; res.ms = fin.ms;
 res.wcp = fin.wcp; res.wcg = fin.wcg; res.peakDb = fin.peakDb;
 
 res.ok = true;
-if res.gains.P == P0 && res.gains.D == D0
+if res.gains.P == P0 && res.gains.I == I0 && res.gains.D == D0
     res.reason = 'already-tuned';
 else
     res.reason = 'ok';
