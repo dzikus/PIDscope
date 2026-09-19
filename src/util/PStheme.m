@@ -1,4 +1,4 @@
-function th = PStheme()
+function th = PStheme(screenHeight)
 %% PStheme - central UI theme for PIDscope (dark)
 
 % figure & panel
@@ -51,12 +51,17 @@ th.overlayDynNotch = [0 .8 .8];   % Dyn Notch - cyan
 th.overlayRPM      = [.6 .9 .6];  % RPM est - light green
 
 % font size - single source of truth
-screensz = get(0, 'ScreenSize');
-th.fontsz = round(screensz(4) * .011);
+if nargin < 1 || isempty(screenHeight)
+    screensz = get(0, 'ScreenSize');
+    screenHeight = screensz(4);
+end
+th.fontsz = round(screenHeight * .011);
 % Octave Qt renders fonts bigger than MATLAB
 if exist('OCTAVE_VERSION', 'builtin')
     th.fontsz = round(th.fontsz * 0.85);
 end
+% a toolkit with no display reports a 1x1 screen, and uipanel refuses FontSize 0
+th.fontsz = max(th.fontsz, 8);
 
 % period marker (Step Response)
 th.periodMarker  = [.95 .20 .20];
