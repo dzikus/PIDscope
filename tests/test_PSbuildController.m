@@ -44,13 +44,27 @@
 %! assert(abs(Dlp(end)) < 0.3*abs(Draw(end)), 'lowpass must cut the D path at 500 Hz');
 
 %!test
-%! % Feedforward carries an extra 0.01 the other three terms do not:
-%! % pid_init.c has Kf = FEEDFORWARD_SCALE * (pid[axis].F * 0.01f)
-%! Fs = 8000; freq = (10:10:200)';
-%! g = struct('P', 0, 'I', 0, 'D', 0, 'F', 120);
-%! [~, ~, F] = PSbuildController(g, [], Fs, freq);
-%! ideal = 120 * 0.013754 * 0.01 * 2*pi*freq;
-%! assert(max(abs(abs(F) - ideal) ./ ideal) < 0.01, 'FF must carry the 0.01 from pid_init');
+%! % Every scaling constant pinned to where the firmware sets it, so they can be
+%! % rechecked against the source instead of taken on trust. This suite once
+%! % passed with the feedforward path 100x too large because nothing here held
+%! % a constant against anything outside the model.
+%! %   pid.h:46-48,52      PTERM 0.032029  ITERM 0.244381  DTERM 0.000529  FF 0.013754
+%! %   pid_init.c:373-375  Kp, Ki, Kd = SCALE * slider
+%! %   pid_init.c:376      Kf = FEEDFORWARD_SCALE * (slider * 0.01f)
+%! %   pid_init.c:378      pidCoefficient[FD_YAW].Ki *= 2.5f
+%! Fs = 8000; freq = (5:5:200)';
+%! zinv = exp(-2j*pi*freq/Fs);
+%! deriv = (1 - zinv) * Fs;
+%! [A, D, F] = PSbuildController(struct('P', 100, 'I', 0, 'D', 0, 'F', 0), [], Fs, freq);
+%! assert(max(abs(A - 100*0.032029)) < 1e-14, 'PTERM_SCALE');
+%! A = PSbuildController(struct('P', 0, 'I', 100, 'D', 0, 'F', 0), [], Fs, freq);
+%! assert(max(abs(A .* (1 - zinv) - 100*0.244381/Fs)) < 1e-15, 'ITERM_SCALE');
+%! [~, D] = PSbuildController(struct('P', 0, 'I', 0, 'D', 100, 'F', 0), [], Fs, freq);
+%! assert(max(abs(D ./ deriv - 100*0.000529)) < 1e-15, 'DTERM_SCALE');
+%! [~, ~, F] = PSbuildController(struct('P', 0, 'I', 0, 'D', 0, 'F', 100), [], Fs, freq);
+%! assert(max(abs(F ./ deriv - 100*0.013754*0.01)) < 1e-15, 'FEEDFORWARD_SCALE and its 0.01');
+%! Ay = PSbuildController(struct('P', 0, 'I', 100, 'D', 0, 'F', 0, 'axis', 2), [], Fs, freq);
+%! assert(max(abs(Ay .* (1 - zinv) - 2.5*100*0.244381/Fs)) < 1e-15, 'yaw I gain 2.5x');
 
 %!test
 %! % Yaw runs 2.5x the I gain of roll and pitch (pid_init.c), and nothing else
@@ -90,27 +104,39 @@
 %!        'TPA must scale only the proportional part of A');
 
 %!test
-%! % The transfer functions must match the difference equations BF actually runs.
-%! % Time domain is the reference here: it mirrors the C code sample by sample,
-%! % the frequency response is the derived form under test.
+%! % The transfer functions must match the difference equations BF runs. The
+%! % time domain is the reference: these are transcribed from the firmware, with
+%! % the line each one comes from, so the transcription can be checked. All three
+%! % paths are covered - leaving F out of here is how the 0.01 stayed missing.
+%! %   pid.c:1294        P = Kp * errorRate
+%! %   pid.c:1318,1326   iTermChange = Ki * dT * errorRate; I = previousIterm + iTermChange
+%! %   pid.c:1151-1153   dterm chain: notch, then lowpass, then lowpass2
+%! %   pid.c:1359-1360   delta = -(gyroRateDterm[k] - gyroRateDterm[k-1]) * pidFrequency
+%! %                     preTpaD = Kd * delta
+%! %   pid.c:1410        F = Kf * pidSetpointDelta
 %! Fs = 2000; Ts = 1/Fs; N = 40000;
 %! randn('state', 7);
-%! g = struct('P', 45, 'I', 80, 'D', 30, 'F', 0);
-%! Kp = 45*0.032029; Ki = 80*0.244381; Kd = 30*0.000529;
+%! g = struct('P', 45, 'I', 80, 'D', 30, 'F', 120);
+%! Kp = 45*0.032029; Ki = 80*0.244381; Kd = 30*0.000529; Kf = 120*0.013754*0.01;
 %! e = randn(N, 1);
 %! uA = Kp*e + Ki*Ts*cumsum(e);
 %! y = randn(N, 1);
 %! [b, a] = PSbfFilters('pt1', 90, Fs);
 %! yd = filter(b, a, y);
 %! uD = Kd * [0; diff(yd)] / Ts;
+%! r = randn(N, 1);
+%! uF = Kf * [0; diff(r)] / Ts;
 %! [Ahat, ~, freq] = PSestimateFreqResponse(e, uA, Fs);
 %! [Dhat, ~, ~] = PSestimateFreqResponse(y, uD, Fs);
+%! [Fhat, ~, ~] = PSestimateFreqResponse(r, uF, Fs);
 %! fp = struct('dterm_lpf1_type', 0, 'dterm_lpf1_hz', 90, ...
 %!             'dterm_lpf2_type', 0, 'dterm_lpf2_hz', 0, ...
 %!             'dterm_notch_hz', 0, 'dterm_notch_cut', 0);
-%! [A, D] = PSbuildController(g, fp, Fs, freq);
+%! [A, D, F] = PSbuildController(g, fp, Fs, freq);
 %! band = freq > 10 & freq < 400;  % below 10 Hz a 2.5 s Welch segment holds too few cycles
 %! assert(max(abs(Ahat(band) - A(band)) ./ abs(A(band))) < 0.01, ...
 %!        'A must match the PI difference equation');
 %! assert(max(abs(Dhat(band) - D(band)) ./ abs(D(band))) < 0.01, ...
 %!        'D must match the filtered-derivative difference equation');
+%! assert(max(abs(Fhat(band) - F(band)) ./ abs(F(band))) < 0.01, ...
+%!        'F must match the scaled setpoint-derivative difference equation');

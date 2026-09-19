@@ -15,8 +15,10 @@ function [A, D, F] = PSbuildController(gains, fp, Fs, freq)
 %  D - Kd*s*Hdterm, on the gyro (enters the loop with a minus sign)
 %  F - Kff*s, on the setpoint
 %
-%  Feedforward smoothing is not modelled, so F is optimistic on a log flown
-%  with heavy smoothing - compare against the logged axisF before trusting it.
+%  F is the weakest of the three. The firmware differentiates the setpoint at
+%  the RX rate, not the PID rate, then puts it through PT3 smoothing, boost and
+%  jitter reduction (rc.c:439,463,505,510). This models a plain derivative at
+%  the PID rate, so hold F against the logged axisF before trusting it.
 
 PTERM_SCALE = 0.032029;
 ITERM_SCALE = 0.244381;

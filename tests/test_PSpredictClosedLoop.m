@@ -49,6 +49,17 @@
 %! % the plant the way PSrunChirpAnalysis does, then predict the loop back from
 %! % it. The identified plant is model-free, so a wrong controller model (sign,
 %! % sample offset, scaling) shows up here even though the plant still matches.
+%! % The loop below is transcribed from the firmware, not from PSbuildController -
+%! % if both sides came from the same belief this test would only confirm it:
+%! %   pid.c:1294        P = Kp * errorRate
+%! %   pid.c:1318,1326   I = previousIterm + Ki * dT * errorRate
+%! %   pid.c:1359-1360   D = Kd * -(dtermGyro[k] - dtermGyro[k-1]) * pidFrequency
+%! %   pid.c:1410        F = Kf * pidSetpointDelta
+%! %   pid_init.c:376    Kf carries an extra 0.01 the other three do not
+%! % Known gap: the firmware differentiates the setpoint at the RX rate and runs
+%! % it through PT3 smoothing, boost and jitter reduction (rc.c:439,463,505,510).
+%! % This models a plain derivative at the PID rate, so the F path is an
+%! % approximation - see the header of PSbuildController.
 %! Fs = 2000; Ts = 1/Fs; N = 60000;
 %! g = struct('P', 45, 'I', 60, 'D', 20, 'F', 90);
 %! fp = struct('dterm_lpf1_type', 0, 'dterm_lpf1_hz', 80, ...
