@@ -83,7 +83,13 @@ if hasAxisSum
     end
 end
 
-id.fTrust = PStrustBand(id.freq, id.C_track);
+% the plant is the ratio of two estimates, so it is only trustworthy where both
+% are
+if isempty(id.C_uw)
+    id.fTrust = PStrustBand(id.freq, id.C_track);
+else
+    id.fTrust = PStrustBand(id.freq, min(id.C_track, id.C_uw));
+end
 
 if ~isempty(setupInfo)
     id.fp = PSparseFilterParams(setupInfo);

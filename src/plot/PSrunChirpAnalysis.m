@@ -26,7 +26,8 @@ end
 
 pred = [];
 if ~isempty(id.G_plant) && ~isempty(id.gains)
-    pred = struct('gains', id.gains, 'fp', id.fp, 'FsPid', id.FsPid, 'Fref', id.G_ff);
+    pred = struct('gains', id.gains, 'fp', id.fp, 'FsPid', id.FsPid, ...
+                  'Fref', id.G_ff, 'fTrust', id.fTrust);
 end
 
 PSplotBode(id.freq, id.G_track, id.G_plant, id.C_track, stepData, id.axisName, pred);

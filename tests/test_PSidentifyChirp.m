@@ -100,6 +100,17 @@
 %! assert(isempty(id.axisD));
 
 %!test
+%! % The plant is G_track / G_uw, so the band may never be wider than what
+%! % either estimate alone supports. On a log where axisSum is an exact function
+%! % of the logged signals C_uw sits at 1 and C_track binds, so this guards the
+%! % direction rather than a number: widening it, or reading the band off G_uw
+%! % alone, would let the prediction run past where the plant was measured.
+%! id = PSidentifyChirp(T, si, Fs, tIND, 0);
+%! assert(id.fTrust <= PStrustBand(id.freq, id.C_track));
+%! assert(id.fTrust <= PStrustBand(id.freq, id.C_uw));
+%! assert(id.fTrust > 50, 'a clean 400 Hz sweep must leave a usable band');
+
+%!test
 %! % The window and the header land in the result, because the gates and the UI
 %! % read them from here rather than re-parsing the log
 %! id = PSidentifyChirp(T, si, Fs, tIND, 0);

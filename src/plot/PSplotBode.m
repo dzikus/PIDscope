@@ -27,7 +27,12 @@ freq = freq(:);
 fPlot = freq(freq > 0);  % skip DC for log plot
 fMask = freq > 0;
 
+% the caller knows the plant coherence as well as the tracking coherence plotted
+% here, and the two consumers have to agree on where the band ends
 fTrust = PStrustBand(freq, C);
+if hasPred && isfield(pred, 'fTrust') && ~isempty(pred.fTrust) && isfinite(pred.fTrust)
+    fTrust = pred.fTrust;
+end
 predMask = fMask & freq <= fTrust;
 fPred = freq(predMask);
 
