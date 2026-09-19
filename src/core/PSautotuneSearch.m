@@ -19,6 +19,7 @@ if nargin < 2 || isempty(opt), opt = struct(); end
 
 o = struct('pmTarget', 60, 'msMax', 2.0, 'peakMaxDb', 6, ...
            'magAtTrustDb', -6, 'wcpFracTrust', 0.5, 'wcpMaxRatio', 3, ...
+           'dDomRatio', 2.0, ...
            'pClamp', [0.5 2.0], 'pStep', 0.02, ...
            'dClamp', [0.6 1.25], 'dStep', 0.05, 'pidsumFrac', 0.9);
 fn = fieldnames(o);
@@ -83,6 +84,7 @@ g = struct();
 g.okMask = false(nD, nP);
 g.pm = nan(nD, nP);  g.ms = nan(nD, nP);  g.wcp = nan(nD, nP);
 g.gm = nan(nD, nP);  g.peakDb = nan(nD, nP);  g.nCross = zeros(nD, nP);
+g.magTrustDb = nan(nD, nP); g.dRatio = nan(nD, nP);
 g.P = zeros(nD, nP); g.D = zeros(nD, nP);
 
 for iD = 1:nD
@@ -95,6 +97,7 @@ for iD = 1:nD
         g.pm(iD,iP) = c.pm; g.ms(iD,iP) = c.ms; g.wcp(iD,iP) = c.wcp;
         g.gm(iD,iP) = c.gm; g.peakDb(iD,iP) = c.peakDb;
         g.nCross(iD,iP) = c.nCross;
+        g.magTrustDb(iD,iP) = c.magTrustDb; g.dRatio(iD,iP) = c.dRatio;
         g.okMask(iD,iP) = Pi >= 1 && admissible(c, o, id.fTrust, base.wcp);
     end
 end
@@ -150,7 +153,7 @@ function ok = admissible(c, o, fTrust, wcp0)
          && c.magTrustDb <= o.magAtTrustDb ...
          && c.wcp <= o.wcpFracTrust * fTrust ...
          && c.wcp <= o.wcpMaxRatio * wcp0 ...
-         && c.dDom;
+         && c.dRatio <= o.dDomRatio;
 end
 
 
@@ -162,13 +165,17 @@ function c = evalOne(P, freq, A, D, F)
     magDb = 20*log10(abs(L) + 1e-12);
     c.nCross = sum(diff(sign(magDb)) ~= 0);
     c.magTrustDb = magDb(end);
-    % the crossover has to be held up by the PI part: a loop whose stability
-    % rests on the derivative rests on the least certain part of the model
-    c.dDom = true;
+    % How far the derivative may outweigh the PI part at the crossover. Lead
+    % beyond this rests the loop on the modelled D chain instead of on the
+    % measured plant. Flown Betaflight tunes sit higher here than one might
+    % guess: across the 18 axes of the pichim corpus the ratio runs 0.10 to
+    % 1.90, median 1.62, so a limit of 1 would reject every roll and pitch tune
+    % in it - including the craft of the author of the chirp tooling.
+    c.dRatio = 0;
     if ~isnan(c.wcp)
         aW = interp1(freq, abs(A), c.wcp, 'linear');
         dW = interp1(freq, abs(D), c.wcp, 'linear');
-        c.dDom = dW <= aW;
+        c.dRatio = dW / max(aW, 1e-12);
     end
 end
 
