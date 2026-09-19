@@ -62,7 +62,7 @@
 %! x = randn(N,1); y = 3*x;
 %! [G, ~, freq, nSeg] = PSestimateFreqResponse({x, randn(100,1)}, {y, randn(100,1)}, Fs);
 %! [~, ~, ~, n1] = PSestimateFreqResponse(x, y, Fs);
-%! assert(nSeg, n1, 'the short window must contribute nothing');
+%! assert(nSeg == n1, 'the short window must contribute nothing');
 %! mid = freq > 10 & freq < 400;
 %! assert(max(abs(abs(G(mid)) - 3)) < 0.01);
 
