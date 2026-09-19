@@ -66,6 +66,10 @@ for m=1:size(s,1)
 end
 
 
+if exist('SetupInfo','var')
+    T = PSapplyHighRes(T, SetupInfo);
+end
+
 %
 DAT.T=T;
 DAT.mainFname=BBLFileName;
