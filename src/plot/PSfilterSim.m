@@ -300,17 +300,17 @@ doUpdate();
         end
 
         if sBoth
-            set(axNmag,   'Position', offscr);
-            set(axNdelay, 'Position', offscr);
-            set(axNphase, 'Position', offscr);
-            set(axNstep,  'Position', offscr);
+            set(axNmag,   'Position', offscr, 'Visible', 'off');
+            set(axNdelay, 'Position', offscr, 'Visible', 'off');
+            set(axNphase, 'Position', offscr, 'Visible', 'off');
+            set(axNstep,  'Position', offscr, 'Visible', 'off');
             set(hTitleN, 'Visible', 'off');
             set(axBarN, 'Position', offscr);
             set(axBarL, 'Position', [plotL barY plotR-plotL barH]);
         else
-            set(axNmag,   'Position', [colL(2) rB1 colW rH]);
-            set(axNdelay, 'Position', [colL(2) rB2 colW rH]);
-            set(axNphase, 'Position', [colL(2) rB3 colW rH]);
+            set(axNmag,   'Position', [colL(2) rB1 colW rH], 'Visible', 'on');
+            set(axNdelay, 'Position', [colL(2) rB2 colW rH], 'Visible', 'on');
+            set(axNphase, 'Position', [colL(2) rB3 colW rH], 'Visible', 'on');
             if sStep
                 set(axNstep, 'Position', [colL(2) rB4 colW rH], 'Visible', 'on');
             else
@@ -742,9 +742,9 @@ doUpdate();
             end
             hideRest(AX_LSTP, li);
             if row4mode == 1
-                set(axLstep, 'XLim', [tSigL(1) tSigL(end)], 'YLim', [-0.05 1.15]);
+                set(axLstep, 'XLim', [0 lpfStepMs], 'YLim', [-0.05 1.15]);
             else
-                set(axLstep, 'XLim', [tSigL(1) tSigL(end)]);
+                set(axLstep, 'XLim', [0 lpfStepMs]);
             end
         end
         xlabel(axLstep, r4labelL, 'Color', thm.textPrimary);
@@ -885,9 +885,9 @@ doUpdate();
                 end
                 hideRest(AX_NSTP, li);
                 if row4mode == 1
-                    set(axNstep, 'XLim', [tSigN(1) tSigN(end)], 'YLim', [0.8 1.2]);
+                    set(axNstep, 'XLim', [0 notchStepMs], 'YLim', [0.8 1.2]);
                 else
-                    set(axNstep, 'XLim', [tSigN(1) tSigN(end)]);
+                    set(axNstep, 'XLim', [0 notchStepMs]);
                 end
             end
             xlabel(axNstep, r4labelN, 'Color', thm.textPrimary);
