@@ -78,7 +78,17 @@ catch
     stepData = [];
 end
 
+% controller model for the prediction sliders - needs the gains and the dterm
+% filters from the header, and the PID rate rather than the logging rate
+pred = [];
+if hasAxisSum && ~isempty(setupInfo)
+    fp = PSparseFilterParams(setupInfo);
+    FsPid = fp.pid_rate_hz;
+    if FsPid <= 0, FsPid = Fs; end
+    pred = struct('gains', PSparsePIDGains(setupInfo, axisIdx), 'fp', fp, 'FsPid', FsPid);
+end
+
 % plot
-PSplotBode(freq, G_track, G_plant, C_track, stepData, axNames{ax});
+PSplotBode(freq, G_track, G_plant, C_track, stepData, axNames{ax}, pred);
 
 end

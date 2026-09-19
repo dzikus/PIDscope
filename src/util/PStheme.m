@@ -91,6 +91,7 @@ th.bodeMain      = [0 .80 1.0];     % tracking TF - bright cyan
 th.bodeSecondary = [1.0 .50 0];     % plant TF - orange
 th.bodeCoherence = [.30 .90 .30];   % coherence - green
 th.bodeRef       = [.50 .50 .50];   % reference lines (0dB, -180, unity)
+th.bodePredicted = [.70 .40 .95];   % predicted closed loop - chirp purple
 
 % transport buttons (Player)
 th.btnPlay       = [0 .60 0];       % play - dark green
