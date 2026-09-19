@@ -30,6 +30,12 @@ if lt > 0
 else
   fp.gyro_rate_hz = 0;
 end
+
+% The PID loop, and with it the dterm filters and the D difference, runs
+% pid_process_denom times slower than the gyro
+denom = hval(si, 'pid_process_denom', 1);
+if denom < 1, denom = 1; end
+fp.pid_rate_hz = round(fp.gyro_rate_hz / denom);
 end
 
 function v = hval(si, key, default)
