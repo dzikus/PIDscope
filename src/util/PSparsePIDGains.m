@@ -10,6 +10,7 @@ function g = PSparsePIDGains(si, axisIdx)
 axKeys = {'rollPID', 'pitchPID', 'yawPID'};
 pid = hlist(si, axKeys{axisIdx + 1}, [0 0 0]);
 
+g.axis = axisIdx;
 g.P = pid(1);
 g.I = pid(2);
 g.D = pid(3);

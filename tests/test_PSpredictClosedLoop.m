@@ -54,7 +54,7 @@
 %! fp = struct('dterm_lpf1_type', 0, 'dterm_lpf1_hz', 80, ...
 %!             'dterm_lpf2_type', 0, 'dterm_lpf2_hz', 0, ...
 %!             'dterm_notch_hz', 0, 'dterm_notch_cut', 0);
-%! Kp = 45*0.032029; Ki = 60*0.244381; Kd = 20*0.000529; Kf = 90*0.013754;
+%! Kp = 45*0.032029; Ki = 60*0.244381; Kd = 20*0.000529; Kf = 90*0.013754*0.01;
 %! pt1k = @(fc) (1/Fs) / (1/(2*pi*fc) + 1/Fs);
 %! kPlant = pt1k(60 * 1.553773974);   % pt2 at 60 Hz, as PSbfFilters builds it
 %! kDterm = pt1k(80);

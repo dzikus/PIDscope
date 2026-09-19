@@ -44,6 +44,39 @@
 %! assert(abs(Dlp(end)) < 0.3*abs(Draw(end)), 'lowpass must cut the D path at 500 Hz');
 
 %!test
+%! % Feedforward carries an extra 0.01 the other three terms do not:
+%! % pid_init.c has Kf = FEEDFORWARD_SCALE * (pid[axis].F * 0.01f)
+%! Fs = 8000; freq = (10:10:200)';
+%! g = struct('P', 0, 'I', 0, 'D', 0, 'F', 120);
+%! [~, ~, F] = PSbuildController(g, [], Fs, freq);
+%! ideal = 120 * 0.013754 * 0.01 * 2*pi*freq;
+%! assert(max(abs(abs(F) - ideal) ./ ideal) < 0.01, 'FF must carry the 0.01 from pid_init');
+
+%!test
+%! % Yaw runs 2.5x the I gain of roll and pitch (pid_init.c), and nothing else
+%! % on that axis is scaled
+%! Fs = 8000; freq = (1:2:99)';
+%! g = struct('P', 40, 'I', 80, 'D', 25, 'F', 100);
+%! roll = g; roll.axis = 0;
+%! yaw  = g; yaw.axis = 2;
+%! [Ar, Dr, Fr] = PSbuildController(roll, [], Fs, freq);
+%! [Ay, Dy, Fy] = PSbuildController(yaw,  [], Fs, freq);
+%! assert(max(abs(Dy - Dr)) < 1e-18, 'yaw must not scale the D path');
+%! assert(max(abs(Fy - Fr)) < 1e-18, 'yaw must not scale feedforward');
+%! Kp = 40*0.032029;
+%! assert(max(abs((Ay - Kp) - 2.5*(Ar - Kp))) < 1e-12, 'yaw I gain must be 2.5x');
+
+%!test
+%! % An axis that is not named behaves like roll
+%! Fs = 8000; freq = (1:2:99)';
+%! g = struct('P', 40, 'I', 80, 'D', 25, 'F', 0);
+%! A0 = PSbuildController(g, [], Fs, freq);
+%! g.axis = 0; A1 = PSbuildController(g, [], Fs, freq);
+%! g.axis = 1; A2 = PSbuildController(g, [], Fs, freq);
+%! assert(max(abs(A1 - A0)) < 1e-18);
+%! assert(max(abs(A2 - A0)) < 1e-18);
+
+%!test
 %! % TPA scales P and D, never I or FF
 %! Fs = 8000; freq = (20:20:400)';
 %! g  = struct('P', 45, 'I', 80, 'D', 30, 'F', 120);

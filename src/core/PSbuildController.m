@@ -6,6 +6,7 @@ function [A, D, F] = PSbuildController(gains, fp, Fs, freq)
 %  checked straight against a log.
 %
 %  gains - struct with P, I, D, F (as entered in the firmware), optional tpa
+%          and axis (0=Roll, 1=Pitch, 2=Yaw; yaw runs 2.5x the I gain)
 %  fp    - filter params from PSparseFilterParams, or [] for no dterm filtering
 %  Fs    - PID loop rate (Hz)
 %  freq  - frequency vector (Hz)
@@ -24,11 +25,18 @@ FF_SCALE    = 0.013754;
 
 tpa = 1;
 if isfield(gains, 'tpa') && ~isempty(gains.tpa), tpa = gains.tpa; end
+axis = 0;
+if isfield(gains, 'axis') && ~isempty(gains.axis), axis = gains.axis; end
 
 Kp = gains.P * PTERM_SCALE * tpa;
 Ki = gains.I * ITERM_SCALE;
 Kd = gains.D * DTERM_SCALE * tpa;
-Kf = gains.F * FF_SCALE;
+% pid_init.c divides the feedforward slider by 100 before scaling it
+Kf = gains.F * FF_SCALE * 0.01;
+
+if axis == 2
+    Ki = Ki * 2.5;
+end
 
 Ts = 1 / Fs;
 freq = freq(:);
