@@ -24,7 +24,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository_owner }}/pidscope-test:latest
+      image: ghcr.io/${{ github.repository_owner }}/pidscope-builder-appimage:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
