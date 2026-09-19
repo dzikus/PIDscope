@@ -1,0 +1,199 @@
+function res = PSautotuneSearch(id, opt)
+%% PSautotuneSearch - the P and D that widen the loop without spending its margins
+%  id  - from PSidentifyChirp
+%  opt - thresholds, all exposed so they can be read off logs known to be good
+%        and known to be bad before anyone freezes them
+%
+%  Maximises the 0 dB crossover under hard limits on phase margin, the
+%  sensitivity peak and the closed loop peak. The condition is PM >= target, not
+%  PM == target: on a discrete grid equality is brittle, and maximising
+%  bandwidth presses PM down onto the target by itself. When something other
+%  than PM binds, the answer comes out more conservative rather than not coming
+%  out at all.
+%
+%  res.gains carries P, I, D and F and nothing else. Betaflight issue #5258 was
+%  a filter cutoff derived from chirp coherence; here there is nowhere to put
+%  one.
+
+if nargin < 2 || isempty(opt), opt = struct(); end
+
+o = struct('pmTarget', 60, 'msMax', 2.0, 'peakMaxDb', 6, ...
+           'magAtTrustDb', -6, 'wcpFracTrust', 0.5, 'wcpMaxRatio', 3, ...
+           'pClamp', [0.5 2.0], 'pStep', 0.02, ...
+           'dClamp', [0.6 1.25], 'dStep', 0.05, 'pidsumFrac', 0.9);
+fn = fieldnames(o);
+for k = 1:numel(fn)
+    if isfield(opt, fn{k}) && ~isempty(opt.(fn{k})), o.(fn{k}) = opt.(fn{k}); end
+end
+
+res = blank();
+res.opt = o;
+res.notes = {};
+
+P0 = id.gains.P; I0 = id.gains.I; D0 = id.gains.D; F0 = id.gains.F;
+res.gains = struct('axis', id.gains.axis, 'P', P0, 'I', I0, 'D', D0, 'F', F0);
+
+% the loop may only be evaluated where the plant was measured
+keep = id.freq > 0 & id.freq <= id.fTrust;
+if sum(keep) < 16
+    res.reason = 'no-candidate';
+    res.notes{end+1} = 'trust band too narrow to evaluate a loop in';
+    return
+end
+fk = id.freq(keep);
+Pk = id.G_plant(keep);
+
+b = PSautotuneBasis(id.gains, id.fp, id.FsPid, fk);
+
+base = evalOne(Pk, fk, P0*b.Ap + I0*b.Ai, D0*b.D1, F0*b.F1);
+res.pm0 = base.pm; res.gm0 = base.gm; res.ms0 = base.ms;
+res.wcp0 = base.wcp; res.wcg0 = base.wcg; res.peakDb0 = base.peakDb;
+
+if isnan(base.wcp)
+    res.reason = 'no-crossover';
+    res.notes{end+1} = 'the flown loop never crosses 0 dB inside the trust band';
+    return
+end
+
+dHi = o.dClamp(2);
+if D0 > 0 && isfield(id.gains, 'dMax') && ~isempty(id.gains.dMax) && id.gains.dMax > D0
+    % the log records the floor of a D that moved; the controller model only
+    % covers the static value, so raising it would be raising something else
+    dHi = min(dHi, 1.0);
+    res.notes{end+1} = 'dynamic D was active, so D is held at or below the logged value';
+end
+if D0 > 0 && ~isempty(id.axisD) && isfinite(id.pidsumLimit) && id.pidsumLimit > 0
+    peakD = max(abs(id.axisD));
+    if peakD > 0
+        sBudget = o.pidsumFrac * id.pidsumLimit / peakD;
+        if sBudget < dHi
+            dHi = max(o.dClamp(1), sBudget);
+            res.notes{end+1} = sprintf('D capped at %.2fx by the measured pidsum budget', dHi);
+        end
+    end
+end
+
+sP = o.pClamp(1):o.pStep:o.pClamp(2);
+sD = o.dClamp(1):o.dStep:dHi;
+if isempty(sP), sP = 1; end
+if isempty(sD), sD = min(1, dHi); end
+
+nD = numel(sD); nP = numel(sP);
+g = struct();
+g.okMask = false(nD, nP);
+g.pm = nan(nD, nP);  g.ms = nan(nD, nP);  g.wcp = nan(nD, nP);
+g.gm = nan(nD, nP);  g.peakDb = nan(nD, nP);  g.nCross = zeros(nD, nP);
+g.P = zeros(nD, nP); g.D = zeros(nD, nP);
+
+for iD = 1:nD
+    Di = round(sD(iD) * D0);
+    Dv = Di * b.D1;
+    for iP = 1:nP
+        Pi = round(sP(iP) * P0);
+        c = evalOne(Pk, fk, Pi*b.Ap + I0*b.Ai, Dv, F0*b.F1);
+        g.P(iD,iP) = Pi; g.D(iD,iP) = Di;
+        g.pm(iD,iP) = c.pm; g.ms(iD,iP) = c.ms; g.wcp(iD,iP) = c.wcp;
+        g.gm(iD,iP) = c.gm; g.peakDb(iD,iP) = c.peakDb;
+        g.nCross(iD,iP) = c.nCross;
+        g.okMask(iD,iP) = Pi >= 1 && admissible(c, o, id.fTrust, base.wcp);
+    end
+end
+
+% A cell with no admissible neighbour is a one-point island: rounding to whole
+% gains put it there and a neighbouring log would not reproduce it. Requiring
+% every neighbour instead would back the answer off by one grid step, which
+% would make the proposal depend on how finely the grid was drawn.
+sel = g.okMask & (neighbourCount(g.okMask) >= 1 | numel(g.okMask) == 1);
+if ~any(sel(:))
+    res.reason = 'no-candidate';
+    res.notes{end+1} = 'nothing on the grid clears the targets';
+    res.grid = g;
+    return
+end
+
+wcp = g.wcp; wcp(~sel) = -Inf;
+best = max(wcp(:));
+tie = sel & (wcp >= best * 0.99);
+[iDs, iPs] = find(tie);
+kD = sD(iDs); kP = sP(iPs);
+[~, pick] = sortrows([kD(:), kP(:)], [1 2]);
+iD = iDs(pick(1)); iP = iPs(pick(1));
+
+res.iD = iD; res.iP = iP;
+res.grid = g;
+res.gains.P = g.P(iD,iP);
+res.gains.D = g.D(iD,iP);
+res.scale = struct('P', ratio(res.gains.P, P0), 'I', 1, ...
+                   'D', ratio(res.gains.D, D0), 'F', 1);
+
+% report what the CLI will actually set, not what the scale factor found
+fin = evalOne(Pk, fk, res.gains.P*b.Ap + res.gains.I*b.Ai, ...
+              res.gains.D*b.D1, res.gains.F*b.F1);
+res.pm = fin.pm; res.gm = fin.gm; res.ms = fin.ms;
+res.wcp = fin.wcp; res.wcg = fin.wcg; res.peakDb = fin.peakDb;
+
+res.ok = true;
+if res.gains.P == P0 && res.gains.D == D0
+    res.reason = 'already-tuned';
+else
+    res.reason = 'ok';
+end
+
+end
+
+
+function ok = admissible(c, o, fTrust, wcp0)
+    ok = ~isnan(c.pm) && c.pm >= o.pmTarget ...
+         && c.ms <= o.msMax ...
+         && c.peakDb <= o.peakMaxDb ...
+         && c.nCross == 1 ...
+         && c.magTrustDb <= o.magAtTrustDb ...
+         && c.wcp <= o.wcpFracTrust * fTrust ...
+         && c.wcp <= o.wcpMaxRatio * wcp0 ...
+         && c.dDom;
+end
+
+
+function c = evalOne(P, freq, A, D, F)
+    [T, L, S] = PSpredictClosedLoop(P, A, D, F);
+    [c.gm, c.pm, c.wcg, c.wcp] = PSmarginsFromL(freq, L);
+    c.ms = max(abs(S));
+    c.peakDb = 20*log10(max(abs(T)) + 1e-12);
+    magDb = 20*log10(abs(L) + 1e-12);
+    c.nCross = sum(diff(sign(magDb)) ~= 0);
+    c.magTrustDb = magDb(end);
+    % the crossover has to be held up by the PI part: a loop whose stability
+    % rests on the derivative rests on the least certain part of the model
+    c.dDom = true;
+    if ~isnan(c.wcp)
+        aW = interp1(freq, abs(A), c.wcp, 'linear');
+        dW = interp1(freq, abs(D), c.wcp, 'linear');
+        c.dDom = dW <= aW;
+    end
+end
+
+
+function n = neighbourCount(m)
+    n = zeros(size(m));
+    n(2:end,:)   = n(2:end,:)   + m(1:end-1,:);
+    n(1:end-1,:) = n(1:end-1,:) + m(2:end,:);
+    n(:,2:end)   = n(:,2:end)   + m(:,1:end-1);
+    n(:,1:end-1) = n(:,1:end-1) + m(:,2:end);
+end
+
+
+function r = ratio(new, old)
+    r = 1;
+    if old ~= 0, r = new / old; end
+end
+
+
+function res = blank()
+    res = struct('ok', false, 'reason', 'no-candidate', ...
+                 'gains', [], 'scale', [], 'notes', {{}}, ...
+                 'pm', NaN, 'gm', NaN, 'ms', NaN, 'wcp', NaN, 'wcg', NaN, ...
+                 'peakDb', NaN, ...
+                 'pm0', NaN, 'gm0', NaN, 'ms0', NaN, 'wcp0', NaN, ...
+                 'wcg0', NaN, 'peakDb0', NaN, ...
+                 'iD', NaN, 'iP', NaN, 'grid', [], 'opt', []);
+end
