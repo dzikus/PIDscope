@@ -49,6 +49,35 @@
 %! assert(abs(i0 - 19*Fs) < 0.01*Fs, 'must pick the run where the axis responded');
 
 %!test
+%! % Every run in a log is the same length by construction, so run length is
+%! % noise and cannot decide which axis a run swept. Block sizes and variances
+%! % here are the ones measured on 20250907_flipmini_00, where roll answers in
+%! % blocks 1 and 4 while the other four still carry 1e3 of cross-axis coupling -
+%! % well clear of the 500 floor, and the longest block of the six is #6.
+%! nSamp = [39987 39988 39942 39950 39986 39996];
+%! gvar  = [561000 853 211 562000 1365 225];
+%! randn('state', 31);
+%! sinarg = []; gyro = [];
+%! for k = 1:6
+%!   sinarg = [sinarg; 15000*ones(nSamp(k),1); zeros(2000,1)];
+%!   gyro = [gyro; sqrt(gvar(k))*randn(nSamp(k),1); zeros(2000,1)];
+%! end
+%! [i0, i1] = PSfindChirpWindow(sinarg, gyro);
+%! starts = 1 + cumsum([0 nSamp(1:5) + 2000]);
+%! picked = find(starts == i0);
+%! assert(any(picked == [1 4]), 'must pick a run that actually moved this axis');
+
+%!test
+%! % Two longer runs carrying only cross-axis coupling clear the variance floor
+%! % but must not outrank the run that was swept
+%! randn('state', 20);
+%! sinarg = [ones(3000,1); zeros(2000,1); ones(9000,1); zeros(2000,1); ones(5000,1)];
+%! gyro = [700*randn(3000,1); zeros(2000,1); 30*randn(9000,1); ...
+%!         zeros(2000,1); 30*randn(5000,1)];
+%! [i0, i1] = PSfindChirpWindow(sinarg, gyro);
+%! assert(isequal([i0 i1], [1 3000]), 'the swept run wins over the longer ones');
+
+%!test
 %! % A sample landing exactly on the wrap logs a zero; it must not split the run
 %! Fs = 2000; Tc = 10; N = 30*Fs;
 %! sinarg_raw = zeros(N, 1); gyro = 2*randn(N, 1);

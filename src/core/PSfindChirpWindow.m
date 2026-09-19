@@ -13,14 +13,17 @@ if isempty(w)
     return
 end
 
-% pick longest window with sufficient gyro variance
-best_len = 0;
+% Every run in a log lasts chirp_time_seconds, so run length differs only by
+% sampling noise and says nothing about which axis a run swept - the response
+% does. Cross-axis coupling on a real log reaches 1e3, which clears varThresh,
+% so the threshold only answers "was this axis swept at all".
+best_var = 0;
 idx_start = w(1).i0;
 idx_end = w(1).i1;
 for k = 1:numel(w)
     if w(k).nSamp < 100, continue; end
-    if w(k).gyroVar > varThresh && w(k).nSamp > best_len
-        best_len = w(k).nSamp;
+    if w(k).gyroVar > varThresh && w(k).gyroVar > best_var
+        best_var = w(k).gyroVar;
         idx_start = w(k).i0;
         idx_end = w(k).i1;
     end
