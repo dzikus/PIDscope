@@ -20,7 +20,7 @@ if strcmp(fwType, 'Betaflight') && fwMajor >= 2025
     idx.RPM_FILTER = 45;
     idx.FEEDFORWARD = 58;
     idx.DSHOT_RPM_TELEMETRY = 36;
-    idx.CHIRP = 119;
+    idx.CHIRP = 97;
 end
 
 end

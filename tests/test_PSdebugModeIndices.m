@@ -19,6 +19,8 @@
 %! assert(idx.FFT_FREQ, 16);
 %! assert(idx.RPM_FILTER, 45);
 %! assert(idx.FEEDFORWARD, 58);
+%! % DEBUG_CHIRP is 97 in debugType_e; 119 is DEBUG_COUNT, the end sentinel
+%! assert(idx.CHIRP, 97);
 
 %!test
 %! % INAV (uses default old indices)
