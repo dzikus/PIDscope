@@ -76,8 +76,8 @@ end
 
 function H = notchResp(center_hz, cutoff_hz, Fs, freq)
     H = ones(numel(freq), 1);
-    if center_hz <= 0 || cutoff_hz <= 0 || cutoff_hz >= center_hz, return; end
-    Q = center_hz * cutoff_hz / (center_hz^2 - cutoff_hz^2);
+    Q = PSnotchQ(center_hz, cutoff_hz);
+    if Q <= 0, return; end
     [b, a] = PSbfFilters('notch', center_hz, Fs, Q);
     H = freqz(b, a, freq, Fs);
     H = H(:);
