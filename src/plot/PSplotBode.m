@@ -27,21 +27,7 @@ freq = freq(:);
 fPlot = freq(freq > 0);  % skip DC for log plot
 fMask = freq > 0;
 
-% The prediction is only worth as much as the plant under it, and the plant
-% stops meaning anything once the chirp no longer moves the airframe. Cut it at
-% the same 0.8 coherence the plot already draws a line at, and take a run of
-% bins rather than the first one so a single noisy bin does not end the band.
-low = freq > 2 & C(:) < 0.8;
-run = 5;
-iBad = [];
-if numel(low) >= run
-    iBad = find(conv(double(low), ones(run, 1), 'valid') == run, 1);
-end
-if isempty(iBad)
-    fTrust = max(freq);
-else
-    fTrust = freq(max(iBad - 1, 2));
-end
+fTrust = PStrustBand(freq, C);
 predMask = fMask & freq <= fTrust;
 fPred = freq(predMask);
 
