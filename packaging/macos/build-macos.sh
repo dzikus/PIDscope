@@ -30,15 +30,24 @@ cp -r "${SRC_DIR}/src" "${STAGING}/"
 # 2. Copy blackbox_decode binaries
 # BF: from GH Actions artifacts (mounted) or /cache; INAV: from /cache (Dockerfile)
 echo "Copying blackbox_decode binaries..."
-for bin in blackbox_decode.arm64 blackbox_decode.x86_64 blackbox_decode_INAV.arm64 blackbox_decode_INAV.x86_64; do
-    if [ -f "/cache/${bin}" ]; then
-        cp "/cache/${bin}" "${STAGING}/"
-    elif [ -f "${SRC_DIR}/${bin}" ]; then
+for bin in blackbox_decode_INAV.arm64 blackbox_decode_INAV.x86_64; do
+    if [ ! -f "/cache/${bin}" ]; then
+        echo "ERROR: /cache/${bin} missing - rebuild the builder image" >&2
+        exit 1
+    fi
+    cp "/cache/${bin}" "${STAGING}/"
+done
+for bin in blackbox_decode.arm64 blackbox_decode.x86_64; do
+    if [ -f "${SRC_DIR}/${bin}" ]; then
         cp "${SRC_DIR}/${bin}" "${STAGING}/"
     else
-        echo "WARNING: ${bin} not found, skipping (BF binaries come from GH Actions)"
+        echo "WARNING: ${bin} not found (BF binaries come from GH Actions runners)"
     fi
 done
+
+# 2a. Licence text and third-party notices
+cp "${SRC_DIR}/LICENSE" "${STAGING}/"
+cp "${SRC_DIR}/THIRD-PARTY-LICENSES.md" "${STAGING}/"
 
 # 3. Copy launcher
 cp "${SRC_DIR}/packaging/macos/pidscope.command" "${STAGING}/"

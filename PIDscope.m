@@ -23,9 +23,7 @@ isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;
 if isOctave
   % Load required Octave packages (suppress warnings if already loaded)
   try pkg load signal; end
-  try pkg load statistics; end
   try pkg load control; end
-  try pkg load image; end
 end
 
 executableDir = fileparts(mfilename('fullpath'));

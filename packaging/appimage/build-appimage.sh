@@ -29,15 +29,16 @@ cp "${SRC_DIR}"/VERSION "${APPDIR}/usr/share/pidscope/"
 cp -r "${SRC_DIR}/src" "${APPDIR}/usr/share/pidscope/"
 
 for decoder in blackbox_decode blackbox_decode_INAV; do
-    if [ -f "${SRC_DIR}/${decoder}" ]; then
-        cp "${SRC_DIR}/${decoder}" "${APPDIR}/usr/share/pidscope/"
-    elif [ -f "/cache/${decoder}" ]; then
-        cp "/cache/${decoder}" "${APPDIR}/usr/share/pidscope/"
-    else
-        echo "WARNING: ${decoder} not found in ${SRC_DIR} or /cache"
+    if [ ! -f "/cache/${decoder}" ]; then
+        echo "ERROR: /cache/${decoder} missing - rebuild the builder image" >&2
+        exit 1
     fi
-    [ -f "${APPDIR}/usr/share/pidscope/${decoder}" ] && chmod +x "${APPDIR}/usr/share/pidscope/${decoder}"
+    cp "/cache/${decoder}" "${APPDIR}/usr/share/pidscope/"
+    chmod +x "${APPDIR}/usr/share/pidscope/${decoder}"
 done
+
+cp "${SRC_DIR}/LICENSE" "${APPDIR}/usr/share/pidscope/"
+cp "${SRC_DIR}/THIRD-PARTY-LICENSES.md" "${APPDIR}/usr/share/pidscope/"
 
 # Desktop integration
 cp "${SRC_DIR}/packaging/pidscope.desktop" "${APPDIR}/usr/share/applications/"

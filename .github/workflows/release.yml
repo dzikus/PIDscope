@@ -11,10 +11,15 @@ env:
 
 permissions: {}
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   # Stage 0: Run tests before building anything
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: read
@@ -25,6 +30,8 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Run unit tests
         run: octave --no-gui --eval "run('tests/run_tests.m')"
@@ -32,12 +39,15 @@ jobs:
   # Stage 1: Build Docker builder images (3 parallel)
   build-appimage-builder:
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121  # v4.1.0
         with:
@@ -52,12 +62,15 @@ jobs:
 
   build-windows-builder:
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121  # v4.1.0
         with:
@@ -80,13 +93,17 @@ jobs:
           - runner: macos-15-intel
             arch_name: x86_64
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
       - name: Build blackbox_decode
+        env:
+          BF_BLACKBOX_REV: f832acf9cd9dbe5ad8220de1a5f4eb4021523d72
         run: |
-          git clone --depth 1 https://github.com/betaflight/blackbox-tools.git
+          git clone https://github.com/betaflight/blackbox-tools.git
           cd blackbox-tools
+          git checkout --detach "${BF_BLACKBOX_REV}"
           make DEBUG= obj/blackbox_decode
           cp obj/blackbox_decode ../blackbox_decode.${{ matrix.arch_name }}
           codesign --force --sign - ../blackbox_decode.${{ matrix.arch_name }}
@@ -99,12 +116,15 @@ jobs:
   # Stage 2: Build packages (each depends only on its own builder)
   build-appimage:
     needs: build-appimage-builder
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121  # v4.1.0
         with:
@@ -126,14 +146,46 @@ jobs:
           name: appimage
           path: dist/PIDscope-*-x86_64.AppImage
 
+  build-flatpak:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.10
+      options: --privileged
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Add Flathub remote for the Octave base app
+        run: |
+          flatpak remote-add --if-not-exists --user flathub \
+            https://dl.flathub.org/repo/flathub.flatpakrepo
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@79327416609af08178ad73b352877e51450790b3  # v6.8
+        with:
+          bundle: PIDscope.flatpak
+          manifest-path: packaging/flatpak/com.pidscope.PIDscope.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
+        with:
+          name: flatpak
+          path: PIDscope.flatpak
+
   build-windows:
     needs: build-windows-builder
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121  # v4.1.0
         with:
@@ -158,12 +210,15 @@ jobs:
   build-macos:
     needs: build-macos-blackbox
     runs-on: macos-15
+    timeout-minutes: 45
     permissions:
       contents: read
     env:
       INAV_BB_VERSION: "9.0.0"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
@@ -191,6 +246,7 @@ jobs:
           cp blackbox_decode.arm64 blackbox_decode.x86_64 "$STAGING/"
           cp blackbox_decode_INAV.arm64 blackbox_decode_INAV.x86_64 "$STAGING/"
           chmod +x "$STAGING"/blackbox_decode*
+          cp LICENSE THIRD-PARTY-LICENSES.md "$STAGING/"
           if [ -f packaging/com.pidscope.PIDscope.png ]; then cp packaging/com.pidscope.PIDscope.png "$STAGING/PIDscope.png"; fi
           cat > "$STAGING/README-macOS.txt" <<'HEREDOC'
           PIDscope - Blackbox Flight Log Analyzer
@@ -216,7 +272,8 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [build-appimage, build-windows, build-macos]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:

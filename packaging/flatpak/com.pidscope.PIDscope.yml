@@ -7,7 +7,7 @@ base: org.octave.Octave
 base-version: stable
 # Octave uses Sdk (not Platform) as runtime - needs compilers for Forge packages
 runtime: org.kde.Sdk
-runtime-version: '5.15-24.08'
+runtime-version: '6.10'
 sdk: org.kde.Sdk
 command: pidscope
 
@@ -48,26 +48,40 @@ modules:
       - type: file
         url: https://github.com/gnu-octave/octave-signal/releases/download/1.4.7/signal-1.4.7.tar.gz
         sha256: 6a8b4b8cf0b3019d984fde75af947ae73e9a1c509890552cd5e113f7ba89038c
-      - type: file
-        url: https://github.com/pr0m1th3as/datatypes/releases/download/release-1.1.8/datatypes-1.1.8.tar.gz
-        sha256: 83258f0a587f014f2fb7ddb477cdb4fcc25cb92bf6ebdf8c046f64178a0ed4d4
-      - type: file
-        url: https://github.com/gnu-octave/statistics/releases/download/release-1.8.1/statistics-1.8.1.tar.gz
-        sha256: 5174f80ddf182674ca06d871d9fbed439f3eaed3e3970892a0716ed480f5545d
-      - type: file
-        url: https://downloads.sourceforge.net/project/octave/Octave%20Forge%20Packages/Individual%20Package%20Releases/image-2.18.1.tar.gz
-        sha256: d4eed0579782c2efaa0818de2f20f13b276eb3d4b4b3d63347c7317d84e29531
     build-commands:
       # Install all packages globally into /app in dependency order
       - |
+        mkdir -p /tmp/shim
+        printf '#!/bin/sh\nexec %s "$@" --no-same-owner\n' "$(command -v tar)" > /tmp/shim/tar
+        chmod +x /tmp/shim/tar
+        export PATH=/tmp/shim:$PATH
         octave --eval "
           pkg install -global control-4.2.1.tar.gz;
           pkg install -global signal-1.4.7.tar.gz;
-          pkg install -global datatypes-1.1.8.tar.gz;
-          pkg install -global statistics-1.8.1.tar.gz;
-          pkg install -global image-2.18.1.tar.gz;
           pkg list;
         "
+
+  # --- blackbox_decode (GPL-3.0, built from pinned upstream sources) ---
+  - name: blackbox-decode-bf
+    buildsystem: simple
+    sources:
+      - type: git
+        url: https://github.com/betaflight/blackbox-tools.git
+        commit: f832acf9cd9dbe5ad8220de1a5f4eb4021523d72
+    build-commands:
+      - make obj/blackbox_decode
+      - install -Dm755 obj/blackbox_decode /app/share/pidscope/blackbox_decode
+
+  - name: blackbox-decode-inav
+    buildsystem: simple
+    sources:
+      - type: git
+        url: https://github.com/iNavFlight/blackbox-tools.git
+        tag: v9.0.0
+        commit: 1918a752851d99beb092bb2f3a2e7ba16ccb86db
+    build-commands:
+      - make obj/blackbox_decode
+      - install -Dm755 obj/blackbox_decode /app/share/pidscope/blackbox_decode_INAV
 
   # --- PIDscope application ---
   - name: pidscope
@@ -77,9 +91,7 @@ modules:
       - install -d /app/share/pidscope
       - install -m644 PIDscope.m VERSION /app/share/pidscope/
       - cp -r src /app/share/pidscope/
-      # Install blackbox_decode binaries
-      - install -m755 blackbox_decode /app/share/pidscope/
-      - install -m755 blackbox_decode_INAV /app/share/pidscope/
+      - install -m644 LICENSE THIRD-PARTY-LICENSES.md /app/share/pidscope/
       # Install launcher
       - install -Dm755 packaging/flatpak/pidscope-launcher.sh /app/bin/pidscope
       # Install desktop integration

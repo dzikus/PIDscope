@@ -58,3 +58,48 @@
 %!test
 %! % contains() - case insensitive
 %! assert(contains('Hello', 'hello', 'IgnoreCase', true));
+
+%!test
+%! % kstest2() - samples from clearly different distributions
+%! a = [0.1 0.5 0.3 0.9 0.2 0.7 0.44 0.61 0.15 0.83];
+%! b = [1.1 1.5 0.95 2.0 1.2 1.7 1.44 1.61 1.05 1.83];
+%! [h, p] = kstest2(a, b);
+%! assert(h, true);
+%! assert(p, 1.88797936571626e-05, 1e-15);
+
+%!test
+%! % kstest2() - samples that track each other closely
+%! c = [1 2 3 4 5 6 7 8];
+%! d = [1.2 2.1 3.3 3.9 5.2 5.8 7.1 8.3];
+%! [h, p] = kstest2(c, d);
+%! assert(h, false);
+%! assert(p, 0.999999479887226, 1e-12);
+
+%!test
+%! % kstest2() - alpha controls the reject decision
+%! a = [0.1 0.5 0.3 0.9 0.2 0.7 0.44 0.61 0.15 0.83];
+%! b = [1.1 1.5 0.95 2.0 1.2 1.7 1.44 1.61 1.05 1.83];
+%! assert(kstest2(a, b, 0.01), true);
+%! assert(kstest2([1 2 3 4], [1.1 2.1 3.1 4.1], 0.01), false);
+
+%!test
+%! % fspecial() - gaussian column kernel, values from the image package
+%! f = fspecial('gaussian', [5 1], 4);
+%! assert(size(f), [5 1]);
+%! assert(sum(f(:)), 1, 1e-14);
+%! assert(f(1), 0.18762716195139, 1e-14);
+%! assert(f(3), 0.212609428318537, 1e-14);
+%! assert(f(1), f(5), 1e-14);
+
+%!test
+%! % fspecial() - non-square gaussian normalises to unit sum
+%! f = fspecial('gaussian', [10 2], 4);
+%! assert(size(f), [10 2]);
+%! assert(sum(f(:)), 1, 1e-14);
+%! assert(f(1), 0.0335293399098535, 1e-14);
+
+%!test
+%! % fspecial() - scalar size gives a square kernel
+%! f = fspecial('gaussian', 5, 4);
+%! assert(size(f), [5 5]);
+%! assert(sum(f(:)), 1, 1e-14);

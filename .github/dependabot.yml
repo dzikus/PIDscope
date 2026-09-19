@@ -1,6 +1,32 @@
 version: 2
+
+multi-ecosystem-groups:
+  deps:
+    schedule:
+      interval: weekly
+
 updates:
   - package-ecosystem: github-actions
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: deps
+    cooldown:
+      default-days: 7
+  - package-ecosystem: docker
+    directory: /packaging/appimage
+    patterns: ["*"]
+    multi-ecosystem-group: deps
+    cooldown:
+      default-days: 7
+  - package-ecosystem: docker
+    directory: /packaging/windows
+    patterns: ["*"]
+    multi-ecosystem-group: deps
+    cooldown:
+      default-days: 7
+  - package-ecosystem: docker
+    directory: /packaging/macos
+    patterns: ["*"]
+    multi-ecosystem-group: deps
+    cooldown:
+      default-days: 7
