@@ -166,12 +166,14 @@ hPredInfo = [];
 hSl = []; hLbl = [];
 gNames = {'P', 'I', 'D', 'FF'};
 g0 = [0 0 0 0];
+useMeasuredF = false;
 
 if hasPred
     hPredInfo = text(0.05, 0.45, {''}, 'Parent', ax5, 'Color', th.bodePredicted, ...
         'FontSize', fontsz, 'FontWeight', 'bold', 'VerticalAlignment', 'top', ...
         'Units', 'normalized');
     g0 = [pred.gains.P pred.gains.I pred.gains.D pred.gains.F];
+    useMeasuredF = isfield(pred, 'Fref') && ~isempty(pred.Fref) && g0(4) > 0;
     buildPanel();
     redraw();
     PSstyleControls(fig, th);
@@ -222,7 +224,11 @@ PSdatatipSetup(fig);
         end
 
         g = struct('P', v(1), 'I', v(2), 'D', v(3), 'F', v(4));
+        if isfield(pred.gains, 'axis'), g.axis = pred.gains.axis; end
         [A, D, F] = PSbuildController(g, pred.fp, pred.FsPid, freq);
+        if useMeasuredF
+            F = pred.Fref * (v(4) / g0(4));
+        end
         [Tp, Lp] = PSpredictClosedLoop(G_plant, A, D, F);
 
         set(hPredMag, 'YData', 20*log10(abs(Tp(predMask)) + 1e-12));

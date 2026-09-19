@@ -115,3 +115,57 @@
 %! [t2, s2] = PSstepFromFRD(freq, T2, 300);
 %! rise = @(t, s) t(find(s > 0.63, 1));
 %! assert(rise(t2, s2) < rise(t1, s1), 'more P must reach 63 %% sooner');
+
+%!test
+%! % The firmware builds feedforward from the RX-rate setpoint delta and then
+%! % smooths it (rc.c:439,463,505,510) - none of which PSbuildController models.
+%! % So the F path is taken from the log instead: axisF against the logged
+%! % setpoint is the same measured-FRF trick the plant already uses. This loop
+%! % carries a PT3 on the F path that the model knows nothing about; predicting
+%! % with the modelled F must miss, predicting with the measured F must not.
+%! Fs = 2000; Ts = 1/Fs; N = 60000;
+%! g = struct('P', 45, 'I', 60, 'D', 20, 'F', 90);
+%! fp = struct('dterm_lpf1_type', 0, 'dterm_lpf1_hz', 80, ...
+%!             'dterm_lpf2_type', 0, 'dterm_lpf2_hz', 0, ...
+%!             'dterm_notch_hz', 0, 'dterm_notch_cut', 0);
+%! Kp = 45*0.032029; Ki = 60*0.244381; Kd = 20*0.000529; Kf = 90*0.013754*0.01;
+%! pt1k = @(fc) (1/Fs) / (1/(2*pi*fc) + 1/Fs);
+%! kPlant = pt1k(60 * 1.553773974);
+%! kDterm = pt1k(80);
+%! kFF = pt1k(25 * 1.961459177);      % pt3 at 25 Hz on the feedforward
+%! gPlant = 0.5;
+%! randn('state', 11);
+%! [br, ar] = PSbfFilters('pt2', 250, Fs);
+%! r = filter(br, ar, randn(N, 1)); r = 40 * r / std(r);
+%! y = zeros(N, 1); u = zeros(N, 1); aF = zeros(N, 1);
+%! s1 = 0; s2 = 0; sd = 0; f1 = 0; f2 = 0; f3 = 0;
+%! Iacc = 0; sdPrev = 0; rPrev = 0; yNext = 0;
+%! for k = 1:N
+%!     y(k) = yNext;
+%!     ek = r(k) - y(k);
+%!     Iacc = Iacc + Ki*Ts*ek;
+%!     sd = sd + kDterm*(y(k) - sd);
+%!     uD = Kd*(sd - sdPrev)/Ts; sdPrev = sd;
+%!     uFraw = Kf*(r(k) - rPrev)/Ts; rPrev = r(k);
+%!     f1 = f1 + kFF*(uFraw - f1);
+%!     f2 = f2 + kFF*(f1 - f2);
+%!     f3 = f3 + kFF*(f2 - f3);
+%!     aF(k) = f3;
+%!     u(k) = Kp*ek + Iacc - uD + aF(k);
+%!     s1 = s1 + kPlant*(gPlant*u(k) - s1);
+%!     s2 = s2 + kPlant*(s1 - s2);
+%!     yNext = s2;
+%! end
+%! assert(all(isfinite(y)) && max(abs(y)) < 1e6, 'simulated loop must stay stable');
+%! [G_track, ~, freq] = PSestimateFreqResponse(r, y, Fs);
+%! [G_uw, ~, ~] = PSestimateFreqResponse(r, u, Fs);
+%! [G_ff, ~, ~] = PSestimateFreqResponse(r, aF, Fs);
+%! G_plant = G_track ./ (G_uw + 1e-12);
+%! [A, D, Fmod] = PSbuildController(g, fp, Fs, freq);
+%! Tmod = PSpredictClosedLoop(G_plant, A, D, Fmod);
+%! Tmea = PSpredictClosedLoop(G_plant, A, D, G_ff);
+%! band = freq > 10 & freq < 250;
+%! eMea = max(abs(Tmea(band) - G_track(band)) ./ abs(G_track(band)));
+%! eMod = max(abs(Tmod(band) - G_track(band)) ./ abs(G_track(band)));
+%! assert(eMea < 0.01, 'the measured F path must reproduce the loop');
+%! assert(eMod > 0.05, 'the modelled F path must visibly miss, or this proves nothing');
