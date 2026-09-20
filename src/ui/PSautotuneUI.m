@@ -3,25 +3,15 @@ function PSautotuneUI(T, setupInfo, Fs, tIND, logName)
 %  T, setupInfo, Fs, tIND - as handed to the other tools
 %  logName                - shown in the header, optional
 %
-%  All nine answers (three axes, three settings) are worked out once when the
-%  window opens and then just displayed, so nothing recomputes while you read.
-%  Stability margins live in the Chirp Analysis window; this one answers the
-%  only question a pilot has, which is what to type into the CLI.
+%  Everything is worked out before the window opens, so it never appears with
+%  empty rows. The flown value is printed once per gain and the three settings
+%  print only what they would change it to. Stability margins live in the Chirp
+%  Analysis window; this one answers what to type into the CLI.
 
 if nargin < 5, logName = ''; end
 
 th = PStheme();
 fontsz = th.fontsz;
-
-figName = 'Autotune';
-old = findobj('Type', 'figure', 'Name', figName);
-if ~isempty(old), close(old); end
-
-figW = 700; figH = 560;
-screensz = get(0, 'ScreenSize');
-fig = figure('Name', figName, 'NumberTitle', 'off', 'Color', th.figBg, ...
-    'Position', [round((screensz(3)-figW)/2) round((screensz(4)-figH)/2) figW figH], ...
-    'MenuBar', 'none', 'ToolBar', 'none', 'Resize', 'off');
 
 axNames = {'Roll', 'Pitch', 'Yaw'};
 gainNames = {'P', 'I', 'D'};
@@ -29,11 +19,57 @@ setNames = {'CALM', 'NORMAL', 'SHARP'};
 setBlurb = {'most margin', 'recommended', 'least margin'};
 targets  = [72.5 60 50];
 
-xAxis = 22; wAxis = 64;
-xCol = [96 292 488]; wCol = 186;
-yTitle = figH - 38; ySummary = figH - 108; ySep = figH - 118;
-yHdr = figH - 154; yBlurb = figH - 170;
-rowH = 22; grpGap = 12; yTop = figH - 198;
+%% --- work it all out first ---
+wb = [];
+try wb = waitbar(0, 'Measuring the plant...'); catch, end
+ids = [];
+res = cell(3, 3);
+gateMsg = {'', '', ''};
+nStep = 12; done = 0;
+for a = 1:3
+    tick(done/nStep, sprintf('Measuring the %s plant...', lower(axNames{a})));
+    id = PSidentifyChirp(T, setupInfo, Fs, tIND, a-1);
+    if isempty(ids), ids = id; else, ids(a) = id; end
+    done = done + 1;
+end
+for a = 1:3
+    [gok, gmsgs, ginfo] = PSautotuneGates(ids(a));
+    gateMsg{a} = strjoin(gmsgs, '; ');
+    if ~gok
+        done = done + 3;
+        continue
+    end
+    for s = 1:3
+        tick(done/nStep, sprintf('Working out %s for %s...', setNames{s}, lower(axNames{a})));
+        res{a,s} = PSautotuneSearch(ids(a), ...
+            struct('pmTarget', targets(s), 'dClamp', [0.6 ginfo.dClampHi]));
+        done = done + 1;
+    end
+end
+try close(wb); catch, end
+
+%% --- then draw it ---
+figName = 'Autotune';
+old = findobj('Type', 'figure', 'Name', figName);
+if ~isempty(old), close(old); end
+
+figW = 604; figH = 520;
+screensz = get(0, 'ScreenSize');
+fig = figure('Name', figName, 'NumberTitle', 'off', 'Color', th.figBg, ...
+    'Position', [round((screensz(3)-figW)/2) round((screensz(4)-figH)/2) figW figH], ...
+    'MenuBar', 'none', 'ToolBar', 'none', 'Resize', 'off');
+
+mL = 24;
+xAx = mL; wAx = 56;
+xGain = 86; wGain = 16;
+xNow = 104; wNow = 60;
+xCol = [200 330 460]; wCol = 120;
+hiCol = min(1, th.figBg + 0.04);
+colBg = {th.figBg, hiCol, th.figBg};
+
+% rows are exactly as tall as they are spaced, so the highlighted column reads
+% as one block instead of a stack of stripes
+rowH = 18; grpGap = 14; yTop = figH - 204;
 rowY = zeros(3, 3);
 for g = 1:3
     for k = 1:3
@@ -41,90 +77,98 @@ for g = 1:3
     end
 end
 
-% Backdrop: groups the three gains of an axis together and marks the column
-% most pilots should take. uicontrols always draw over axes, so this sits
-% behind everything without fighting for hit testing.
-axBg = axes('Parent', fig, 'Units', 'normalized', 'Position', [0 0 1 1], ...
-    'XLim', [0 figW], 'YLim', [0 figH], 'Visible', 'off', 'HitTest', 'off');
-hold(axBg, 'on');
-hiCol = min(1, th.figBg + 0.045);
-colBg = {th.figBg, hiCol, th.figBg};
-patch('Parent', axBg, 'FaceColor', hiCol, 'EdgeColor', 'none', 'HitTest', 'off', ...
-    'XData', [xCol(2)-10 xCol(2)+wCol-10 xCol(2)+wCol-10 xCol(2)-10], ...
-    'YData', [rowY(3,3)-10 rowY(3,3)-10 yHdr+22 yHdr+22]);
-line('Parent', axBg, 'XData', [xAxis figW-xAxis], 'YData', [ySep ySep], ...
-    'Color', th.gridColor, 'LineWidth', 0.5, 'HitTest', 'off');
-for g = 1:2
-    yg = rowY(g,3) - grpGap/2;
-    line('Parent', axBg, 'XData', [xAxis figW-xAxis], 'YData', [yg yg], ...
-        'Color', th.gridColor, 'LineWidth', 0.5, 'HitTest', 'off');
-end
-hold(axBg, 'off');
+txt = @(s, x, y, w, col, align, fs, wt, bg) uicontrol(fig, 'Style', 'text', ...
+    'Units', 'pixels', 'String', s, 'Position', [x y w 18], 'FontSize', fs, ...
+    'FontWeight', wt, 'HorizontalAlignment', align, ...
+    'ForegroundColor', col, 'BackgroundColor', bg);
+
+rule = @(y) uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', '', ...
+    'Position', [mL y figW-2*mL 1], ...
+    'BackgroundColor', th.gridColor, 'ForegroundColor', th.gridColor);
 
 uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', 'Autotune', ...
-    'Position', [xAxis yTitle 200 24], 'FontSize', fontsz+3, 'FontWeight', 'bold', ...
-    'HorizontalAlignment', 'left', ...
-    'ForegroundColor', th.btnAutotune, 'BackgroundColor', th.figBg);
-uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', logName, ...
-    'Position', [figW-432-22 yTitle+2 432 20], 'FontSize', fontsz, ...
-    'HorizontalAlignment', 'right', ...
-    'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
-
-hSummary = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', '', ...
-    'Position', [xAxis ySummary figW-2*xAxis 56], 'FontSize', fontsz, ...
+    'Position', [mL figH-42 200 24], 'FontSize', fontsz+3, 'FontWeight', 'bold', ...
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
+txt(logName, figW-mL-380, figH-40, 380, th.textSecondary, 'right', fontsz, 'normal', th.figBg);
+rule(figH-54);
 
-% progress sits where the table will be, so hiding it leaves no hole
-hBarBg = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', '', ...
-    'Position', [xAxis yTop+6 figW-2*xAxis 10], ...
-    'BackgroundColor', th.btnBg, 'ForegroundColor', th.btnBg);
-hBar = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', '', ...
-    'Position', [xAxis yTop+6 1 10], ...
-    'BackgroundColor', th.btnAutotune, 'ForegroundColor', th.btnAutotune);
-hStep = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', '', ...
-    'Position', [xAxis yTop-24 figW-2*xAxis 18], 'FontSize', fontsz, ...
-    'HorizontalAlignment', 'left', ...
-    'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
-
-hCell = zeros(3, 3, 3);     % axis, setting, gain
-hNote = zeros(1, 3);
-hHdr = zeros(1, 3);
-for g = 1:3
-    uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', axNames{g}, ...
-        'Position', [xAxis rowY(g,1) wAxis rowH], 'FontSize', fontsz, ...
-        'FontWeight', 'bold', 'HorizontalAlignment', 'left', ...
-        'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
-    hNote(g) = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', '', ...
-        'Visible', 'off', 'Position', [xCol(1) rowY(g,1) figW-xCol(1)-22 rowH], ...
-        'FontSize', fontsz, 'HorizontalAlignment', 'left', ...
-        'ForegroundColor', th.btnReset, 'BackgroundColor', th.figBg);
-    for s = 1:3
-        for k = 1:3
-            hCell(g,s,k) = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', ...
-                'String', '', 'Position', [xCol(s) rowY(g,k) wCol rowH], ...
-                'FontSize', fontsz, 'FontName', 'Monospace', ...
-                'HorizontalAlignment', 'left', ...
-                'ForegroundColor', th.textPrimary, 'BackgroundColor', colBg{s});
-        end
+%% --- one plain sentence about what the log says ---
+hot = {}; soft = {}; refused = {};
+for a = 1:3
+    if ~isempty(gateMsg{a}), refused{end+1} = axNames{a}; continue; end
+    rn = res{a,2};
+    if isempty(rn) || ~rn.ok, continue; end
+    if rn.gains.P < ids(a).gains.P, hot{end+1} = axNames{a};
+    elseif rn.gains.P > ids(a).gains.P, soft{end+1} = axNames{a};
     end
 end
+lines = {};
+if ~isempty(hot)
+    lines{end+1} = sprintf('%s want less gain - they are flying close to the limit.', ...
+                           strjoin(hot, ' and '));
+end
+if ~isempty(soft)
+    lines{end+1} = sprintf('%s can take more gain than it is flying.', strjoin(soft, ' and '));
+end
+if ~isempty(refused)
+    lines{end+1} = sprintf('%s could not be read from this log.', strjoin(refused, ' and '));
+end
+if isempty(lines), lines{end+1} = 'Nothing to change on this log.'; end
+uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', lines, ...
+    'Position', [mL figH-112 figW-2*mL 48], 'FontSize', fontsz, ...
+    'HorizontalAlignment', 'left', ...
+    'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
+rule(figH-124);
 
+%% --- header ---
+txt('now', xNow, figH-152, wNow, th.textSecondary, 'right', fontsz, 'normal', th.figBg);
 for s = 1:3
-    hdrCol = th.textPrimary;
-    if s == 2, hdrCol = th.btnAutotune; end
-    hHdr(s) = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', setNames{s}, ...
-        'Position', [xCol(s) yHdr wCol 20], 'FontSize', fontsz+1, ...
-        'FontWeight', 'bold', 'HorizontalAlignment', 'left', ...
-        'ForegroundColor', hdrCol, 'BackgroundColor', colBg{s});
-    uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', setBlurb{s}, ...
-        'Position', [xCol(s) yBlurb wCol 16], 'FontSize', fontsz-1, ...
-        'HorizontalAlignment', 'left', ...
-        'ForegroundColor', th.textSecondary, 'BackgroundColor', colBg{s});
+    txt(setNames{s}, xCol(s), figH-152, wCol, th.textPrimary, 'right', fontsz, 'bold', colBg{s});
+    txt(setBlurb{s}, xCol(s), figH-168, wCol, th.textSecondary, 'right', fontsz-1, 'normal', colBg{s});
+end
+rule(figH-178);
+
+%% --- one row per gain, the flown value printed once ---
+for g = 1:3
+    txt(axNames{g}, xAx, rowY(g,1), wAx, th.textPrimary, 'left', fontsz, 'bold', th.figBg);
+    if ~isempty(gateMsg{g})
+        txt(gateMsg{g}, xGain, rowY(g,1), figW-xGain-mL, th.btnReset, 'left', fontsz, 'normal', th.figBg);
+        if g < 3, rule(rowY(g,3) - grpGap/2); end
+        continue
+    end
+    for k = 1:3
+        was = gainOf(ids(g).gains, k);
+        txt(gainNames{k}, xGain, rowY(g,k), wGain, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
+        txt(sprintf('%d', was), xNow, rowY(g,k), wNow, th.textSecondary, 'right', fontsz, 'normal', th.figBg);
+        for s = 1:3
+            r = res{g,s};
+            if isempty(r) || ~r.ok
+                str = ''; col = th.textSecondary;
+                if k == 1, str = 'out of reach'; end
+                txt(str, xCol(s), rowY(g,k), wCol, col, 'right', fontsz-1, 'normal', colBg{s});
+            else
+                now = gainOf(r.gains, k);
+                txt(sprintf('%d', now), xCol(s), rowY(g,k), wCol, th.textPrimary, ...
+                    'right', fontsz, 'normal', colBg{s});
+            end
+        end
+    end
+    if g < 3, rule(rowY(g,3) - grpGap/2); end
 end
 
-hFoot = uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', '', ...
-    'Position', [xAxis 96 figW-2*xAxis 40], 'FontSize', fontsz-1, ...
+%% --- footer and the three copies ---
+band = [];
+for a = 1:3
+    if isfinite(ids(a).fTrust), band(end+1) = ids(a).fTrust; end
+end
+foot = {'Pick a column and paste it into the Betaflight CLI. Feedforward is left as flown.'};
+if ~isempty(band)
+    foot{end+1} = sprintf(['Measured from the chirp up to %.0f Hz. ' ...
+                           'Fly it and check before trusting it.'], min(band));
+end
+uicontrol(fig, 'Style', 'text', 'Units', 'pixels', 'String', foot, ...
+    'Position', [mL 82 figW-2*mL 36], 'FontSize', fontsz-1, ...
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
 
@@ -132,135 +176,26 @@ hBtn = zeros(1, 3);
 for s = 1:3
     hBtn(s) = uicontrol(fig, 'Style', 'pushbutton', 'Units', 'pixels', ...
         'String', ['Copy ' setNames{s}], ...
-        'Position', [xCol(s) 32 wCol 32], 'FontSize', fontsz, ...
-        'FontWeight', 'bold', ...
-        'BackgroundColor', th.btnBg, 'ForegroundColor', th.btnAutotune, ...
+        'Position', [xCol(s) 30 wCol 32], 'FontSize', fontsz, 'FontWeight', 'bold', ...
+        'BackgroundColor', th.btnBg, 'ForegroundColor', th.textAccent, ...
         'Callback', @(~,~) copyCLI(s));
 end
 
-ids = [];
-res = cell(3, 3);
-gateMsg = {'', '', ''};
-
-compute();
-render();
+PSstyleControls(fig, th);
 
 
-    function compute()
-        nStep = 12; done = 0;
-        for a = 1:3
-            step(sprintf('Measuring the %s plant...', lower(axNames{a})), done, nStep);
-            id = PSidentifyChirp(T, setupInfo, Fs, tIND, a-1);
-            if isempty(ids), ids = id; else, ids(a) = id; end
-            done = done + 1;
-        end
-        for a = 1:3
-            [gok, gmsgs, ginfo] = PSautotuneGates(ids(a));
-            gateMsg{a} = strjoin(gmsgs, '; ');
-            if ~gok
-                done = done + 3;
-                step('', done, nStep);
-                continue
-            end
-            for s = 1:3
-                step(sprintf('Working out %s for %s...', setNames{s}, lower(axNames{a})), ...
-                     done, nStep);
-                res{a,s} = PSautotuneSearch(ids(a), ...
-                    struct('pmTarget', targets(s), 'dClamp', [0.6 ginfo.dClampHi]));
-                done = done + 1;
-            end
-        end
-        step('', nStep, nStep);
-        set([hBarBg hBar hStep], 'Visible', 'off');
+    function tick(frac, msg)
+        if isempty(wb), return; end
+        try waitbar(frac, wb, msg); drawnow; catch, end
     end
 
 
-    function step(msg, done, total)
-        w = max(1, round((figW - 2*xAxis) * done / total));
-        set(hBar, 'Position', [xAxis figH-130 w 10]);
-        if ~isempty(msg), set(hStep, 'String', msg); end
-        drawnow;
-    end
-
-
-    function render()
-        hot = {}; soft = {}; refused = {};
-        for a = 1:3
-            if ~isempty(gateMsg{a})
-                set(hNote(a), 'String', gateMsg{a}, 'Visible', 'on');
-                for s = 1:3
-                    for k = 1:3, set(hCell(a,s,k), 'Visible', 'off'); end
-                end
-                refused{end+1} = axNames{a};
-                continue
-            end
-            for s = 1:3
-                r = res{a,s};
-                for k = 1:3
-                    if isempty(r) || ~r.ok
-                        txt = '';
-                        if k == 1, txt = 'out of reach'; end
-                        set(hCell(a,s,k), 'String', txt, ...
-                            'ForegroundColor', th.textSecondary);
-                        continue
-                    end
-                    was = gainOf(ids(a).gains, k);
-                    now = gainOf(r.gains, k);
-                    col = th.textPrimary;
-                    if now < was, col = th.btnDash2; elseif now > was, col = th.btnRun; end
-                    set(hCell(a,s,k), 'ForegroundColor', col, ...
-                        'String', sprintf('%s %4d -> %-4d', gainNames{k}, was, now));
-                end
-            end
-            rn = res{a,2};
-            if ~isempty(rn) && rn.ok
-                if rn.gains.P < ids(a).gains.P, hot{end+1} = axNames{a};
-                elseif rn.gains.P > ids(a).gains.P, soft{end+1} = axNames{a};
-                end
-            end
-        end
-
-        lines = {};
-        if ~isempty(hot)
-            lines{end+1} = sprintf('%s want less gain - they are flying close to the limit.', ...
-                                   strjoin(hot, ' and '));
-        end
-        if ~isempty(soft)
-            lines{end+1} = sprintf('%s can take more gain than %s flying.', ...
-                                   strjoin(soft, ' and '), pickAux(numel(soft)));
-        end
-        if ~isempty(refused)
-            lines{end+1} = sprintf('%s could not be read from this log.', ...
-                                   strjoin(refused, ' and '));
-        end
-        if isempty(lines), lines{end+1} = 'Nothing to change on this log.'; end
-        set(hSummary, 'String', lines);
-
-        band = [];
-        for a = 1:3
-            if isfinite(ids(a).fTrust), band(end+1) = ids(a).fTrust; end
-        end
-        foot = {'Pick a column and paste it into the Betaflight CLI. Feedforward is left as flown.'};
-        if ~isempty(band)
-            foot{end+1} = sprintf(['Measured from the chirp up to %.0f Hz. ' ...
-                                   'Fly it and check before trusting it.'], min(band));
-        end
-        set(hFoot, 'String', foot);
-    end
-
-
-    function v = gainOf(g, k)
+    function v = gainOf(gg, k)
         switch k
-            case 1, v = g.P;
-            case 2, v = g.I;
-            otherwise, v = g.D;
+            case 1, v = gg.P;
+            case 2, v = gg.I;
+            otherwise, v = gg.D;
         end
-    end
-
-
-    function s = pickAux(n)
-        s = 'it is';
-        if n > 1, s = 'they are'; end
     end
 
 
@@ -278,11 +213,11 @@ render();
             end
             if isempty(items), items = it; else, items(a) = it; end
         end
-        txt = PSautotuneCLI(items, targets(s));
-        if PScopyToClipboard(txt)
+        cliText = PSautotuneCLI(items, targets(s));
+        if PScopyToClipboard(cliText)
             set(hBtn(s), 'String', 'Copied!');
         else
-            PSshowCLIDialog(txt);
+            PSshowCLIDialog(cliText);
         end
     end
 
