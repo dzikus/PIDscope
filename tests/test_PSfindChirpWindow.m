@@ -49,6 +49,38 @@
 %! assert(abs(i0 - 19*Fs) < 0.01*Fs, 'must pick the run where the axis responded');
 
 %!test
+%! % An axis is swept twice in a six-run log, and the two runs last the same
+%! % chirp_time_seconds, so their lengths differ only by sampling noise. Sizes
+%! % and variances here are measured on 20250907_flipmini_00 through the import
+%! % path: roll answers in runs 1 and 4 at 5588 and 5618, the rest carry 2 to 14
+%! % of cross-axis coupling. Picking by length takes run 1 by one sample;
+%! % picking by response takes run 4, which is the one that moved the axis more.
+%! nSamp = [39987 39988 39942 39950 39986 39996];
+%! gvar  = [5588 9 2 5618 14 2];
+%! randn('state', 31);
+%! sinarg = []; gyro = [];
+%! for k = 1:6
+%!   sinarg = [sinarg; 15000*ones(nSamp(k),1); zeros(2000,1)];
+%!   g = sqrt(gvar(k))*randn(nSamp(k),1);
+%!   gyro = [gyro; g/std(g)*sqrt(gvar(k)); zeros(2000,1)];
+%! end
+%! [i0, i1] = PSfindChirpWindow(sinarg, gyro);
+%! starts = 1 + cumsum([0 nSamp(1:5) + 2000]);
+%! picked = find(starts == i0);
+%! assert(picked == 4, sprintf('expected the stronger run, got run %d', picked));
+
+%!test
+%! % Should a log ever put coupling above the floor - a harder sweep, a softer
+%! % airframe - length must still not decide it. The corpus tops out at 137
+%! % against a floor of 500, so this guards a margin rather than an observation.
+%! randn('state', 20);
+%! sinarg = [ones(3000,1); zeros(2000,1); ones(9000,1); zeros(2000,1); ones(5000,1)];
+%! gyro = [700*randn(3000,1); zeros(2000,1); 30*randn(9000,1); ...
+%!         zeros(2000,1); 30*randn(5000,1)];
+%! [i0, i1] = PSfindChirpWindow(sinarg, gyro);
+%! assert(isequal([i0 i1], [1 3000]), 'the swept run wins over the longer ones');
+
+%!test
 %! % A sample landing exactly on the wrap logs a zero; it must not split the run
 %! Fs = 2000; Tc = 10; N = 30*Fs;
 %! sinarg_raw = zeros(N, 1); gyro = 2*randn(N, 1);
