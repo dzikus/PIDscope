@@ -16,7 +16,7 @@ fontsz = th.fontsz;
 
 axNames = {'Roll', 'Pitch', 'Yaw'};
 axCols = {th.axisRoll, th.axisPitch, th.axisYaw};
-gainNames = {'P', 'I', 'D'};
+gainNames = {'P', 'I', 'D', 'FF'};
 setNames = {'CALM', 'NORMAL', 'SHARP'};
 setBlurb = {'most margin', 'recommended', 'least margin'};
 setCols = {th.bodeCoherence, th.textAccent, th.btnReset};
@@ -64,7 +64,7 @@ fig = figure('Name', figName, 'NumberTitle', 'off', ...
     'Color', th.figBg, ...
     'Position', round([0 0 screensz(3) screensz(4)]));
 
-plotL = 0.05; plotR = 0.66; colW = plotR - plotL;
+plotL = 0.04; plotR = 0.585; colW = plotR - plotL;
 topMargin = 0.03; botMargin = 0.06; rowGap = 0.045;
 plotH = (1 - topMargin - botMargin - 2*rowGap) / 3;
 plotB = [1-topMargin-plotH, 0, 0];
@@ -72,6 +72,11 @@ plotB(2) = plotB(1) - plotH - rowGap;
 plotB(3) = plotB(2) - plotH - rowGap;
 
 tShow = 250;    % the same window on every axis, so the three can be compared
+customCol = th.btnDash6;
+hCustom = zeros(1, 3);
+axCustom = zeros(1, 3);
+hEdit = zeros(3, 4);
+hCustomInfo = [];
 
 for a = 1:3
     ax = axes('Parent', fig, 'Units', 'normalized', ...
@@ -108,6 +113,11 @@ for a = 1:3
             hs(end+1) = plot(ax, d.t, d.y{s}, 'Color', setCols{s}, 'LineWidth', 1.6);
             leg{end+1} = nm;
         end
+        % the try-it-yourself curve, empty until something is typed
+        hCustom(a) = plot(ax, nan, nan, 'Color', customCol, 'LineWidth', 1.8);
+        hs(end+1) = hCustom(a);
+        leg{end+1} = 'custom';
+        axCustom(a) = ax;
         set(ax, 'XLim', [0 tShow], 'YLim', [0 1.6]);
         hl = legend(ax, hs, leg, 'Location', 'southeast');
         try PSstyleLegend(hl, th); catch, end
@@ -121,11 +131,12 @@ for a = 1:3
 end
 
 %% --- control column ---
-cpL = 0.69;
-xGain = cpL + 0.032; wGain = 0.014;
-xNow  = cpL + 0.048; wNow = 0.042;
-xSet  = cpL + [0.095 0.155 0.215]; wSet = 0.055;
-rh = 0.026; grpGap = 0.016;
+cpL = 0.615;
+xGain = cpL + 0.028; wGain = 0.014;
+xNow  = cpL + 0.044; wNow = 0.040;
+xSet  = cpL + [0.090 0.146 0.202]; wSet = 0.052;
+xCust = cpL + 0.262; wCust = 0.058;
+rh = 0.024; grpGap = 0.014; nGain = 4;
 % banding so the eye keeps the row across the four numbers, with the
 % recommended column a shade lighter still
 band = {th.figBg, min(1, th.figBg + 0.022)};
@@ -140,10 +151,10 @@ uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', 'Autotune', ...
     'Position', [cpL 0.948 0.14 0.032], 'FontSize', fontsz+3, 'FontWeight', 'bold', ...
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
-txt(logName, cpL, 0.918, 0.281, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
+txt(logName, cpL, 0.918, 0.340, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
 
 uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', summaryLines(), ...
-    'Position', [cpL 0.828 0.281 0.075], 'FontSize', fontsz, ...
+    'Position', [cpL 0.828 0.340 0.075], 'FontSize', fontsz, ...
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
 
@@ -153,25 +164,29 @@ for s = 1:3
     txt(setNames{s}, xSet(s), 0.782, wSet, setCols{s}, 'right', fontsz+1, 'bold', hdrBg);
     txt(setBlurb{s}, xSet(s), 0.759, wSet, th.textSecondary, 'right', fontsz-2, 'normal', hdrBg);
 end
+txt('CUSTOM', xCust, 0.782, wCust, customCol, 'left', fontsz+1, 'bold', th.figBg);
+txt('type and see', xCust, 0.759, wCust, th.textSecondary, 'left', fontsz-2, 'normal', th.figBg);
 
 yTop = 0.700;
 for g = 1:3
-    yG = yTop - (g-1)*(3*rh + grpGap);
-    txt(axNames{g}, cpL, yG, 0.030, axCols{g}, 'left', fontsz, 'bold', th.figBg);
+    yG = yTop - (g-1)*(nGain*rh + grpGap);
+    txt(axNames{g}, cpL, yG, 0.028, axCols{g}, 'left', fontsz, 'bold', th.figBg);
     if ~isempty(gateMsg{g})
         txt('not usable', xGain, yG, 0.10, th.btnReset, 'left', fontsz, 'normal', th.figBg);
         continue
     end
-    for k = 1:3
+    for k = 1:nGain
         yR = yG - (k-1)*rh;
         was = gainOf(ids(g).gains, k);
         txt(gainNames{k}, xGain, yR, wGain, th.textSecondary, 'left', fontsz, 'bold', cellBg(k,0));
         txt(sprintf('%d', was), xNow, yR, wNow, th.textPrimary, 'right', fontsz+1, 'normal', cellBg(k,0));
         for s = 1:3
             r = res{g,s};
-            if isempty(r) || ~r.ok
+            % feedforward is not proposed - showing the flown number again in
+            % all three columns would be noise, so the row stays blank there
+            if k == 4 || isempty(r) || ~r.ok
                 str = '';
-                if k == 1, str = 'n/a'; end
+                if k == 1 && (isempty(r) || ~r.ok), str = 'n/a'; end
                 txt(str, xSet(s), yR, wSet, th.textSecondary, 'right', fontsz, 'normal', cellBg(k,s));
             else
                 now = gainOf(r.gains, k);
@@ -183,15 +198,28 @@ for g = 1:3
                     'normal', cellBg(k,s));
             end
         end
+        start = was;
+        r = res{g,2};
+        if ~isempty(r) && r.ok && k < 4, start = gainOf(r.gains, k); end
+        hEdit(g,k) = uicontrol(fig, 'Style', 'edit', 'Units', 'normalized', ...
+            'String', sprintf('%d', start), ...
+            'Position', [xCust yR wCust rh], 'FontSize', fontsz, ...
+            'HorizontalAlignment', 'center', ...
+            'Callback', @(~,~) onCustom(g));
     end
 end
 
 % the colours in the table mean something, so say what
-txt('lower than now', xNow, 0.420, 0.075, th.btnReset, 'left', fontsz-1, 'normal', th.figBg);
-txt('higher', xNow+0.080, 0.420, 0.050, th.bodeCoherence, 'left', fontsz-1, 'normal', th.figBg);
+txt('lower than now', xNow, 0.372, 0.075, th.btnReset, 'left', fontsz-1, 'normal', th.figBg);
+txt('higher', xNow+0.080, 0.372, 0.050, th.bodeCoherence, 'left', fontsz-1, 'normal', th.figBg);
+
+hCustomInfo = uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', '', ...
+    'Position', [cpL 0.336 0.340 rh], 'FontSize', fontsz-1, ...
+    'HorizontalAlignment', 'left', ...
+    'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
 
 uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', footLines(), ...
-    'Position', [cpL 0.345 0.281 0.060], 'FontSize', fontsz-1, ...
+    'Position', [cpL 0.258 0.340 0.060], 'FontSize', fontsz-1, ...
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
 
@@ -201,13 +229,13 @@ hBtn = zeros(1, 3);
 for s = 1:3
     hBtn(s) = uicontrol(fig, 'Style', 'pushbutton', 'Units', 'normalized', ...
         'String', setNames{s}, ...
-        'Position', [xSet(s) 0.272 wSet 0.046], ...
+        'Position', [xSet(s) 0.196 wSet 0.046], ...
         'FontSize', fontsz+1, 'FontWeight', 'bold', ...
         'HorizontalAlignment', 'center', ...
         'BackgroundColor', th.btnBg, 'ForegroundColor', setCols{s}, ...
         'Callback', @(~,~) copyCLI(s));
 end
-txt('Copy to CLI:', cpL, 0.282, 0.075, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
+txt('Copy to CLI:', cpL, 0.206, 0.075, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
 
 PSstyleControls(fig, th);
 PSdatatipSetup(fig);
@@ -282,7 +310,43 @@ PSdatatipSetup(fig);
         switch k
             case 1, v = gg.P;
             case 2, v = gg.I;
-            otherwise, v = gg.D;
+            case 3, v = gg.D;
+            otherwise, v = gg.F;
+        end
+    end
+
+
+    function onCustom(g)
+        id = ids(g);
+        if isempty(id.G_plant) || hCustom(g) == 0, return; end
+        v = zeros(1, 4);
+        for k = 1:4
+            v(k) = round(str2double(get(hEdit(g,k), 'String')));
+            if ~isfinite(v(k)) || v(k) < 0, v(k) = 0; end
+            set(hEdit(g,k), 'String', sprintf('%d', v(k)));
+        end
+        gg = struct('axis', id.axisIdx, 'P', v(1), 'I', v(2), 'D', v(3), 'F', v(4));
+        [A, D, F] = PSbuildController(gg, id.fp, id.FsPid, id.freq);
+        Tp = PSpredictClosedLoop(id.G_plant, A, D, F);
+        [t, y] = PSstepFromFRD(id.freq, Tp, min(id.fTrust, 300));
+        set(hCustom(g), 'XData', t, 'YData', y);
+        % feedforward never enters L = P*(A+D), so it cannot destabilise the
+        % loop - the margins below answer for P, I and D only
+        keep = id.freq > 0 & id.freq <= id.fTrust;
+        [A, D, F] = PSbuildController(gg, id.fp, id.FsPid, id.freq(keep));
+        [~, L, S] = PSpredictClosedLoop(id.G_plant(keep), A, D, F);
+        [~, pm] = PSmarginsFromL(id.freq(keep), L);
+        if isnan(pm)
+            s = sprintf('%s custom: no 0 dB crossing in band', axNames{g});
+        else
+            s = sprintf('%s custom: PM %.0f deg, Ms %.2f, overshoot %.0f%%', ...
+                        axNames{g}, pm, max(abs(S)), 100*(max(y)-1));
+        end
+        set(hCustomInfo, 'String', s);
+        if pm < 30 || max(abs(S)) > 2.5
+            set(hCustomInfo, 'ForegroundColor', th.btnReset);
+        else
+            set(hCustomInfo, 'ForegroundColor', th.textSecondary);
         end
     end
 
