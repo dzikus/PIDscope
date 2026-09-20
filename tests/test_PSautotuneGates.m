@@ -40,14 +40,15 @@
 %! assert(~isempty(strfind(strjoin(msgs, ' '), 'No chirp data found')));
 
 %!test
-%! % An axis that was not swept. Measured on the corpus: the swept axis scores
-%! % 3.6e5 to 5.8e5, while cross-axis coupling during another axis's run reaches
-%! % 1365 - so the old floor of 500 sat inside the coupling, not above it.
-%! [ok, msgs] = PSautotuneGates(mkid('gyroVar', 1365));
+%! % An axis that was not swept. Measured through the import path, so with
+%! % blackbox_high_resolution undone: the swept axis scores 3523 to 6188
+%! % (deg/s)^2 across the corpus, cross-axis coupling reaches 137. The floor
+%! % sits between them with 3.6x below and 7x above.
+%! [ok, msgs] = PSautotuneGates(mkid('gyroVar', 137));
 %! assert(~ok, 'cross-axis coupling must not read as a swept axis');
 %! assert(~isempty(strfind(lower(strjoin(msgs, ' ')), 'swept')));
-%! [ok2, ~] = PSautotuneGates(mkid('gyroVar', 3.6e5));
-%! assert(ok2, 'a genuinely swept axis must pass');
+%! [ok2, ~] = PSautotuneGates(mkid('gyroVar', 3523));
+%! assert(ok2, 'the weakest genuinely swept axis in the corpus must pass');
 
 %!test
 %! % A sweep that was cut short never reached the top of the band, and fTrust

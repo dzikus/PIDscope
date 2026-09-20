@@ -18,7 +18,7 @@ function [ok, msgs, info] = PSautotuneGates(id, opt)
 
 if nargin < 2 || isempty(opt), opt = struct(); end
 
-o = struct('gyroVarMin', 1e4, ...   % swept axes score 3.6e5..5.8e5, coupling reaches 1365
+o = struct('gyroVarMin', 500, ...   % swept axes score 3523..6188, coupling reaches 137
            'sweepFrac', 0.95, ...   % structural: a short sweep has no top of band
            'satFracMax', 0.01, ...  % structural: saturation makes the plant a fiction
            'nSegMin', 8, ...        % the corpus runs 70 on every axis

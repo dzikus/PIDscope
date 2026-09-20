@@ -13,10 +13,10 @@ if isempty(w)
     return
 end
 
-% Every run in a log lasts chirp_time_seconds, so run length differs only by
-% sampling noise and says nothing about which axis a run swept - the response
-% does. Cross-axis coupling on a real log reaches 1e3, which clears varThresh,
-% so the threshold only answers "was this axis swept at all".
+% Every run lasts chirp_time_seconds, so run length differs only by sampling
+% noise and cannot decide between the two runs that swept this axis - the
+% response can. varThresh only answers "was this axis swept at all"; measured
+% on the pichim corpus a swept run scores 3523..6188 against 137 of coupling.
 best_var = 0;
 idx_start = w(1).i0;
 idx_end = w(1).i1;
