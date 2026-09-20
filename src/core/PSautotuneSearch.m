@@ -11,6 +11,12 @@ function res = PSautotuneSearch(id, opt)
 %  than PM binds, the answer comes out more conservative rather than not coming
 %  out at all.
 %
+%  I is settled inside the scan, not after it, so the cell that is judged is the
+%  cell that is reported. Choosing it afterwards let the grid hold one
+%  integrator and the answer another, which on a real yaw axis left the margin
+%  14 deg above the target and turned a looser request into a more aggressive
+%  tune.
+%
 %  res.gains carries P, I, D and F and nothing else. Betaflight issue #5258 was
 %  a filter cutoff derived from chirp coherence; here there is nowhere to put
 %  one.
@@ -20,8 +26,8 @@ if nargin < 2 || isempty(opt), opt = struct(); end
 o = struct('pmTarget', 60, 'msMax', 2.0, 'peakMaxDb', 6, ...
            'magAtTrustDb', -6, 'wcpFracTrust', 0.5, 'wcpMaxRatio', 3, ...
            'dDomRatio', 2.0, ...
-           'pClamp', [0.25 2.0], 'dClamp', [0.6 1.25], 'pidsumFrac', 0.9, ...
-           'peakStepMin', 1.05);
+           'pClamp', [0.25 2.0], 'dClamp', [0.6 1.25], 'iClamp', [0.25 2.0], ...
+           'pidsumFrac', 0.9, 'zeroRatio', []);
 fn = fieldnames(o);
 for k = 1:numel(fn)
     if isfield(opt, fn{k}) && ~isempty(opt.(fn{k})), o.(fn{k}) = opt.(fn{k}); end
@@ -82,6 +88,20 @@ Pcand = max(1, round(o.pClamp(1)*P0)) : round(o.pClamp(2)*P0);
 Dcand = round(o.dClamp(1)*D0) : round(dHi*D0);
 if isempty(Pcand), Pcand = max(1, P0); end
 if isempty(Dcand), Dcand = D0; end
+iLo = max(1, round(o.iClamp(1)*I0));
+iHi = max(iLo, round(o.iClamp(2)*I0));
+
+% Where the flown tune put the PI corner relative to its own crossover. Holding
+% that fraction is the scale-invariant choice: a slower loop has a smaller phase
+% budget, and an integrator left at the old corner eats more of it. There is no
+% textbook value to impose instead - across the 37 well flown axes we hold the
+% fraction runs 1.96 to 14.34 and splits by axis, yaw sitting at 2.0..3.1
+% because the firmware runs 2.5x the I gain there.
+zRatio = o.zeroRatio;
+if isempty(zRatio), zRatio = zeroRatio(b, P0, I0, base.wcp); end
+if ~isfinite(zRatio)
+    res.notes{end+1} = 'no PI corner in the flown tune, so I follows P';
+end
 
 nD = numel(Dcand); nP = numel(Pcand);
 g = struct();
@@ -98,11 +118,19 @@ for iD = 1:nD
         Pi = Pcand(iP);
         % Ki in the firmware is absolute, so holding I while cutting P drags
         % the PI corner upwards and the integrator adds lag exactly where the
-        % scan is trying to buy phase margin. Scaling both keeps the integral
-        % time the pilot flew.
+        % scan is trying to buy phase margin. Scale it with P to find where this
+        % cell crosses over, then put the corner back at the flown fraction of
+        % that crossover and judge the cell on the I it will actually be given.
         Ii = I0;
         if P0 > 0, Ii = round(Pi / P0 * I0); end
         c = evalOne(Pk, fk, Pi*b.Ap + Ii*b.Ai, Dv, F0*b.F1);
+        if isfinite(zRatio) && ~isnan(c.wcp)
+            Ij = min(max(iFromZero(b, Pi, c.wcp / zRatio), iLo), iHi);
+            if Ij ~= Ii
+                Ii = Ij;
+                c = evalOne(Pk, fk, Pi*b.Ap + Ii*b.Ai, Dv, F0*b.F1);
+            end
+        end
         g.P(iD,iP) = Pi; g.I(iD,iP) = Ii; g.D(iD,iP) = Di;
         g.pm(iD,iP) = c.pm; g.ms(iD,iP) = c.ms; g.wcp(iD,iP) = c.wcp;
         g.gm(iD,iP) = c.gm; g.peakDb(iD,iP) = c.peakDb;
@@ -138,18 +166,14 @@ res.gains.P = g.P(iD,iP);
 res.gains.I = g.I(iD,iP);
 res.gains.D = g.D(iD,iP);
 
-% D acts on the gyro only, so the tracking response is P*A/(1+P*(A+D)) and the
-% PI zero at Ki/Kp sits in the numerator where the margins never see it.
-% Measured on the pichim corpus: at a fixed cell, I moved the step overshoot
-% from 1.11 to 1.17 while the phase margin moved 0.6 deg and Ms not at all.
-% So take the most I that does not make the step worse than it already flies -
-% I is what rejects disturbances, and it is nearly free of the margins.
-[res.gains.I, res.peak, res.peak0] = shapeI(id, res.gains, I0, o, base.wcp);
-if isfinite(res.peak) && isfinite(res.peak0) && res.peak > max(res.peak0, o.peakStepMin) + 1e-6
-    res.notes{end+1} = sprintf(['step overshoot still %.0f%% against %.0f%% flown - ' ...
-                                'the margins would not allow less I'], ...
-                               100*(res.peak-1), 100*(res.peak0-1));
-end
+% Reported, never optimised against. A step is a fast setpoint move, and
+% iterm_relax gates the integrator off during one on roll and pitch - measured
+% across every chirp log we hold, the running integrator is 6..74% of the
+% integral of the error there, against 100% on yaw, which the mechanism does not
+% touch. So the modelled step is not a quantity to tune I by.
+res.peak0 = stepPeak(id, id.gains);
+res.peak = stepPeak(id, res.gains);
+
 res.scale = struct('P', ratio(res.gains.P, P0), 'I', ratio(res.gains.I, I0), ...
                    'D', ratio(res.gains.D, D0), 'F', 1);
 
@@ -169,28 +193,31 @@ end
 end
 
 
-function [Ibest, pk, pk0] = shapeI(id, gains, I0, o, wcp0)
-    Ibest = gains.I;
-    pk0 = stepPeak(id, id.gains);
-    pk = stepPeak(id, gains);
-    if I0 <= 0 || ~isfinite(pk0) || ~isfinite(pk), return; end
-    limit = max(pk0, o.peakStepMin);
-    if pk <= limit, return; end
+function fz = zeroFreq(b, P, I)
+    % The PI corner is where the two halves of A are equal in magnitude. Reading
+    % it off the basis rather than from Ki/Kp keeps the Betaflight scaling
+    % constants, and the 2.5x the firmware puts on yaw, in the one file that
+    % owns them.
+    fz = NaN;
+    if P <= 0 || I <= 0, return; end
+    d = abs(P * b.Ap) - abs(I * b.Ai);
+    k = find(d(1:end-1) < 0 & d(2:end) >= 0, 1);
+    if isempty(k), return; end
+    fz = interp1(d(k:k+1), b.freq(k:k+1), 0, 'linear');
+end
 
-    keep = id.freq > 0 & id.freq <= id.fTrust;
-    fk = id.freq(keep);
-    Pk = id.G_plant(keep);
 
-    % walk I down, but only over values that still clear every constraint - an
-    % I that fixes the step and loses the margin is not an answer
-    for Ii = (gains.I-1):-1:max(1, round(0.2*I0))
-        trial = gains; trial.I = Ii;
-        [A, D, F] = PSbuildController(trial, id.fp, id.FsPid, fk);
-        if ~admissible(evalOne(Pk, fk, A, D, F), o, id.fTrust, wcp0), continue; end
-        p = stepPeak(id, trial);
-        if p < pk, Ibest = Ii; pk = p; end
-        if p <= limit, break; end
-    end
+function r = zeroRatio(b, P, I, wcp)
+    r = NaN;
+    fz = zeroFreq(b, P, I);
+    if isfinite(fz) && fz > 0 && isfinite(wcp), r = wcp / fz; end
+end
+
+
+function Ii = iFromZero(b, P, fz)
+    ap = interp1(b.freq, abs(b.Ap), fz, 'linear', 'extrap');
+    ai = interp1(b.freq, abs(b.Ai), fz, 'linear', 'extrap');
+    Ii = max(1, round(P * ap / max(ai, 1e-12)));
 end
 
 

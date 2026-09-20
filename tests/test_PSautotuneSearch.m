@@ -35,6 +35,17 @@
 %!              'axisD', p.axisD*ones(1000,1), 'pidsumLimit', 800);
 %!endfunction
 
+%!function fz = picorner(gains, fp, Fs, freq)
+%!  % where the P half and the I half of A are equal in magnitude
+%!  f = freq(freq > 0);
+%!  gp = gains; gp.I = 0;
+%!  gi = gains; gi.P = 0;
+%!  d = abs(PSbuildController(gp, fp, Fs, f)) - abs(PSbuildController(gi, fp, Fs, f));
+%!  k = find(d(1:end-1) < 0 & d(2:end) >= 0, 1);
+%!  fz = NaN;
+%!  if ~isempty(k), fz = interp1(d(k:k+1), f(k:k+1), 0, 'linear'); end
+%!endfunction
+
 %!test
 %! % T1 - the target is hit where the algebra says it is.
 %! % tau = 2 ms and a 50 deg target pin w*tau = 40 deg, so w = 349.066 rad/s and
@@ -167,17 +178,23 @@
 %!        'the budget must say when it bound');
 
 %!test
-%! % I moves with P, because Ki in the firmware is absolute. Holding I while
-%! % cutting P drags the PI corner upwards, so the integrator contributes more
-%! % lag exactly where the scan is trying to buy phase margin. Measured on the
-%! % pichim corpus: with I held, one craft tops out at 45.2 deg of reachable
-%! % phase margin however far P is cut, and clears 69.9 deg once I follows.
-%! res = PSautotuneSearch(mkfix('P', 80, 'I', 120), struct('pmTarget', 60));
+%! % I follows the loop, not just P. Ki in the firmware is absolute, so holding
+%! % I while cutting P drags the PI corner upwards and the integrator adds lag
+%! % exactly where the scan is trying to buy phase margin. Scaling it with P
+%! % instead holds the corner still in Hz, which is not the same thing either: a
+%! % slower loop has a smaller phase budget, so the corner has to come down with
+%! % the crossover. What is held is the ratio between them - measured at 1.96 to
+%! % 14.34 across the 37 well flown axes we hold, splitting by axis because the
+%! % firmware runs 2.5x the I gain on yaw.
+%! fix = mkfix('P', 80, 'I', 120);
+%! res = PSautotuneSearch(fix, struct('pmTarget', 60));
 %! assert(res.ok, res.reason);
-%! assert(res.gains.I ~= 120, 'I has to move when P does');
-%! assert(abs(res.scale.I - res.scale.P) < 0.02, ...
-%!        sprintf('I scaled %.3f against P %.3f - the integral time must hold', ...
-%!                res.scale.I, res.scale.P));
+%! assert(res.gains.I ~= 120, 'I has to move when the loop does');
+%! before = res.wcp0 / picorner(fix.gains, fix.fp, fix.FsPid, fix.freq);
+%! after  = res.wcp  / picorner(res.gains, fix.fp, fix.FsPid, fix.freq);
+%! assert(abs(after - before) / before < 0.1, ...
+%!        sprintf('the PI corner moved relative to crossover: %.2f -> %.2f', ...
+%!                before, after));
 
 %!test
 %! % Opening the lower clamp can only add answers, never change one. The scan
@@ -201,18 +218,35 @@
 %! assert(rW.gains.P == 45, sprintf('expected P 45, got %d', rW.gains.P));
 
 %!test
-%! % I is shaped against the step, not scaled blindly with P. D acts on the
-%! % gyro only, so the tracking response is P*A/(1+P*(A+D)) and the PI zero at
-%! % Ki/Kp sits in the numerator where the margins never see it: on the pichim
-%! % corpus, at a fixed cell, I moved the overshoot from 1.11 to 1.17 while the
-%! % phase margin moved 0.6 deg. So the proposal must not hand back a worse step
-%! % than the one being flown.
+%! % The modelled step is reported and never tuned against. Both peaks come back
+%! % so the window can draw them, but no proposal is rejected for having a worse
+%! % one: T = P*(A+F)*S carries the modelled integrator, and iterm_relax gates
+%! % that integrator off on roll and pitch through any fast setpoint move - a
+%! % step included. Rebuilding every logged PID term across all 15 chirp logs put
+%! % the running integrator at 6..74% of the integral of the error on those axes
+%! % and at 100% on yaw, which the mechanism does not touch.
 %! res = PSautotuneSearch(mkfix('P', 80, 'I', 120), struct('pmTarget', 60));
 %! assert(res.ok, res.reason);
 %! assert(isfinite(res.peak) && isfinite(res.peak0), 'both peaks must be reported');
-%! assert(res.peak <= max(res.peak0, 1.05) + 1e-9, ...
-%!        sprintf('step got worse: %.3f against %.3f flown', res.peak, res.peak0));
-%! assert(res.pm >= 60 - 1e-6, sprintf('shaping I cost phase margin: %.2f', res.pm));
+%! assert(res.pm >= 60 - 1e-6, sprintf('phase margin missed: %.2f', res.pm));
+%! assert(~isfield(res.opt, 'peakStepMin'), ...
+%!        'a step threshold in the options means something still tunes to it');
+
+%!test
+%! % The cell the scan picked has to be the cell it reports. I used to be chosen
+%! % after the grid had already judged every cell admissible or not, so the grid
+%! % held one integrator and the answer another. On a real yaw axis that left the
+%! % reported margin 14 deg above the target it was asked for, and made the
+%! % proposal jump from P 36 to P 75 when the target was relaxed from 72.5 to 60
+%! % - a looser request returning a more aggressive tune.
+%! res = PSautotuneSearch(mkfix('P', 30, 'I', 80), struct('pmTarget', 50));
+%! assert(res.ok, res.reason);
+%! assert(res.grid.I(res.iD, res.iP) == res.gains.I, ...
+%!        sprintf('grid judged I %d, answer sets I %d', ...
+%!                res.grid.I(res.iD, res.iP), res.gains.I));
+%! assert(abs(res.grid.pm(res.iD, res.iP) - res.pm) < 1e-6, ...
+%!        sprintf('grid judged PM %.2f, answer reports %.2f', ...
+%!                res.grid.pm(res.iD, res.iP), res.pm));
 
 %!test
 %! % Reason codes have to be usable by the UI without guessing
