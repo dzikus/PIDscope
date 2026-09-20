@@ -20,7 +20,8 @@ if nargin < 2 || isempty(opt), opt = struct(); end
 o = struct('pmTarget', 60, 'msMax', 2.0, 'peakMaxDb', 6, ...
            'magAtTrustDb', -6, 'wcpFracTrust', 0.5, 'wcpMaxRatio', 3, ...
            'dDomRatio', 2.0, ...
-           'pClamp', [0.25 2.0], 'dClamp', [0.6 1.25], 'pidsumFrac', 0.9);
+           'pClamp', [0.25 2.0], 'dClamp', [0.6 1.25], 'pidsumFrac', 0.9, ...
+           'peakStepMin', 1.05);
 fn = fieldnames(o);
 for k = 1:numel(fn)
     if isfield(opt, fn{k}) && ~isempty(opt.(fn{k})), o.(fn{k}) = opt.(fn{k}); end
@@ -136,6 +137,19 @@ res.grid = g;
 res.gains.P = g.P(iD,iP);
 res.gains.I = g.I(iD,iP);
 res.gains.D = g.D(iD,iP);
+
+% D acts on the gyro only, so the tracking response is P*A/(1+P*(A+D)) and the
+% PI zero at Ki/Kp sits in the numerator where the margins never see it.
+% Measured on the pichim corpus: at a fixed cell, I moved the step overshoot
+% from 1.11 to 1.17 while the phase margin moved 0.6 deg and Ms not at all.
+% So take the most I that does not make the step worse than it already flies -
+% I is what rejects disturbances, and it is nearly free of the margins.
+[res.gains.I, res.peak, res.peak0] = shapeI(id, res.gains, I0, o, base.wcp);
+if isfinite(res.peak) && isfinite(res.peak0) && res.peak > max(res.peak0, o.peakStepMin) + 1e-6
+    res.notes{end+1} = sprintf(['step overshoot still %.0f%% against %.0f%% flown - ' ...
+                                'the margins would not allow less I'], ...
+                               100*(res.peak-1), 100*(res.peak0-1));
+end
 res.scale = struct('P', ratio(res.gains.P, P0), 'I', ratio(res.gains.I, I0), ...
                    'D', ratio(res.gains.D, D0), 'F', 1);
 
@@ -152,6 +166,42 @@ else
     res.reason = 'ok';
 end
 
+end
+
+
+function [Ibest, pk, pk0] = shapeI(id, gains, I0, o, wcp0)
+    Ibest = gains.I;
+    pk0 = stepPeak(id, id.gains);
+    pk = stepPeak(id, gains);
+    if I0 <= 0 || ~isfinite(pk0) || ~isfinite(pk), return; end
+    limit = max(pk0, o.peakStepMin);
+    if pk <= limit, return; end
+
+    keep = id.freq > 0 & id.freq <= id.fTrust;
+    fk = id.freq(keep);
+    Pk = id.G_plant(keep);
+
+    % walk I down, but only over values that still clear every constraint - an
+    % I that fixes the step and loses the margin is not an answer
+    for Ii = (gains.I-1):-1:max(1, round(0.2*I0))
+        trial = gains; trial.I = Ii;
+        [A, D, F] = PSbuildController(trial, id.fp, id.FsPid, fk);
+        if ~admissible(evalOne(Pk, fk, A, D, F), o, id.fTrust, wcp0), continue; end
+        p = stepPeak(id, trial);
+        if p < pk, Ibest = Ii; pk = p; end
+        if p <= limit, break; end
+    end
+end
+
+
+function pk = stepPeak(id, gains)
+    pk = NaN;
+    if isempty(id.G_plant), return; end
+    [A, D, F] = PSbuildController(gains, id.fp, id.FsPid, id.freq);
+    Tp = PSpredictClosedLoop(id.G_plant, A, D, F);
+    [~, s] = PSstepFromFRD(id.freq, Tp, min(id.fTrust, 300));
+    if isempty(s), return; end
+    pk = max(s);
 end
 
 
@@ -209,7 +259,7 @@ function res = blank()
     res = struct('ok', false, 'reason', 'no-candidate', ...
                  'gains', [], 'scale', [], 'notes', {{}}, ...
                  'pm', NaN, 'gm', NaN, 'ms', NaN, 'wcp', NaN, 'wcg', NaN, ...
-                 'peakDb', NaN, ...
+                 'peakDb', NaN, 'peak', NaN, 'peak0', NaN, ...
                  'pm0', NaN, 'gm0', NaN, 'ms0', NaN, 'wcp0', NaN, ...
                  'wcg0', NaN, 'peakDb0', NaN, ...
                  'iD', NaN, 'iP', NaN, 'grid', [], 'opt', []);

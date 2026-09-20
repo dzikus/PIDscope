@@ -201,6 +201,20 @@
 %! assert(rW.gains.P == 45, sprintf('expected P 45, got %d', rW.gains.P));
 
 %!test
+%! % I is shaped against the step, not scaled blindly with P. D acts on the
+%! % gyro only, so the tracking response is P*A/(1+P*(A+D)) and the PI zero at
+%! % Ki/Kp sits in the numerator where the margins never see it: on the pichim
+%! % corpus, at a fixed cell, I moved the overshoot from 1.11 to 1.17 while the
+%! % phase margin moved 0.6 deg. So the proposal must not hand back a worse step
+%! % than the one being flown.
+%! res = PSautotuneSearch(mkfix('P', 80, 'I', 120), struct('pmTarget', 60));
+%! assert(res.ok, res.reason);
+%! assert(isfinite(res.peak) && isfinite(res.peak0), 'both peaks must be reported');
+%! assert(res.peak <= max(res.peak0, 1.05) + 1e-9, ...
+%!        sprintf('step got worse: %.3f against %.3f flown', res.peak, res.peak0));
+%! assert(res.pm >= 60 - 1e-6, sprintf('shaping I cost phase margin: %.2f', res.pm));
+
+%!test
 %! % Reason codes have to be usable by the UI without guessing
 %! r = PSautotuneSearch(mkfix('P', 40), struct('pmTarget', 60, 'pClamp', [1 1]));
 %! assert(strcmp(r.reason, 'already-tuned') || strcmp(r.reason, 'ok'));
