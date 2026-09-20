@@ -90,10 +90,23 @@ for a = 1:3
         hs = plot(ax, d.t, d.y0, 'Color', th.textSecondary, 'LineWidth', 1.4, ...
                   'LineStyle', '--');
         leg = {'as flown'};
+        % two settings can land on the same gains - on yaw Ms binds before the
+        % phase margin does, so NORMAL and SHARP come out identical. Drawing
+        % both would hide one curve completely under the other.
         for s = 1:3
             if isempty(d.y{s}), continue; end
+            same = {};
+            for s2 = (s+1):3
+                if ~isempty(res{a,s}) && ~isempty(res{a,s2}) && ...
+                   isequal(res{a,s}.gains, res{a,s2}.gains)
+                    same{end+1} = setNames{s2};
+                    d.y{s2} = [];
+                end
+            end
+            nm = setNames{s};
+            if ~isempty(same), nm = strjoin([{nm} same], ' = '); end
             hs(end+1) = plot(ax, d.t, d.y{s}, 'Color', setCols{s}, 'LineWidth', 1.6);
-            leg{end+1} = setNames{s};
+            leg{end+1} = nm;
         end
         set(ax, 'XLim', [0 tShow], 'YLim', [0 1.6]);
         hl = legend(ax, hs, leg, 'Location', 'southeast');
@@ -173,8 +186,12 @@ for g = 1:3
     end
 end
 
+% the colours in the table mean something, so say what
+txt('lower than now', xNow, 0.420, 0.075, th.btnReset, 'left', fontsz-1, 'normal', th.figBg);
+txt('higher', xNow+0.080, 0.420, 0.050, th.bodeCoherence, 'left', fontsz-1, 'normal', th.figBg);
+
 uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', footLines(), ...
-    'Position', [cpL 0.385 0.281 0.060], 'FontSize', fontsz-1, ...
+    'Position', [cpL 0.345 0.281 0.060], 'FontSize', fontsz-1, ...
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
 
@@ -184,13 +201,13 @@ hBtn = zeros(1, 3);
 for s = 1:3
     hBtn(s) = uicontrol(fig, 'Style', 'pushbutton', 'Units', 'normalized', ...
         'String', setNames{s}, ...
-        'Position', [xSet(s) 0.318 wSet 0.046], ...
+        'Position', [xSet(s) 0.272 wSet 0.046], ...
         'FontSize', fontsz+1, 'FontWeight', 'bold', ...
         'HorizontalAlignment', 'center', ...
         'BackgroundColor', th.btnBg, 'ForegroundColor', setCols{s}, ...
         'Callback', @(~,~) copyCLI(s));
 end
-txt('Copy to CLI:', cpL, 0.328, 0.075, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
+txt('Copy to CLI:', cpL, 0.282, 0.075, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
 
 PSstyleControls(fig, th);
 PSdatatipSetup(fig);
@@ -204,21 +221,21 @@ PSdatatipSetup(fig);
 
     function d = stepsFor(id, rrow)
         d = [];
-        keep = id.freq > 0 & id.freq <= id.fTrust;
-        if sum(keep) < 16, return; end
-        fk = id.freq(keep);
-        Pk = id.G_plant(keep);
+        if isempty(id.G_plant) || numel(id.freq) < 16, return; end
+        % the full grid, DC included: PSstepFromFRD reads bin 1 as DC and
+        % normalises by it, so handing it a band-limited grid shifts every
+        % frequency by one bin and the step never settles to 1
         fmax = min(id.fTrust, 300);
-        [A, D, F] = PSbuildController(id.gains, id.fp, id.FsPid, fk);
-        Tp = PSpredictClosedLoop(Pk, A, D, F);
-        [d.t, d.y0] = PSstepFromFRD(fk, Tp, fmax);
+        [A, D, F] = PSbuildController(id.gains, id.fp, id.FsPid, id.freq);
+        Tp = PSpredictClosedLoop(id.G_plant, A, D, F);
+        [d.t, d.y0] = PSstepFromFRD(id.freq, Tp, fmax);
         d.y = cell(1, 3);
         for s = 1:3
             r = rrow{s};
             if isempty(r) || ~r.ok, continue; end
-            [A, D, F] = PSbuildController(r.gains, id.fp, id.FsPid, fk);
-            Tp = PSpredictClosedLoop(Pk, A, D, F);
-            [~, d.y{s}] = PSstepFromFRD(fk, Tp, fmax);
+            [A, D, F] = PSbuildController(r.gains, id.fp, id.FsPid, id.freq);
+            Tp = PSpredictClosedLoop(id.G_plant, A, D, F);
+            [~, d.y{s}] = PSstepFromFRD(id.freq, Tp, fmax);
         end
     end
 
