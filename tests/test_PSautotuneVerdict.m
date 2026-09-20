@@ -47,24 +47,42 @@
 %! assert(~isempty(strfind(lower(strjoin(msgs, ' ')), 'phase margin')));
 
 %!test
-%! % Neither Ms nor the closed loop peak separates good tunes from bad ones: on
-%! % 24 measured axes the good range 1.28..2.23 overlaps the bad 2.12..3.44, and
-%! % the peak overlaps too. Both stay as backstops, so neither may be set tight
-%! % enough to become the headline test.
+%! % Ms does not separate good tunes from bad ones: on 24 measured axes the good
+%! % range 1.28..2.23 overlaps the bad 2.12..3.44. It stays as a backstop, so it
+%! % may not be set tight enough to become the headline test.
 %! [~, ~, info] = PSautotuneVerdict(mkid());
 %! assert(info.msMax >= 2.5, 'Ms must not be the tight test');
-%! assert(info.peakDbMax >= 2.0, 'nor the closed loop peak');
-%! assert(isfield(info, 'ms') && isfinite(info.ms), 'but both are still reported');
-%! % the two that do separate sit inside their measured gaps
-%! assert(info.pmFloor > 29 && info.pmFloor < 38.1, 'PM floor must sit in the gap');
-%! assert(info.overshootMax > 0.15 && info.overshootMax < 0.22, ...
-%!        'overshoot limit must sit in the gap');
+%! assert(isfield(info, 'ms') && isfinite(info.ms), 'but it is still reported');
+%! assert(info.pmFloor > 29 && info.pmFloor < 37.7, 'PM floor must sit in the gap');
 
 %!test
-%! % Everything measured is handed back so the window can say why
+%! % Step overshoot and the closed loop peak both come from T = P*(A+F)*S, which
+%! % carries the modelled integrator. Rebuilding every logged PID term across all
+%! % 15 chirp logs showed iterm_relax gates that integrator off on roll and pitch
+%! % for the whole sweep - the logged axisI runs 6..74% of the integral of the
+%! % error, and correlates with it as weakly as 0.29 - while yaw, which the
+%! % mechanism does not touch, reconstructs at 1.00 with correlation 1.000.
+%! % So neither number may decide anything. This loop has margin to spare and
+%! % would still overshoot 28% on paper.
+%! id = mkid('P', 20, 'I', 160);
+%! [needs, msgs, info] = PSautotuneVerdict(id);
+%! assert(info.pm > 38, sprintf('fixture must have margin, has %.1f', info.pm));
+%! assert(info.ms < 2.3, sprintf('fixture must have a calm Ms, has %.2f', info.ms));
+%! assert(info.overshoot > 0.25, ...
+%!        sprintf('fixture must overshoot on paper, does %.0f%%', 100*info.overshoot));
+%! assert(~needs, sprintf('a modelled overshoot must not flag a tune: %s', ...
+%!                        strjoin(msgs, '; ')));
+
+%!test
+%! % The two contaminated numbers are still measured and handed to the window -
+%! % they are worth showing - but there is no threshold left to compare them to
 %! [~, ~, info] = PSautotuneVerdict(mkid());
-%! for f = {'pm', 'ms', 'peakDb', 'overshoot', 'pmFloor', 'peakDbMax', 'overshootMax'}
+%! for f = {'pm', 'ms', 'peakDb', 'overshoot', 'pmFloor', 'msMax'}
 %!   assert(isfield(info, f{1}), sprintf('info must carry %s', f{1}));
+%! end
+%! for f = {'peakDbMax', 'overshootMax'}
+%!   assert(~isfield(info, f{1}), ...
+%!          sprintf('%s still exists, so something still gates on it', f{1}));
 %! end
 
 %!test
