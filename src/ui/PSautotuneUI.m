@@ -96,10 +96,9 @@ for a = 1:3
             leg{end+1} = setNames{s};
         end
         set(ax, 'XLim', [0 tShow], 'YLim', [0 1.6]);
-        if a == 1
-            hl = legend(ax, hs, leg, 'Location', 'southeast');
-            try PSstyleLegend(hl, th); catch, end
-        end
+        hl = legend(ax, hs, leg, 'Location', 'southeast');
+        try PSstyleLegend(hl, th); catch, end
+        try set(hl, 'FontSize', fontsz+1); catch, end
     end
     set(get(ax, 'YLabel'), 'String', 'Step');
     if a == 3
@@ -110,12 +109,14 @@ end
 
 %% --- control column ---
 cpL = 0.69;
-xGain = cpL + 0.030; wGain = 0.014;
-xNow  = cpL + 0.046; wNow = 0.038;
-xSet  = cpL + [0.115 0.172 0.229]; wSet = 0.052;
+xGain = cpL + 0.032; wGain = 0.014;
+xNow  = cpL + 0.048; wNow = 0.042;
+xSet  = cpL + [0.095 0.155 0.215]; wSet = 0.055;
 rh = 0.026; grpGap = 0.016;
-hiCol = min(1, th.figBg + 0.04);
-colBg = {th.figBg, hiCol, th.figBg};
+% banding so the eye keeps the row across the four numbers, with the
+% recommended column a shade lighter still
+band = {th.figBg, min(1, th.figBg + 0.022)};
+cellBg = @(k, s) min(1, band{mod(k,2)+1} + 0.035*(s == 2));
 
 txt = @(s, x, y, w, col, align, fs, wt, bg) uicontrol(fig, 'Style', 'text', ...
     'Units', 'normalized', 'String', s, 'Position', [x y w rh], 'FontSize', fs, ...
@@ -133,10 +134,11 @@ uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', summaryLines(),
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
 
-txt('now', xNow, 0.782, wNow, th.textSecondary, 'right', fontsz, 'normal', th.figBg);
+txt('now', xNow, 0.782, wNow, th.textSecondary, 'right', fontsz, 'bold', th.figBg);
 for s = 1:3
-    txt(setNames{s}, xSet(s), 0.782, wSet, th.textPrimary, 'right', fontsz, 'bold', colBg{s});
-    txt(setBlurb{s}, xSet(s), 0.759, wSet, th.textSecondary, 'right', fontsz-2, 'normal', colBg{s});
+    hdrBg = min(1, th.figBg + 0.035*(s == 2));
+    txt(setNames{s}, xSet(s), 0.782, wSet, setCols{s}, 'right', fontsz+1, 'bold', hdrBg);
+    txt(setBlurb{s}, xSet(s), 0.759, wSet, th.textSecondary, 'right', fontsz-2, 'normal', hdrBg);
 end
 
 yTop = 0.700;
@@ -150,17 +152,22 @@ for g = 1:3
     for k = 1:3
         yR = yG - (k-1)*rh;
         was = gainOf(ids(g).gains, k);
-        txt(gainNames{k}, xGain, yR, wGain, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
-        txt(sprintf('%d', was), xNow, yR, wNow, th.textSecondary, 'right', fontsz, 'normal', th.figBg);
+        txt(gainNames{k}, xGain, yR, wGain, th.textSecondary, 'left', fontsz, 'bold', cellBg(k,0));
+        txt(sprintf('%d', was), xNow, yR, wNow, th.textPrimary, 'right', fontsz+1, 'normal', cellBg(k,0));
         for s = 1:3
             r = res{g,s};
             if isempty(r) || ~r.ok
                 str = '';
                 if k == 1, str = 'n/a'; end
-                txt(str, xSet(s), yR, wSet, th.textSecondary, 'right', fontsz, 'normal', colBg{s});
+                txt(str, xSet(s), yR, wSet, th.textSecondary, 'right', fontsz, 'normal', cellBg(k,s));
             else
-                txt(sprintf('%d', gainOf(r.gains, k)), xSet(s), yR, wSet, ...
-                    th.textPrimary, 'right', fontsz, 'normal', colBg{s});
+                now = gainOf(r.gains, k);
+                % colour says the direction, so a glance along the row reads as
+                % a change rather than four unrelated numbers
+                col = th.textSecondary;
+                if now < was, col = th.btnReset; elseif now > was, col = th.bodeCoherence; end
+                txt(sprintf('%d', now), xSet(s), yR, wSet, col, 'right', fontsz+1, ...
+                    'normal', cellBg(k,s));
             end
         end
     end
@@ -171,15 +178,19 @@ uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', footLines(), ..
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
 
+% one button per column, in that column's colour, so the button and the curve
+% it belongs to read as the same thing
 hBtn = zeros(1, 3);
 for s = 1:3
     hBtn(s) = uicontrol(fig, 'Style', 'pushbutton', 'Units', 'normalized', ...
-        'String', ['Copy ' setNames{s}], ...
-        'Position', [xSet(s)-0.004 0.330 wSet+0.008 0.038], ...
-        'FontSize', fontsz, 'FontWeight', 'bold', ...
-        'BackgroundColor', th.btnBg, 'ForegroundColor', th.textAccent, ...
+        'String', setNames{s}, ...
+        'Position', [xSet(s) 0.318 wSet 0.046], ...
+        'FontSize', fontsz+1, 'FontWeight', 'bold', ...
+        'HorizontalAlignment', 'center', ...
+        'BackgroundColor', th.btnBg, 'ForegroundColor', setCols{s}, ...
         'Callback', @(~,~) copyCLI(s));
 end
+txt('Copy to CLI:', cpL, 0.328, 0.075, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
 
 PSstyleControls(fig, th);
 PSdatatipSetup(fig);
