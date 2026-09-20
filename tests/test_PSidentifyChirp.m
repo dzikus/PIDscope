@@ -60,7 +60,8 @@
 %! % array even when an axis refuses
 %! want = {'ok','msg','freq','G_track','C_track','G_plant','G_uw','C_uw', ...
 %!         'G_ff','gains','fp','FsPid','axisIdx','axisName','i0','i1', ...
-%!         'nSamp','durSec','gyroVar','nSeg','fTrust','axisD','pidsumLimit'};
+%!         'nSamp','durSec','chirpTime','gyroVar','satFrac','thrStd', ...
+%!         'nSeg','fTrust','axisD','pidsumLimit'};
 %! good = PSidentifyChirp(T, si, Fs, tIND, 0);
 %! bad = PSidentifyChirp(struct('gyroADC_0_', zeros(10,1)), si, Fs, true(10,1), 0);
 %! assert(isempty(setdiff(want, fieldnames(good))), 'a field the plan names is missing');
@@ -122,4 +123,11 @@
 %! assert(id.pidsumLimit == 800);
 %! assert(id.gains.P == 45);
 %! assert(id.FsPid == 2000);
+%! % the gates judge the measurement, and these three are the measurement:
+%! % whether the sweep finished, whether the loop stayed linear, whether the
+%! % throttle held still. Recomputing them later would mean finding the window
+%! % twice.
+%! assert(id.chirpTime == 20);
+%! assert(id.satFrac == 0, 'a clean simulation cannot be saturated');
+%! assert(id.thrStd == 0, 'the simulated throttle is constant');
 %! assert(numel(id.axisD) == id.nSamp, 'axisD is the window, ready for the noise budget');

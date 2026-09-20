@@ -60,7 +60,10 @@ id.nSamp = i1 - i0 + 1;
 k = find([w.i0] == i0, 1);
 if ~isempty(k)
     id.durSec = w(k).durSec;
+    id.chirpTime = w(k).chirpTime;
     id.gyroVar = w(k).gyroVar;
+    id.satFrac = w(k).satFrac;
+    id.thrStd = w(k).thrStd;
     id.pidsumLimit = w(k).pidsumLimit;
 end
 
@@ -110,6 +113,7 @@ function id = blank()
                 'gains', [], 'fp', [], 'FsPid', [], ...
                 'axisIdx', [], 'axisName', '', ...
                 'i0', [], 'i1', [], 'nSamp', [], 'durSec', NaN, ...
-                'gyroVar', NaN, 'nSeg', 0, 'fTrust', NaN, ...
+                'chirpTime', NaN, 'gyroVar', NaN, 'satFrac', NaN, ...
+                'thrStd', NaN, 'nSeg', 0, 'fTrust', NaN, ...
                 'axisD', [], 'pidsumLimit', NaN);
 end
