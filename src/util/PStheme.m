@@ -70,6 +70,10 @@ th.periodMarker  = [.95 .20 .20];
 % diff highlight (Setup Info)
 th.diffBg      = [.30 .30 .32];
 
+% verdict banner (Autotune) - dark enough to read light text on
+th.bannerOk    = [.13 .25 .15];
+th.bannerWarn  = [.30 .21 .10];
+
 % checkbox / input bg
 th.checkBg     = [.18 .18 .20];
 th.inputBg     = [.14 .14 .16];

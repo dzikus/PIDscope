@@ -29,6 +29,8 @@ ids = [];
 res = cell(3, 3);
 stepDat = cell(1, 3);
 gateMsg = {'', '', ''};
+gateWarn = {'', '', ''};
+gateOk = false(1, 3);
 nStep = 12; done = 0;
 
 for a = 1:3
@@ -39,8 +41,15 @@ for a = 1:3
 end
 for a = 1:3
     [gok, gmsgs, ginfo] = PSautotuneGates(ids(a));
-    gateMsg{a} = strjoin(gmsgs, '; ');
-    if ~gok
+    % a passing axis can still carry a message - dynamic D is a warning, not a
+    % refusal. Conflating the two marked a usable axis unusable and, worse, kept
+    % it out of the verdict entirely, so a craft with 23 deg of phase margin was
+    % told nothing needed changing.
+    gateOk(a) = gok;
+    if gok
+        gateWarn{a} = strjoin(gmsgs, '; ');
+    else
+        gateMsg{a} = strjoin(gmsgs, '; ');
         done = done + 3;
         continue
     end
@@ -136,6 +145,10 @@ xGain = cpL + 0.028; wGain = 0.014;
 xNow  = cpL + 0.044; wNow = 0.040;
 xSet  = cpL + [0.090 0.146 0.202]; wSet = 0.052;
 xCust = cpL + 0.262; wCust = 0.058;
+wStep = 0.014;
+xStep = xCust + wCust + [0.003 0.019];
+stepLbl = {'-', '+'};
+stepDir = [-1 1];
 rh = 0.024; grpGap = 0.014; nGain = 4;
 % banding so the eye keeps the row across the four numbers, with the
 % recommended column a shade lighter still
@@ -153,10 +166,24 @@ uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', 'Autotune', ...
     'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
 txt(logName, cpL, 0.918, 0.340, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
 
-uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', summaryLines(), ...
-    'Position', [cpL 0.828 0.340 0.075], 'FontSize', fontsz, ...
+% The headline answers the only question most people open this window with, so
+% it gets a band of its own - the previous version said it in body text the same
+% size and colour as everything else, and it read as a caption.
+[headline, bodyLines, allWell] = summaryLines();
+bannerBg = th.bannerWarn; bannerFg = th.btnReset;
+if allWell, bannerBg = th.bannerOk; bannerFg = th.bodeCoherence; end
+% runs to the right edge of the table below it, steppers included, so the band
+% reads as belonging to the column rather than stopping short of it
+bannerW = 0.262 + 0.058 + 0.019 + 0.014;
+uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', ['  ' headline], ...
+    'Position', [cpL 0.862 bannerW 0.038], 'FontSize', fontsz+3, 'FontWeight', 'bold', ...
     'HorizontalAlignment', 'left', ...
-    'ForegroundColor', th.textPrimary, 'BackgroundColor', th.figBg);
+    'ForegroundColor', bannerFg, 'BackgroundColor', bannerBg);
+uicontrol(fig, 'Style', 'text', 'Units', 'normalized', ...
+    'String', cellfun(@(s) ['  ' s], bodyLines, 'UniformOutput', false), ...
+    'Position', [cpL 0.806 bannerW 0.056], 'FontSize', fontsz, ...
+    'HorizontalAlignment', 'left', ...
+    'ForegroundColor', th.textPrimary, 'BackgroundColor', bannerBg);
 
 txt('now', xNow, 0.782, wNow, th.textSecondary, 'right', fontsz, 'bold', th.figBg);
 for s = 1:3
@@ -171,7 +198,7 @@ yTop = 0.700;
 for g = 1:3
     yG = yTop - (g-1)*(nGain*rh + grpGap);
     txt(axNames{g}, cpL, yG, 0.028, axCols{g}, 'left', fontsz, 'bold', th.figBg);
-    if ~isempty(gateMsg{g})
+    if ~gateOk(g)
         txt('not usable', xGain, yG, 0.10, th.btnReset, 'left', fontsz, 'normal', th.figBg);
         continue
     end
@@ -206,12 +233,34 @@ for g = 1:3
             'Position', [xCust yR wCust rh], 'FontSize', fontsz, ...
             'HorizontalAlignment', 'right', ...
             'Callback', @(~,~) onCustom(g));
+        % nudging one count at a time is how a gain is actually explored; typing
+        % still works, so an exact value is never more than a keystroke away
+        for d = 1:2
+            uicontrol(fig, 'Style', 'pushbutton', 'Units', 'normalized', ...
+                'String', stepLbl{d}, 'Tag', 'autotuneStep', ...
+                'Position', [xStep(d) yR wStep rh], ...
+                'FontSize', fontsz, 'FontWeight', 'bold', ...
+                'ForegroundColor', customCol, 'BackgroundColor', th.btnBg, ...
+                'Callback', @(~,~) bump(g, k, stepDir(d)));
+        end
     end
 end
 
-% the colours in the table mean something, so say what
-txt('lower than now', xNow, 0.372, 0.075, th.btnReset, 'left', fontsz-1, 'normal', th.figBg);
-txt('higher', xNow+0.080, 0.372, 0.050, th.bodeCoherence, 'left', fontsz-1, 'normal', th.figBg);
+% The colours in the table mean something, so say what. The swatch is what makes
+% this read as a key - two coloured words on their own look like stray labels.
+yKey = 0.372; wSwatch = 0.010;
+txt('Colour key', cpL, yKey, 0.055, th.textSecondary, 'left', fontsz-1, 'normal', th.figBg);
+keyX = cpL + 0.062;
+keyCols = {th.btnReset, th.bodeCoherence};
+keyText = {'lower than now', 'higher than now'};
+for k = 1:2
+    uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', '', ...
+        'Position', [keyX yKey+0.005 wSwatch rh-0.010], ...
+        'BackgroundColor', keyCols{k});
+    txt(keyText{k}, keyX+wSwatch+0.006, yKey, 0.085, keyCols{k}, 'left', ...
+        fontsz-1, 'normal', th.figBg);
+    keyX = keyX + wSwatch + 0.100;
+end
 
 hCustomInfo = uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', '', ...
     'Position', [cpL 0.336 0.340 rh], 'FontSize', fontsz-1, ...
@@ -219,7 +268,7 @@ hCustomInfo = uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', '
     'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
 
 uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', footLines(), ...
-    'Position', [cpL 0.258 0.340 0.060], 'FontSize', fontsz-1, ...
+    'Position', [cpL 0.244 bannerW 0.076], 'FontSize', fontsz-1, ...
     'HorizontalAlignment', 'left', ...
     'ForegroundColor', th.textSecondary, 'BackgroundColor', th.figBg);
 
@@ -230,7 +279,7 @@ btnX = [xSet xCust]; btnW = [wSet wSet wSet wCust];
 btnName = [setNames {'CUSTOM'}]; btnCol = [setCols {customCol}];
 for s = 1:4
     hBtn(s) = uicontrol(fig, 'Style', 'pushbutton', 'Units', 'normalized', ...
-        'String', btnName{s}, ...
+        'String', btnName{s}, 'Tag', 'autotuneCopy', ...
         'Position', [btnX(s) 0.196 btnW(s) 0.046], ...
         'FontSize', fontsz+1, 'FontWeight', 'bold', ...
         'HorizontalAlignment', 'center', ...
@@ -271,13 +320,13 @@ PSdatatipSetup(fig);
     end
 
 
-    function lines = summaryLines()
+    function [headline, lines, allWell] = summaryLines()
         % the headline answers "does anything need changing", which is not the
         % same question as "what else is reachable" - a healthy loop can still
         % have a faster tune available, and that is an option, not advice
         bad = {}; flagged = {}; why = {};
         for a = 1:3
-            if ~isempty(gateMsg{a}), bad{end+1} = axNames{a}; continue; end
+            if ~gateOk(a), bad{end+1} = axNames{a}; continue; end
             [needs, vmsgs] = PSautotuneVerdict(ids(a));
             if needs
                 flagged{end+1} = axNames{a};
@@ -285,12 +334,16 @@ PSdatatipSetup(fig);
             end
         end
         lines = {};
-        if ~isempty(flagged)
-            lines{end+1} = sprintf('%s needs attention.', strjoin(flagged, ' and '));
+        allWell = isempty(flagged);
+        if ~allWell
+            verb = 'NEEDS';
+            if numel(flagged) > 1, verb = 'NEED'; end
+            headline = sprintf('%s %s ATTENTION', upper(strjoin(flagged, ' AND ')), verb);
             if ~isempty(why), lines{end+1} = why{1}; end
         else
-            lines{end+1} = 'Your tune is within limits - nothing here needs changing.';
-            lines{end+1} = 'The columns are options, not advice.';
+            headline = 'NOTHING NEEDS CHANGING';
+            lines{end+1} = 'Your tune is within limits. The columns below are';
+            lines{end+1} = 'options, not advice.';
         end
         if ~isempty(bad)
             lines{end+1} = sprintf('%s could not be read from this log.', strjoin(bad, ' and '));
@@ -308,6 +361,16 @@ PSdatatipSetup(fig);
         if ~isempty(band)
             foot{end+1} = sprintf('Measured to %.0f Hz. Fly it and check.', min(band));
         end
+        % a warning is worth saying once, naming the axes it applies to, rather
+        % than repeating the same sentence three times
+        warned = {};
+        for a = 1:3
+            if gateOk(a) && ~isempty(gateWarn{a}), warned{end+1} = axNames{a}; end
+        end
+        if ~isempty(warned)
+            foot{end+1} = sprintf('Dynamic D on %s, so D is held at or below what was flown.', ...
+                                  strjoin(warned, ' and '));
+        end
     end
 
 
@@ -324,6 +387,14 @@ PSdatatipSetup(fig);
                 set(hEdit(a,k), 'ForegroundColor', col);
             end
         end
+    end
+
+
+    function bump(g, k, d)
+        if hEdit(g,k) == 0, return; end
+        v = max(0, boxVal(g, k) + d);
+        set(hEdit(g,k), 'String', sprintf('%d', v));
+        onCustom(g);
     end
 
 
