@@ -164,8 +164,8 @@ for s = 1:3
     txt(setNames{s}, xSet(s), 0.782, wSet, setCols{s}, 'right', fontsz+1, 'bold', hdrBg);
     txt(setBlurb{s}, xSet(s), 0.759, wSet, th.textSecondary, 'right', fontsz-2, 'normal', hdrBg);
 end
-txt('CUSTOM', xCust, 0.782, wCust, customCol, 'left', fontsz+1, 'bold', th.figBg);
-txt('type and see', xCust, 0.759, wCust, th.textSecondary, 'left', fontsz-2, 'normal', th.figBg);
+txt('CUSTOM', xCust, 0.782, wCust, customCol, 'right', fontsz+1, 'bold', th.figBg);
+txt('type and see', xCust, 0.759, wCust, th.textSecondary, 'right', fontsz-2, 'normal', th.figBg);
 
 yTop = 0.700;
 for g = 1:3
@@ -204,7 +204,7 @@ for g = 1:3
         hEdit(g,k) = uicontrol(fig, 'Style', 'edit', 'Units', 'normalized', ...
             'String', sprintf('%d', start), ...
             'Position', [xCust yR wCust rh], 'FontSize', fontsz, ...
-            'HorizontalAlignment', 'center', ...
+            'HorizontalAlignment', 'right', ...
             'Callback', @(~,~) onCustom(g));
     end
 end
@@ -225,19 +225,22 @@ uicontrol(fig, 'Style', 'text', 'Units', 'normalized', 'String', footLines(), ..
 
 % one button per column, in that column's colour, so the button and the curve
 % it belongs to read as the same thing
-hBtn = zeros(1, 3);
-for s = 1:3
+hBtn = zeros(1, 4);
+btnX = [xSet xCust]; btnW = [wSet wSet wSet wCust];
+btnName = [setNames {'CUSTOM'}]; btnCol = [setCols {customCol}];
+for s = 1:4
     hBtn(s) = uicontrol(fig, 'Style', 'pushbutton', 'Units', 'normalized', ...
-        'String', setNames{s}, ...
-        'Position', [xSet(s) 0.196 wSet 0.046], ...
+        'String', btnName{s}, ...
+        'Position', [btnX(s) 0.196 btnW(s) 0.046], ...
         'FontSize', fontsz+1, 'FontWeight', 'bold', ...
         'HorizontalAlignment', 'center', ...
-        'BackgroundColor', th.btnBg, 'ForegroundColor', setCols{s}, ...
+        'BackgroundColor', th.btnBg, 'ForegroundColor', btnCol{s}, ...
         'Callback', @(~,~) copyCLI(s));
 end
 txt('Copy to CLI:', cpL, 0.206, 0.075, th.textSecondary, 'left', fontsz, 'normal', th.figBg);
 
 PSstyleControls(fig, th);
+tintBoxes();          % after the theme pass, which would otherwise repaint them
 PSdatatipSetup(fig);
 
 
@@ -308,6 +311,28 @@ PSdatatipSetup(fig);
     end
 
 
+    function tintBoxes()
+        % same reading as the proposed columns: what you typed against what you
+        % are flying, so the custom column is scanned the same way as the rest
+        for a = 1:3
+            if hEdit(a,1) == 0, continue; end
+            for k = 1:4
+                was = gainOf(ids(a).gains, k);
+                v = boxVal(a, k);
+                col = th.inputFg;
+                if v < was, col = th.btnReset; elseif v > was, col = th.bodeCoherence; end
+                set(hEdit(a,k), 'ForegroundColor', col);
+            end
+        end
+    end
+
+
+    function v = boxVal(a, k)
+        v = round(str2double(get(hEdit(a,k), 'String')));
+        if ~isfinite(v) || v < 0, v = 0; end
+    end
+
+
     function v = gainOf(gg, k)
         switch k
             case 1, v = gg.P;
@@ -344,6 +369,7 @@ PSdatatipSetup(fig);
             s = sprintf('%s custom: PM %.0f deg, Ms %.2f, overshoot %.0f%%', ...
                         axNames{g}, pm, max(abs(S)), 100*(max(y)-1));
         end
+        tintBoxes();
         set(hCustomInfo, 'String', s);
         if pm < 30 || max(abs(S)) > 2.5
             set(hCustomInfo, 'ForegroundColor', th.btnReset);
@@ -358,16 +384,29 @@ PSdatatipSetup(fig);
         for a = 1:3
             it = struct('axisName', axNames{a}, 'ok', false, ...
                         'gains', struct('P',0,'I',0,'D',0,'F',0), 'note', gateMsg{a});
-            r = res{a,s};
-            if ~isempty(r) && r.ok
-                it.ok = true;
-                it.gains = r.gains;
-            elseif isempty(it.note)
-                it.note = sprintf('no tune reaches %s on this axis', setNames{s});
+            if s == 4
+                % whatever is in the boxes, even if it was never proposed
+                if hEdit(a,1) ~= 0
+                    it.ok = true;
+                    it.gains = struct('P', boxVal(a,1), 'I', boxVal(a,2), ...
+                                      'D', boxVal(a,3), 'F', boxVal(a,4));
+                elseif isempty(it.note)
+                    it.note = 'nothing typed for this axis';
+                end
+            else
+                r = res{a,s};
+                if ~isempty(r) && r.ok
+                    it.ok = true;
+                    it.gains = r.gains;
+                elseif isempty(it.note)
+                    it.note = sprintf('no tune reaches %s on this axis', setNames{s});
+                end
             end
             if isempty(items), items = it; else, items(a) = it; end
         end
-        cliText = PSautotuneCLI(items, targets(s));
+        tgt = NaN;
+        if s <= 3, tgt = targets(s); end
+        cliText = PSautotuneCLI(items, tgt);
         if PScopyToClipboard(cliText)
             set(hBtn(s), 'String', 'Copied!');
         else

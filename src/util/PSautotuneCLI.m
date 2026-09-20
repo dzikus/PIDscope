@@ -10,7 +10,11 @@ function txt = PSautotuneCLI(items, pmTarget)
 axKeys = struct('Roll', 'roll', 'Pitch', 'pitch', 'Yaw', 'yaw');
 
 lines = {};
-lines{end+1} = sprintf('# PIDscope autotune - phase margin target %g deg', pmTarget);
+if isfinite(pmTarget)
+    lines{end+1} = sprintf('# PIDscope autotune - phase margin target %g deg', pmTarget);
+else
+    lines{end+1} = '# PIDscope autotune - gains typed by hand, not proposed';
+end
 lines{end+1} = '# Verify on a test flight before trusting these in anger.';
 
 nSet = 0;
