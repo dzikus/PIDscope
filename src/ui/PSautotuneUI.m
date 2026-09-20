@@ -269,27 +269,29 @@ PSdatatipSetup(fig);
 
 
     function lines = summaryLines()
-        hot = {}; soft = {}; bad = {};
+        % the headline answers "does anything need changing", which is not the
+        % same question as "what else is reachable" - a healthy loop can still
+        % have a faster tune available, and that is an option, not advice
+        bad = {}; flagged = {}; why = {};
         for a = 1:3
             if ~isempty(gateMsg{a}), bad{end+1} = axNames{a}; continue; end
-            rn = res{a,2};
-            if isempty(rn) || ~rn.ok, continue; end
-            if rn.gains.P < ids(a).gains.P, hot{end+1} = axNames{a};
-            elseif rn.gains.P > ids(a).gains.P, soft{end+1} = axNames{a};
+            [needs, vmsgs] = PSautotuneVerdict(ids(a));
+            if needs
+                flagged{end+1} = axNames{a};
+                if isempty(why), why = vmsgs(1); end
             end
         end
         lines = {};
-        if ~isempty(hot)
-            lines{end+1} = sprintf('%s want less gain - flying close to the limit.', ...
-                                   strjoin(hot, ' and '));
-        end
-        if ~isempty(soft)
-            lines{end+1} = sprintf('%s can take more gain.', strjoin(soft, ' and '));
+        if ~isempty(flagged)
+            lines{end+1} = sprintf('%s needs attention.', strjoin(flagged, ' and '));
+            if ~isempty(why), lines{end+1} = why{1}; end
+        else
+            lines{end+1} = 'Your tune is within limits - nothing here needs changing.';
+            lines{end+1} = 'The columns are options, not advice.';
         end
         if ~isempty(bad)
             lines{end+1} = sprintf('%s could not be read from this log.', strjoin(bad, ' and '));
         end
-        if isempty(lines), lines{end+1} = 'Nothing to change on this log.'; end
     end
 
 
