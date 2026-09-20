@@ -43,6 +43,7 @@ th.btnDash6    = [.90 .30 .60];   % PID Error - vivid magenta
 th.btnDash7    = [.25 .75 .65];   % Flight Stats - vivid teal
 th.btnMotNoise = [.20 .85 .30];   % Motor Noise - vivid green
 th.btnChirp    = [.70 .40 .95];   % Chirp Analysis - vivid purple
+th.btnAutotune = [.55 .55 .98];   % Autotune - indigo
 th.btnLink     = [.95 .60 .15];   % Support PIDscope - amber
 th.btnPlayer   = [.40 .75 1.0];   % Player button - bright sky blue
 
