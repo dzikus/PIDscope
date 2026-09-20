@@ -10,24 +10,26 @@ function [needsWork, msgs, info] = PSautotuneVerdict(id, opt)
 %  be perfectly healthy and still have a faster tune available; that is an
 %  option, not advice.
 %
-%  Thresholds come from the pichim corpus, 18 axes over 6 logs, of which two
-%  (20250918_aosmini_01 roll and pitch) are plainly mistuned:
+%  Thresholds come from every chirp log we have: 24 usable axes over 8 logs,
+%  six airframes, four pilots, three firmware versions and two MCU families.
+%  Four axes are plainly mistuned (20250918_aosmini_01 roll and pitch, galina_8
+%  roll and pitch), the other twenty fly well.
 %
-%                    16 good axes      the 2 bad ones
-%    phase margin    38 .. 82 deg      25, 29 deg
-%    closed loop pk  0.5 .. 1.4 dB     5.2, 6.5 dB
-%    step overshoot  6 .. 15 %         47, 50 %
-%    Ms              1.39 .. 2.23      2.12, 2.37
+%                    20 good axes      the 4 bad ones     separates?
+%    phase margin    38.1 .. 86.5      23.2 .. 29.0       yes, clean gap
+%    step overshoot   1 .. 15 %        22 .. 50 %         yes, gap 15-22
+%    closed loop pk  0.36 .. 1.79 dB   1.76 .. 6.51 dB    no, they overlap
+%    Ms              1.28 .. 2.23      2.12 .. 3.44       no, they overlap
 %
-%  Ms is the one that does not separate them, so it is a backstop for something
-%  extreme rather than the test. Betaflight's own limit of 2.0 is drawn against
-%  a different quantity - their open loop is approximated as T/(1-T), which
-%  reads about 0.74x our sensitivity peak and 25 deg more phase margin on an
-%  axis with real D - so it cannot be carried over unchanged.
+%  So the verdict rests on phase margin and overshoot; the peak and Ms are kept
+%  only to catch something extreme. Betaflight's own limit of Ms <= 2.0 is drawn
+%  against a different quantity - their open loop is approximated as T/(1-T),
+%  which reads about 0.74x our sensitivity peak and 25 deg more phase margin on
+%  an axis with real D - so it cannot be carried over unchanged.
 
 if nargin < 2 || isempty(opt), opt = struct(); end
 
-o = struct('pmFloor', 35, 'peakDbMax', 3.0, 'overshootMax', 0.25, 'msMax', 2.7);
+o = struct('pmFloor', 35, 'peakDbMax', 3.0, 'overshootMax', 0.18, 'msMax', 2.7);
 fn = fieldnames(o);
 for k = 1:numel(fn)
     if isfield(opt, fn{k}) && ~isempty(opt.(fn{k})), o.(fn{k}) = opt.(fn{k}); end

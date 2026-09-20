@@ -47,12 +47,18 @@
 %! assert(~isempty(strfind(lower(strjoin(msgs, ' ')), 'phase margin')));
 
 %!test
-%! % Ms alone is not a verdict. On the corpus a well flown axis reaches 2.23 and
-%! % a badly flown one sits at 2.12, so no Ms line separates them - it stays a
-%! % backstop for the extreme, not the headline.
+%! % Neither Ms nor the closed loop peak separates good tunes from bad ones: on
+%! % 24 measured axes the good range 1.28..2.23 overlaps the bad 2.12..3.44, and
+%! % the peak overlaps too. Both stay as backstops, so neither may be set tight
+%! % enough to become the headline test.
 %! [~, ~, info] = PSautotuneVerdict(mkid());
-%! assert(info.msMax >= 2.5, 'Ms must not be the tight test any more');
-%! assert(isfield(info, 'ms') && isfinite(info.ms), 'but it is still reported');
+%! assert(info.msMax >= 2.5, 'Ms must not be the tight test');
+%! assert(info.peakDbMax >= 2.0, 'nor the closed loop peak');
+%! assert(isfield(info, 'ms') && isfinite(info.ms), 'but both are still reported');
+%! % the two that do separate sit inside their measured gaps
+%! assert(info.pmFloor > 29 && info.pmFloor < 38.1, 'PM floor must sit in the gap');
+%! assert(info.overshootMax > 0.15 && info.overshootMax < 0.22, ...
+%!        'overshoot limit must sit in the gap');
 
 %!test
 %! % Everything measured is handed back so the window can say why
