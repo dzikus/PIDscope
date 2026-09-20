@@ -180,6 +180,27 @@
 %!                res.scale.I, res.scale.P));
 
 %!test
+%! % Opening the lower clamp can only add answers, never change one. The scan
+%! % maximises the crossover and the crossover rises with P, so it always takes
+%! % the highest admissible gain; gains below the old floor are only ever
+%! % considered when nothing above it worked. That is why the floor can sit low
+%! % without making any proposal more drastic than it has to be.
+%! fix = mkfix();
+%! wide = PSautotuneSearch(fix, struct('pmTarget', 50, 'msMax', 3, 'pClamp', [0.2 2.0]));
+%! tight = PSautotuneSearch(fix, struct('pmTarget', 50, 'msMax', 3, 'pClamp', [0.5 2.0]));
+%! assert(wide.ok && tight.ok);
+%! assert(wide.gains.P == tight.gains.P, ...
+%!        sprintf('a feasible answer moved: %d vs %d', wide.gains.P, tight.gains.P));
+%! assert(wide.gains.D == tight.gains.D);
+%! % and a cut too deep for the tight floor is reachable from the wide one
+%! deep = mkfix('P', 120);
+%! rT = PSautotuneSearch(deep, struct('pmTarget', 60, 'msMax', 3, 'pClamp', [0.5 2.0]));
+%! rW = PSautotuneSearch(deep, struct('pmTarget', 60, 'msMax', 3, 'pClamp', [0.25 2.0]));
+%! assert(~rT.ok, 'this fixture needs a cut past half');
+%! assert(rW.ok, 'and the wider floor must reach it');
+%! assert(rW.gains.P == 45, sprintf('expected P 45, got %d', rW.gains.P));
+
+%!test
 %! % Reason codes have to be usable by the UI without guessing
 %! r = PSautotuneSearch(mkfix('P', 40), struct('pmTarget', 60, 'pClamp', [1 1]));
 %! assert(strcmp(r.reason, 'already-tuned') || strcmp(r.reason, 'ok'));

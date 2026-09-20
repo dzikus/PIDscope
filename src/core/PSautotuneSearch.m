@@ -20,8 +20,7 @@ if nargin < 2 || isempty(opt), opt = struct(); end
 o = struct('pmTarget', 60, 'msMax', 2.0, 'peakMaxDb', 6, ...
            'magAtTrustDb', -6, 'wcpFracTrust', 0.5, 'wcpMaxRatio', 3, ...
            'dDomRatio', 2.0, ...
-           'pClamp', [0.3 2.0], 'pStep', 0.02, ...
-           'dClamp', [0.6 1.25], 'dStep', 0.05, 'pidsumFrac', 0.9);
+           'pClamp', [0.3 2.0], 'dClamp', [0.6 1.25], 'pidsumFrac', 0.9);
 fn = fieldnames(o);
 for k = 1:numel(fn)
     if isfield(opt, fn{k}) && ~isempty(opt.(fn{k})), o.(fn{k}) = opt.(fn{k}); end
@@ -74,12 +73,16 @@ if D0 > 0 && ~isempty(id.axisD) && isfinite(id.pidsumLimit) && id.pidsumLimit > 
     end
 end
 
-sP = o.pClamp(1):o.pStep:o.pClamp(2);
-sD = o.dClamp(1):o.dStep:dHi;
-if isempty(sP), sP = 1; end
-if isempty(sD), sD = min(1, dHi); end
+% Walk whole gains rather than scale factors. A scale grid aliases onto the
+% integers unevenly, so the same craft answered differently depending only on
+% where the grid happened to start - 32 of 54 answers on the pichim corpus
+% moved by one count when the lower clamp changed.
+Pcand = max(1, round(o.pClamp(1)*P0)) : round(o.pClamp(2)*P0);
+Dcand = round(o.dClamp(1)*D0) : round(dHi*D0);
+if isempty(Pcand), Pcand = max(1, P0); end
+if isempty(Dcand), Dcand = D0; end
 
-nD = numel(sD); nP = numel(sP);
+nD = numel(Dcand); nP = numel(Pcand);
 g = struct();
 g.okMask = false(nD, nP);
 g.pm = nan(nD, nP);  g.ms = nan(nD, nP);  g.wcp = nan(nD, nP);
@@ -88,15 +91,16 @@ g.magTrustDb = nan(nD, nP); g.dRatio = nan(nD, nP);
 g.P = zeros(nD, nP); g.I = zeros(nD, nP); g.D = zeros(nD, nP);
 
 for iD = 1:nD
-    Di = round(sD(iD) * D0);
+    Di = Dcand(iD);
     Dv = Di * b.D1;
     for iP = 1:nP
-        Pi = round(sP(iP) * P0);
+        Pi = Pcand(iP);
         % Ki in the firmware is absolute, so holding I while cutting P drags
         % the PI corner upwards and the integrator adds lag exactly where the
         % scan is trying to buy phase margin. Scaling both keeps the integral
         % time the pilot flew.
-        Ii = round(sP(iP) * I0);
+        Ii = I0;
+        if P0 > 0, Ii = round(Pi / P0 * I0); end
         c = evalOne(Pk, fk, Pi*b.Ap + Ii*b.Ai, Dv, F0*b.F1);
         g.P(iD,iP) = Pi; g.I(iD,iP) = Ii; g.D(iD,iP) = Di;
         g.pm(iD,iP) = c.pm; g.ms(iD,iP) = c.ms; g.wcp(iD,iP) = c.wcp;
@@ -123,7 +127,7 @@ wcp = g.wcp; wcp(~sel) = -Inf;
 best = max(wcp(:));
 tie = sel & (wcp >= best * 0.99);
 [iDs, iPs] = find(tie);
-kD = sD(iDs); kP = sP(iPs);
+kD = Dcand(iDs); kP = Pcand(iPs);
 [~, pick] = sortrows([kD(:), kP(:)], [1 2]);
 iD = iDs(pick(1)); iP = iPs(pick(1));
 
