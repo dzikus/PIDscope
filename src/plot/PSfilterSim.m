@@ -933,11 +933,11 @@ doUpdate();
         lines{end+1} = sprintf('set dterm_notch_cutoff = %d', readEdit(h.dn_cut));
         lines{end+1} = 'save';
         cliText = strjoin(lines, char(10));
-        ok = copyToClipboard(cliText);
+        ok = PScopyToClipboard(cliText);
         if ok
             set(h.copyCLI, 'String', 'Copied!');
         else
-            showCLIDialog(cliText);
+            PSshowCLIDialog(cliText);
         end
     end
 
@@ -1209,40 +1209,3 @@ function y = localChirp(t, f0, dur, f1)
     y = sin(phase);
 end
 
-function ok = copyToClipboard(str)
-    ok = false;
-    tmpf = [tempname '.txt'];
-    fid = fopen(tmpf, 'w'); fprintf(fid, '%s', str); fclose(fid);
-    if ismac()
-        [st, ~] = system(sprintf('pbcopy < %s 2>&1', tmpf));
-        ok = (st == 0);
-    elseif ispc()
-        [st, ~] = system(sprintf('clip < %s 2>&1', tmpf));
-        ok = (st == 0);
-    else
-        cmds = {'xclip -selection clipboard', 'xsel --clipboard --input', 'wl-copy'};
-        for k = 1:numel(cmds)
-            [st, ~] = system(sprintf('%s < %s 2>&1', cmds{k}, tmpf));
-            if st == 0, ok = true; break; end
-        end
-    end
-    delete(tmpf);
-end
-
-function showCLIDialog(cliText)
-    screensz = get(0, 'ScreenSize');
-    dlg = figure('Name', 'BF CLI Commands', 'NumberTitle', 'off', ...
-        'Color', [.15 .15 .15], ...
-        'Position', round([screensz(3)*.3 screensz(4)*.25 460 380]));
-    uicontrol(dlg, 'Style', 'text', 'String', 'Select All + Copy:', ...
-        'Units', 'normalized', 'Position', [.05 .90 .9 .07], ...
-        'FontSize', 11, 'BackgroundColor', [.15 .15 .15], 'ForegroundColor', [.9 .9 .9]);
-    uicontrol(dlg, 'Style', 'edit', 'Max', 100, 'String', cliText, ...
-        'Units', 'normalized', 'Position', [.05 .12 .9 .76], ...
-        'HorizontalAlignment', 'left', 'FontName', 'Monospace', 'FontSize', 10, ...
-        'BackgroundColor', [.1 .1 .1], 'ForegroundColor', [.9 .9 .9]);
-    uicontrol(dlg, 'Style', 'pushbutton', 'String', 'Close', ...
-        'Units', 'normalized', 'Position', [.35 .02 .3 .08], ...
-        'FontSize', 11, 'BackgroundColor', [.3 .3 .3], 'ForegroundColor', [.9 .9 .9], ...
-        'Callback', @(~,~) close(dlg));
-end

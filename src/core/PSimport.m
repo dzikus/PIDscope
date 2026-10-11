@@ -51,7 +51,19 @@ if isempty(logEndPoints)
     end
 end
 
-relevantLogNum=str2double(csvFname(end-5:end-4));
+% the decoder names each section <log>.NN.csv, but also drops a <log>.NN.gps.csv
+% beside it; reading the number off the last two characters turns that into NaN
+[~, csvBase] = fileparts(csvFname);
+tok = regexp(csvBase, '\.(\d+)$', 'tokens');
+if isempty(tok)
+    error('PSimport: cannot tell which log section "%s" belongs to', csvBase);
+end
+relevantLogNum = str2double(tok{1}{1});
+nSections = min(numel(logStartPoints), numel(logEndPoints));
+if relevantLogNum < 1 || relevantLogNum > nSections
+    error('PSimport: asked for log section %d but "%s" holds %d', ...
+          relevantLogNum, BBLFileName, nSections);
+end
 s=c{1}(logStartPoints(relevantLogNum):logEndPoints(relevantLogNum));
 n=1;
 for m=1:size(s,1)

@@ -65,6 +65,17 @@ The chirp analysis in PIDscope builds on work by **Michael Peter ([pichim](https
 - `src/core/PSstepFromFRD.m` - from `calculate_step_response_from_frd.m`
 - `src/core/PSrotFiltFilt.m` - from `apply_rotfiltfilt.m`
 
+The chirp logs used to validate the autotune come from the same repository and
+are flown by the same author.
+
+The autotune follows the behaviour of the [Betaflight Configurator](https://github.com/betaflight/betaflight-configurator)
+autotune (GPL-3.0) - the three aggressiveness levels and their phase margin
+targets, and the hard limit on the sensitivity peak. The algorithm here was
+written from that description and no code was ported. It differs where it
+matters: Betaflight approximates the open loop as `T/(1-T)`, which assumes unity
+feedback, while PIDscope measures the plant separately through `axisSum` and so
+works with the exact `L = P*(A+D)`. That is what lets it move D as well as P.
+
 Arch Linux packaging is maintained by [FPVogel](https://github.com/FPVogel).
 
 ---
