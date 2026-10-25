@@ -491,6 +491,8 @@ try
         else
             h=legend(legnd, 'Location','NorthEast');
         end
+        % entries carry log file names; Octave has no root default for the legend interpreter
+        set(h, 'Interpreter', 'none');
         try PSstyleLegend(h, th); catch, end
     end
 catch, end
@@ -504,7 +506,7 @@ if any(tmpSpecVal == 2)
         delete(findobj(PSspecfig2, 'Tag', 'prefiltWarn'));
         axW_ = findobj(PSspecfig2, 'Type', 'axes', 'Tag', 'PSspec2_1');
         if ~isempty(axW_)
-            text(axW_, 0.5, 0.5, {'No pre-filter gyro data.', 'Requires gyroUnfilt (BF 4.5+) or debug\_mode = GYRO\_SCALED.'}, ...
+            text(axW_, 0.5, 0.5, {'No pre-filter gyro data.', 'Requires gyroUnfilt (BF 4.5+) or debug_mode = GYRO_SCALED.'}, ...
                 'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontSize', fontsz+1, ...
                 'Color', [.8 .3 .3], 'Tag', 'prefiltWarn');
         end

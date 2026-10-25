@@ -86,6 +86,9 @@ currentDate = currentDate(1:strfind(currentDate,' ')-1);
 
 set(0,'defaultUicontrolFontName', 'Helvetica')
 % defaultUicontrolFontSize is set after fontsz is calculated (below)
+% plots carry log names and field names (quad_bf.01.csv, debug_0_): TeX would make subscripts of them
+set(0,'defaultTextInterpreter', 'none')
+set(0,'defaultAxesTickLabelInterpreter', 'none')
 
 %%%% assign main figure handle and define some UI variables
 PSfig = figure(1);
