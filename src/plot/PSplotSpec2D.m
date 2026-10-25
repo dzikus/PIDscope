@@ -381,8 +381,10 @@ for k = 1 : length(tmpSpecVal)
                         else
                             tmpDbgIdx = struct('GYRO_SCALED',6,'GYRO_FILTERED',3,'RC_INTERPOLATION',7,'FFT_FREQ',17,'FEEDFORWARD',59);
                         end
+                        % BF 4.5+ logs gyroUnfilt whatever the debug mode, and 2025.12 has no GYRO_SCALED
+                        hasPrefilt_ = isfield(T{tmpFileIdx}, 'gyroPrefilt_0_') || debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_SCALED || debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_FILTERED || debugmode(tmpFileIdx) == 1 || debugmode(tmpFileIdx) == 0;
                         if get(guiHandlesSpec2.Delay, 'Value') == 1 && a == 1
-                            if debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_SCALED || debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_FILTERED || debugmode(tmpFileIdx) == 1 || debugmode(tmpFileIdx) == 0
+                            if hasPrefilt_
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Filter: ' Debug01{tmpFileIdx} 'ms | Dterm Filter: ' FilterDelayDterm{tmpFileIdx} 'ms']);
                                 set(h,'Color',[lineCol],'fontsize',fontsz);
                             else
@@ -404,7 +406,7 @@ for k = 1 : length(tmpSpecVal)
                             end
                         end
                          if get(guiHandlesSpec2.Delay, 'Value') == 4 && a == 1
-                            if debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_SCALED || debugmode(tmpFileIdx) == tmpDbgIdx.GYRO_FILTERED || debugmode(tmpFileIdx) == 1 || debugmode(tmpFileIdx) == 0
+                            if hasPrefilt_
                                 h=text(65, climScale2(get(guiHandlesSpec2.checkboxPSD, 'Value')+1)-(f*4), ['Gyro Phase: ' num2str(gyro_phase_shift_deg(tmpFileIdx)) 'deg | Dterm Phase: ' num2str(dterm_phase_shift_deg(tmpFileIdx)) 'deg']);
                                 set(h,'Color',[lineCol],'fontsize',fontsz);
                             else
