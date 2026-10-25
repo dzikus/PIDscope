@@ -217,7 +217,8 @@ updatePreview();
         winSecs = [0.5 1 2 5 inf];
         wSec = winSecs(winIdx);
 
-        idx = tIND{fileIdx};
+        % tIND is a mask; centre the preview on the samples it keeps
+        idx = find(tIND{fileIdx});
         if isempty(idx), idx = 1:N; end
         midSample = round(mean([idx(1) idx(end)]));
         if wSec >= tFull(end)
