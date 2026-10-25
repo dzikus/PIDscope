@@ -334,6 +334,14 @@ PSdatatipSetup(fig);
             end
         end
         lines = {};
+        if numel(bad) == 3
+            % nothing was measured, so there is no verdict either way
+            allWell = false;
+            headline = 'NO AXIS COULD BE MEASURED';
+            lines{end+1} = sprintf('%s could not be read from this log.', strjoin(bad, ' and '));
+            lines{end+1} = 'The reason is shown in each plot.';
+            return
+        end
         allWell = isempty(flagged);
         if ~allWell
             verb = 'NEEDS';
