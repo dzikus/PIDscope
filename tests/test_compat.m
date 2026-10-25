@@ -83,6 +83,29 @@
 %! assert(kstest2([1 2 3 4], [1.1 2.1 3.1 4.1], 0.01), false);
 
 %!test
+%! % kstest2() - p-values across lambda 0.24..1.44, taken from the 101-term
+%! % series the shim summed first, so rewriting the series cannot move them.
+%! % Shifting b by k - 0.5 makes D exactly k/10.
+%! a = 1:10;
+%! expected = [0.9999999942894181 0.97478924654099508 0.67507815371659508 ...
+%!             0.31285267601695582 0.11084033741322809 0.031046781145641307];
+%! for k = 1:6
+%!   [~, p, d] = kstest2(a, (1:10) + k - 0.5);
+%!   assert(d, k/10, 1e-15);
+%!   assert(p, expected(k), 1e-14);
+%! end
+
+%!test
+%! % kstest2() - tied values across both samples, D checked against the
+%! % ECDF difference taken directly at every distinct value
+%! x1 = [1 2 2 3 3 3];
+%! x2 = [2 3 3 4 4 5 1];
+%! [h, p, d] = kstest2(x1, x2);
+%! assert(d, 3/7, 1e-15);
+%! assert(p, 0.46838502154475359, 1e-14);
+%! assert(h, false);
+
+%!test
 %! % fspecial() - gaussian column kernel, values from the image package
 %! f = fspecial('gaussian', [5 1], 4);
 %! assert(size(f), [5 1]);

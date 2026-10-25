@@ -7,7 +7,8 @@ function [H, pValue, ks2stat] = kstest2(x1, x2, varargin)
 %   [h, p] = kstest2(x1, x2, alpha)
 %   [h, p] = kstest2(x1, x2, 'alpha', alpha)
 %
-% Two-sided test only. Asymptotic p-value after Numerical Recipes 14.3.
+% Two-sided test only. Asymptotic p-value from the Kolmogorov distribution,
+% with Stephens' (1970) small-sample correction applied to lambda.
 
     alpha = 0.05;
     if numel(varargin) == 1 && isnumeric(varargin{1})
@@ -33,17 +34,48 @@ function [H, pValue, ks2stat] = kstest2(x1, x2, varargin)
         error('kstest2: both samples must be non-empty');
     end
 
-    edges = [-Inf; sort([x1; x2]); Inf];
-    cdf1 = cumsum(histc(x1, edges)) / n1;
-    cdf2 = cumsum(histc(x2, edges)) / n2;
-    ks2stat = max(abs(cdf1(1:end-1) - cdf2(1:end-1)));
+    [xs, idx] = sort([x1; x2]);
+    in1 = idx <= n1;
+    % both ECDFs have to include every copy of a tied value before comparing
+    last = [diff(xs) ~= 0; true];
+    d = cumsum(in1) / n1 - cumsum(~in1) / n2;
+    ks2stat = max(abs(d(last)));
 
-    n = n1 * n2 / (n1 + n2);
-    lambda = max((sqrt(n) + 0.12 + 0.11 / sqrt(n)) * ks2stat, 0);
+    nEff = n1 * n2 / (n1 + n2);
+    lambda = (sqrt(nEff) + 0.12 + 0.11 / sqrt(nEff)) * ks2stat;
+    pValue = min(max(ksSurvival(lambda), 0), 1);
 
-    v = 1:101;
-    pValue = 2 * sum((-1) .^ (v - 1) .* exp(-2 * lambda * lambda * v .^ 2));
-    pValue = min(max(pValue, 0), 1);
+    H = (pValue <= alpha);
+end
 
-    H = (alpha >= pValue);
+function p = ksSurvival(lambda)
+% P(K > lambda). The alternating series in exp(-2 j^2 lambda^2) needs many
+% terms and cancels badly for small lambda; there the theta-function form
+% of the same distribution converges in two or three terms.
+    if lambda <= 0
+        p = 1;
+        return;
+    end
+    s = 0;
+    if lambda < 1
+        c = -pi^2 / (8 * lambda^2);
+        for k = 1:50
+            t = exp(c * (2*k - 1)^2);
+            s = s + t;
+            if t <= eps * s
+                break;
+            end
+        end
+        p = 1 - sqrt(2*pi) / lambda * s;
+    else
+        c = -2 * lambda^2;
+        for j = 1:50
+            t = exp(c * j^2);
+            s = s + (-1)^(j - 1) * t;
+            if t <= eps * abs(s)
+                break;
+            end
+        end
+        p = 2 * s;
+    end
 end
