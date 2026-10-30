@@ -1,11 +1,8 @@
-function [output_txt] = PSdatatip(obj,event_obj)
-%% Display the position of the data cursor
-% obj          Currently not used (empty)
-% event_obj    Handle to event object
-% output_txt   Data cursor text string (string or cell array of strings).
-% this is a minor modification of the Matlab datatip tool to display
-% relevant units for this project, deg/s and time with ms precision 
-% - B. White
+function txt = PSdatatip(obj, evt)
+% datacursormode UpdateFcn, MATLAB only (Octave goes through PSdatatip_click).
+% Log viewer traces get up to 6 significant digits on x so time keeps ms
+% precision; below -logviewerYscale the lower panel reads in percent.
+% Spectrogram images show %T, Hz and the value under the cursor.
 %
 % ----------------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -17,62 +14,37 @@ function [output_txt] = PSdatatip(obj,event_obj)
 
 global logviewerYscale
 
-fontsz2=16;
+fontsz2 = 16;
 try
-    a=event_obj.Target.Type;  
-    c=event_obj.Target.Color;
+    a = evt.Target.Type;
+    c = evt.Target.Color;
 catch
 end
-c1=[0.9300    0.5000    0.3000];
-c2=[0.3000    0.6500    0.9500]; 
-if ~strcmp(a,'image') % ugly workaround       
-        pos = get(event_obj,'Position');
-        if pos(1)<100,
-            dgts=5;
-        else
-            dgts=6;
-        end   
-        if pos(2) > -logviewerYscale
-        output_txt = {['x: ',num2str(pos(1),dgts)],...
-            ['y: ',num2str(pos(2),4)]};
-        else
-            output_txt = {['sec: ',num2str(pos(1),dgts)],...
-            ['%: ',num2str(((pos(2)+(logviewerYscale*2)) / (logviewerYscale/100)),4)]};
-        end
-            
-  
-%         dataTipH=plot([pos(1) pos(1)], [-2400 2400],'r-');
-%         get(dataTipH)
-        if c==c1 | c==c2
-            output_txt = {['x: ',num2str(pos(1),4)],...
-            ['y: ',num2str(pos(2),4)]};
-        end
-        % If there is a Z-coordinate in the position, display it as well
-        if length(pos) > 2
-            output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
-        end
-        set(findall(gcf,'type','hggroup'),'FontSize',fontsz2,'FontWeight', 'bold')
-    else
-        pos = get(event_obj,'Position');  
-        output_txt = {['X: ',num2str(pos(1),4)],...
-            ['Y: ',num2str(pos(2),4)]};
+c1 = [0.9300 0.5000 0.3000];
+c2 = [0.3000 0.6500 0.9500];
+p = get(evt, 'Position');
 
-        % If there is a Z-coordinate in the position, display it as well
-        if length(pos) > 2
-           output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
-        end
-        if strcmp(a,'image') 
-%             pos = get(event_obj,'Position');
-%             output_txt = {['X: ',num2str(pos(1),4)],...
-%             ['Y: ',num2str(pos(2),4)]};
-        
-            y=(obj.Parent.YLim(2)-pos(2)) / (.3);
-            output_txt = {['%T: ',num2str(pos(1),4)],...
-            ['Hz: ',num2str(y,4)]};
- 
-            z=event_obj.Target.CData(pos(2),pos(1));
-            output_txt{end+1} = ['Z: ',num2str(z,4)];   
-        end     
-        set(findall(gcf,'type','hggroup'),'FontSize',fontsz2,'FontWeight', 'bold')
+if ~strcmp(a, 'image')
+    if p(1) < 100
+        dgts = 5;
+    else
+        dgts = 6;
+    end
+    if p(2) > -logviewerYscale
+        txt = {['x: ' num2str(p(1), dgts)], ['y: ' num2str(p(2), 4)]};
+    else
+        txt = {['sec: ' num2str(p(1), dgts)], ...
+            ['%: ' num2str((p(2) + logviewerYscale*2) / (logviewerYscale/100), 4)]};
+    end
+    if c == c1 | c == c2
+        txt = {['x: ' num2str(p(1), 4)], ['y: ' num2str(p(2), 4)]};
+    end
+    if numel(p) > 2
+        txt{end+1} = ['Z: ' num2str(p(3), 4)];
+    end
+else
+    hz = (obj.Parent.YLim(2) - p(2)) / .3;
+    txt = {['%T: ' num2str(p(1), 4)], ['Hz: ' num2str(hz, 4)], ...
+        ['Z: ' num2str(evt.Target.CData(p(2), p(1)), 4)]};
 end
- 
+set(findall(gcf, 'type', 'hggroup'), 'FontSize', fontsz2, 'FontWeight', 'bold')

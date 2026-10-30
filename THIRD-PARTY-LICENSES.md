@@ -81,11 +81,50 @@ signal 1.4.7, statistics 1.8.3) with their notices retained in place. The macOS
 package ships no Octave packages at all - `pidscope.command` installs control
 and signal from Octave Forge on first launch.
 
-## MATLAB File Exchange helpers
+## b2r colormap (releases up to v26.10.0)
 
-`src/` contains a small number of helper functions originating from the
-MathWorks File Exchange. Their original headers, author names and licence
-terms are retained in the respective files.
+| | |
+| --- | --- |
+| Upstream | https://www.mathworks.com/matlabcentral/fileexchange/36212-b2r-cmin-input-cmax-input- |
+| Author | Cunjie Zhang |
+| Licence | BSD-2-Clause |
+| Copyright | Copyright (c) 2015, LoveUltraman |
+
+Every release from v26.02-beta1 to v26.10.0 shipped `b2r.m`, a blue-white-red
+colormap from the MATLAB File Exchange inherited from PIDtoolbox, unmodified:
+at the top level up to v26.02-beta4, as `src/util/b2r.m` from v26.02-rc1 on.
+Releases up to v26.03.1 also carried a copy of the same function inside the
+statistics plot (`PTplotStats.m`, later `src/plot/PSplotStats.m`). Those files
+kept the author's name but not the licence the File Exchange distributes with
+the submission, so it is reproduced here for those releases. Later releases do
+not contain the code.
+
+```
+Copyright (c) 2015, LoveUltraman
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the distribution
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+```
 
 ## Obtaining the source
 

@@ -2,10 +2,17 @@ function rgb = dkl2rgb(dkl)
 % dkl2rgb - convert DKL cone opponent colors to RGB
 % rgb = dkl2rgb(dkl)
 % input (dkl) is [luminance; red/green; blue/yellow]
+% 'magic numbers', based on 'average' crt monitor and derived using
+% Smith & Pokorny cone fundamentals % V. C. Smith & J. Pokorny (1975), Vision Res. 15, 161-172.
 %
-% Copyright (C) 2026 Grzegorz Sterniczuk
-% License: GPL v3 (see LICENSE)
 % Extracted from PScolormap.m for Octave compatibility
+%
+% ----------------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <brian.white@queensu.ca> wrote this file. As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return. -Brian White
+% ----------------------------------------------------------------------------------
 
 M_dkl2rgb = [
     1.0000    1.0000   -0.3495
